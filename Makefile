@@ -11,4 +11,7 @@ SilkJS:	$(OBJ) SilkJS.h Makefile
 clean:
 	rm SilkJS *.o
 
+release: SilkJS
+	tar czvfp ~/SilkJS.tgz SilkJS examples httpd lib
+
 $(OBJ): SilkJS.h Makefile
