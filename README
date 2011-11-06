@@ -1,0 +1,14 @@
+QUICKSTART
+
+Currently for Mac OSX Lion x64 only...
+
+1. Download the SilkJS.tgz file from the downloads section.
+2. Create a folder.
+3. Unpack SilkJS.tgz in the newly created folder.
+4. Open a terminal window
+5. cd to the directory you unpacked SilkJS
+6. ./SilkJS httpd/main.js
+
+
+
+

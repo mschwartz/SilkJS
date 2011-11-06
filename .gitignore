@@ -1,3 +1,4 @@
 *.o
 SilkJS
 .idea
+*gz
