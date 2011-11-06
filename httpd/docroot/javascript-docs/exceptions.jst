@@ -1,0 +1,42 @@
+<%
+	title = 'JavaScript API Docs';
+	heading = 'Exceptions API';
+	menu = '/javascript-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+
+	<h2>About Exceptions</h2>
+<p>SilkJS Exceptions extensions must be included to be made available:</p>
+	<pre class="code">include('/path/to/silkjs/lib/Exceptions.js');</pre>
+<p>The SilkJS Exceptions extensions provide for a more comprehensive exception handling setup than the plain
+one that is built into v8.  A key benefit of SilkJS' extensions is the ability to get a stack trace of where
+an exception was thrown.</p>
+
+	<h3>throw new SilkException(message);</h3>
+	<p>Instead of throwing a string, throw a new SilkException.  The exception caught by a try/catch block will
+	be an object containing at least these members:</p>
+	<ul>
+	<li>message: text describing the exception/cause.</li>
+	<li>stack: array containing stack trace information.</li>
+	</ul>
+
+	<h3>throw new SQLException(message, query);</h3>
+	<p>This is an extended SilkException that is suitable for exceptions during SQL processing.  The exception
+	caught by a try/catch block will be an object containing a least these members:</p>
+	<ul>
+	<li>message: text describing the exception/cause.</li>
+	<li>query: the SQL query being processed (string) when the exception occurred.</li>
+	<li>stack: array containing stack trace information.</li>
+	</ul>
+
+	<h3>error(message);</h3>
+	<p>Your code may call this function with an error message, and it will throw a SilkException and adjusts
+	the stack trace so the error() function is not part of the trace.  This function does not return.</p>
+	
+	<h3>Error.exceptionHandler(exception);</h3>
+	<p>SilkJS extends the native v8 Error object with this function.  If called from an HTTP context, where there
+	is a res object, it generates a nicely formatted status 500 page, including stack dump and SQL query string (if present).</p>
+	<p>This is a pretty
+	good bit of code to examine and tweak to suit your own purposes.</p>
+	
+<%= include('/include/footer.jst') %>

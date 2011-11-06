@@ -1,0 +1,19 @@
+<div class="content-secondary">
+	<div data-role="collapsible" data-collapsed="true" data-theme="b">
+		<h3>More in this section</h3>
+		<ul data-role="listview"  data-theme="c" data-dividertheme="d">
+			<li data-role="list-divider">SilkJS API Docs</li>
+			<li<%= (req.uri.endsWith('/') ? ' data-theme="a"' : '') %>><a href="/native-docs/">About the API</a></li>
+			<li data-role="list-divider">Native APIs</li>
+			<li<%= (req.uri.endsWith('buffer.jst') ? ' data-theme="a"' : '') %>><a href="/native-docs/buffer.jst">buffer</a></li>
+			<li<%= (req.uri.endsWith('console.jst') ? ' data-theme="a"' : '') %>><a href="/native-docs/console.jst">console</a></li>
+			<li<%= (req.uri.endsWith('fs.jst') ? ' data-theme="a"' : '') %>><a href="/native-docs/fs.jst">fs</a></li>
+			<li<%= (req.uri.endsWith('gd.jst') ? ' data-theme="a"' : '') %>><a href="/native-docs/gd.jst">gd</a></li>
+			<li<%= (req.uri.endsWith('http.jst') ? ' data-theme="a"' : '') %>><a href="/native-docs/http.jst">http</a></li>
+			<li<%= (req.uri.endsWith('mysql.jst') ? ' data-theme="a"' : '') %>><a href="/native-docs/mysql.jst">mysql</a></li>
+			<li<%= (req.uri.endsWith('ncurses.jst') ? ' data-theme="a"' : '') %>><a href="/native-docs/ncurses.jst">ncurses</a></li>
+			<li<%= (req.uri.endsWith('net.jst') ? ' data-theme="a"' : '') %>><a href="/native-docs/net.jst">net</a></li>
+			<li<%= (req.uri.endsWith('process.jst') ? ' data-theme="a"' : '') %>><a href="/native-docs/process.jst">process</a></li>
+		</ul>
+	</div>
+</div>

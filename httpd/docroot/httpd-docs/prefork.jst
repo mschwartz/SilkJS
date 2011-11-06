@@ -1,0 +1,35 @@
+<%
+title = 'Apache Benchmark';
+heading = 'Prefork vs. Event Driven';
+menu = '/httpd-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+<p>There is a considerable amount of discussion about whether the Event Driven or Prefork model for network servers
+is ideal for performance.  In truth, a combination of both is ideal, but server implementations in JavaScript built
+on the v8 engine basically have to be one or the other.  </p>
+<p>The SilkJS implementation of HTTPD is novel in its approach because the WWW server is written in
+JavaScript with as thin a glue between the JavaScript engine and the underlying native APIs as possible.
+The benefit of this approach is that SilkJS HTTPD can be trivially bent to suit your needs without recompiling the
+server, and the performance is impressive.</p>
+
+<p>A lot of care has gone into making SilkJS HTTPD a fast server.  When you get to the point where requests are
+handled at sub millisecond times, little things like an extra string copy in the code somewhere can mean 2x worse
+performance.</p>
+
+<p>A WWW server does have to serve static content, and SilkJS does this about as fast as Apache.  The purpose of
+SilkJS isn't to be a static content server, but a high transaction JavaScript server, so keep this in mind.  The idea
+is to support writing in JavaScript instead of a language like PHP, while gaining many times the performance.</p>
+
+<p>SilkJS not only serves static content very fast, it can handle huge numbers of simultaneous connections.
+See the benchmarks linked in the left menu for more details.</p>
+
+<p>The main benefits of the Prefork model are:</p>
+<ul>
+<li>If a process crashes, the server continues to run and serve requests.</li>
+<li>You get to write your Server Side business logic top to bottom, left to right, instead having to think in terms of
+event handlers.</li>
+<li>Your WWW server continues to respond to requests if your business logic needs to use a bit of CPU, like resizing
+or generating an image.</li>
+</ul>
+	
+<%= include('/include/footer.jst') %>

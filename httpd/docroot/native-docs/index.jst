@@ -1,0 +1,22 @@
+<%
+	title = 'API Docs';
+	heading = 'About the API';
+	menu = '/native-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+	<p>Native APIs are JavaScript callable functions that provide glue to the operating system
+	native functions and other library functions.</p>
+	<p>JavaScript APIs are classes and methods written entirely in JavaScript, and their use is optional.</p>
+	<p>The native APIs closely resemble a 1-to-1 relationship to the native operating system methods.  They do
+	not provide automatic housekeeping and garbage collection.  For example, if you call the <code>fs.open()</code>,
+	method, it will return a file descriptor; if you do not call <code>fs.close()</code> on this file descriptor,
+	your program will leak memory.  But this is true of just about any programming language.</p>
+	<p>Additionally, the native APIs perform as little error checking as possible.  For example, if a native API
+	method call requires 3 arguments and you call it with 2, the results will be unpredictable - but it is YOUR bug.</p>
+	<p>It is an obvious requirement to be able to access the low-level native functions, so your programs can do what
+	you need them to do.  Typically, you'll create a class in JavaScript that calls the native functions and provides
+	error handling and proper housekeeping.  It's up to you!</p>
+	<p>SilkJS comes with a number of these "wrapper" classes that you can <code>include()</code> and use freely.  Or
+	you can roll your own.  The APIs are fully documented here, in any case.</p>
+
+<%= include('/include/footer.jst') %>

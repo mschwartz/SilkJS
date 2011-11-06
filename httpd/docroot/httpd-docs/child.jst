@@ -1,0 +1,11 @@
+<%
+	title = 'HTTP Server';
+	heading = 'HTTPD Child Process';
+	menu = '/httpd-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+	<pre class="code">
+<%= fs.readFile('httpd/child.js').replace(/</gm, '&lt;').replace(/\t/gm, '    ') %>
+	</pre>
+
+<%= include('/include/footer.jst') %>

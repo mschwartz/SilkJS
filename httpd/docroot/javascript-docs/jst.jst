@@ -1,0 +1,92 @@
+<%
+	title = 'JavaScript API Docs';
+	heading = 'Jst API';
+	menu = '/javascript-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+
+	<h2>About Jst</h2>
+<p>Jst is a simple templating language that resembles JSP with JavaScript code instead of Java code.  It was written
+by Mark Turansky a few years ago.  The code has been modified a bit from what Mark originally wrote, but he deserves
+all the credit.<p/>
+
+<p>You can read about Jst on his blog at <a href="http://blog.markturansky.com/BetterJavascriptTemplates.html">http://blog.markturansky.com/BetterJavascriptTemplates.html</a></p>
+	<p>The license for Jst is at the bottom of this page.</p>
+
+<p>Jst is trivial to understand.  A Jst template is plain text (typcially HTML, or XML, or XHTML) with the addition
+	of two special tags.  Any JavaScript code between &lt;% and %> tags is executed.  Any JavaScript expression between
+	&lt;%= and %> tags is echoed.  </p>
+
+<p>Here's a simple Jst template that dumps the first name and last name of players from a database of NBA player stats:</p>
+<pre class="code">
+<%= fs.readFile(Config.documentRoot+'/stats.jst').replace(/</gm, '&lt;').replace(/\t/gm, '    ') %>
+</pre>
+
+<p>Here's a simple Jst template that tests SilkJS httpd's ability to deal with post data:</p>
+<pre class="code">
+<%= fs.readFile(Config.documentRoot+'/post.jst').replace(/</gm, '&lt;').replace(/\t/gm, '    ') %>
+</pre>
+
+	<h2>About Jst methods</h2>
+	<p>Jst is implemented as a singleton class with a handful of relevant member functions that you'd typically call
+	from your JavaScript.  The code in your Jst templates can call any function you've already defined, but they do
+	execute in a "context" created using the little used/known JavaScript "with" keyword.  Note that "with" is deprecated
+	and disabled when "use strict" is turned on.</p>
+
+	<h3>var output = Jst.execute(source, obj);</h3>
+	<p>This function compiles the Jst source template and runs it.  The specified obj will act like the template's
+	global Object, so any global variables accidentally defined in the template won't trash the true global Object.
+	However, the template code can access the global Object, e.g. <code>global.someVar = 10;</code>.</p>
+	<p>The output of the template is returned.  Typically this is an HTML page suitable for
+	writing to the browser.</p>
+
+	<h3>var parsed = Jst.parse(source);</h3>
+	<p>Jst templates are first parsed, then executed.  If you are going to execute the same template over and over,
+	it saves time to parse it once and then just execute it over and over.  This function parses the source Jst template
+	and returns the parsed version of it as a string.</p>
+
+	<h3>var output = Jst.executeParsed(parsed);</h3>
+	<p>This function executes the specified parsed template and returns its output.</p>
+	
+	<h2>Methods within Templates</h2>
+	<p>The SilkJS Jst implementation adds two methods to the namespace that the templates may call.</p>
+	<h3>print(string);<br/>
+	println(string);</h3>
+	<p>The first prints a string to the output, the second prints a string and a newline to the output.  Remember
+	the output is ultimately a string returned by one of Jst.execute() or Jst.executeParsed().</p>
+	<h3>Jst.include(src, obj);<br/>
+	Jst.includeParsed(parsed, obj);</h3>
+	<p>These are basically versions of Jst.execute() and Jst.executeParsed() that save the state of the Jst
+	template engine before creating the output and restoring the state after.  A Jst template may well need to
+	do something like include() another Jst template, and these functions make it possible.  A template may include()
+	another template which include() another template, and so on.</p>
+
+	<h2>Jst License</h2>
+	<pre class="code">
+<h3>License</h3>
+Copyright 2008, mark turansky (www.markturansky.com)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is furnished
+to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+The Software shall be used for Good, not Evil.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+(This is the license from www.json.org and I think it's awesome.  ~mgt)
+</pre>
+
+<%= include('/include/footer.jst') %>

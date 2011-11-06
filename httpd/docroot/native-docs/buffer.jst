@@ -1,0 +1,31 @@
+<%
+	title = 'Native API Docs';
+	heading = 'buffer API';
+	menu = '/native-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+	<h2>About buffers</h2>
+	<p>A buffer is a growable array of characters that resides outside the JavaScript engine context.  They
+	are particularly useful in the HTTPD context, where creating a buffered HTML response in the JavaScript engine
+	context would require an extra string copy before writing the data to the socket (browser).</p>
+
+	<h3>var handle = buffer.create();</h3>
+	<p>Creates a new buffer and returns an opaque handle to that buffer.  JavaScript code will pass that handle
+	to the other buffer methods.</p>
+
+	<h3>buffer.destroy(handle);</h3>
+	<p>Destroys a buffer created with buffer.create(), freeing any memory associated with it.</p>
+
+	<h3>buffer.reset(handle)</h3>
+	<p>Resets an existing buffer, so it represents an empty string.</p>
+
+	<h3>buffer.write(handle, string, length)</h3>
+	<p>Appends the passed string to the buffer, for the given length of the string.</p>
+
+	<h3>var string = buffer.read(handle);</h3>
+	<p>Returns the string in the buffer.</p>
+
+	<h3>var size = buffer.size(handle);</h3>
+	<p>Returns the length of the string in the buffer.</p>
+	
+<%= include('/include/footer.jst') %>

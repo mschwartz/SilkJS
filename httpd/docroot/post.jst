@@ -1,0 +1,39 @@
+<%
+// JST program to test binary file upload, and standard form submit
+	
+if (req.data.testfile) {
+	FileSystem.writefile64('/tmp/'+req.data.testfile.filename, req.data.testfile.content);
+}
+%>
+<html>
+	<head>
+		<title>Post Test</title>
+	</head>
+	<body>
+		<h1>req.data</h1>
+		<pre><%= req.data.dump() %></pre>
+
+		<h1>req.headers</h1>
+		<pre><%= req.headers.dump() %></pre>
+
+		<h1>postData</h1>
+		<pre><%= req.postData.length %> Bytes</pre>
+		<pre><%= req.postData %></pre>
+
+		<h1>Mime Parts</h1>
+		<pre><%= req.mimeParts.dump() %></pre>
+
+		<h1>Standard Form</h1>
+		<form action="/post.jst?foo=bar&baz=zaz" method="POST">
+			<input type="text" name="testtext"><br/>
+			<input type="submit" name="button" value="myButton"><br/>
+		</form>
+
+		<h1>Multi-Part</h1>
+		<form enctype="multipart/form-data" action="/post.jst?foo=bar&baz=zaz" method="POST">
+			<input type="text" name="testtext"><br/>
+			<input type="file" name="testfile"><br/>
+			<input type="submit" name="button" value="myButton"><br/>
+		</form>
+	</body>
+</html>

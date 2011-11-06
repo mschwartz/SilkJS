@@ -1,0 +1,65 @@
+<%
+	title = 'Apache Benchmark';
+	heading = 'Apache Benchmark<br/>50 Concurrent Requests';
+	menu = '/httpd-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+<pre class="console">
+# ab -t 30 -k -c 50 http://localhost:9090/anchor.pngThis is ApacheBench, Version 2.3 <$Revision: 655654 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking localhost (be patient)
+Completed 5000 requests
+Completed 10000 requests
+Completed 15000 requests
+Completed 20000 requests
+Completed 25000 requests
+Completed 30000 requests
+Completed 35000 requests
+Completed 40000 requests
+Completed 45000 requests
+Completed 50000 requests
+Finished 50000 requests
+
+
+Server Software:        SILK
+Server Hostname:        localhost
+Server Port:            9090
+
+Document Path:          /anchor.png
+Document Length:        523 bytes
+
+Concurrency Level:      50
+<span class="highlight">Time taken for tests:   1.332 seconds</span>
+Complete requests:      50000
+Failed requests:        0
+Write errors:           0
+Keep-Alive requests:    49901
+Total transferred:      35346139 bytes
+HTML transferred:       26150000 bytes
+<span class="highlight">Requests per second:    37527.73 [#/sec] (mean)</span>
+Time per request:       1.332 [ms] (mean)
+<span class="highlight">Time per request:       0.027 [ms] (mean, across all concurrent requests)</span>
+Transfer rate:          25907.43 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.0      0       2
+Processing:     0    1   2.1      0      42
+Waiting:        0    1   2.1      0      42
+Total:          0    1   2.1      0      42
+
+Percentage of the requests served within a certain time (ms)
+  50%      0
+  66%      1
+  75%      1
+  80%      1
+  90%      3
+  95%      5
+  98%      8
+  99%     10
+ 100%     42 (longest request)
+#
+</pre>
+<%= include('/include/footer.jst') %>

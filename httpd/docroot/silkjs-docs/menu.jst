@@ -1,0 +1,11 @@
+<div class="content-secondary">
+	<div data-role="collapsible" data-collapsed="true" data-theme="b">
+		<h3>More in this section</h3>
+		<ul data-role="listview"  data-theme="c" data-dividertheme="d">
+			<li data-role="list-divider">About SilkJS</li>
+			<li<%= (req.uri.endsWith('/') ? ' data-theme="a"' : '') %>><a href="/silkjs-docs/">Introducing SilkJS</a></li>
+			<li<%= (req.uri.endsWith('why.jst') ? ' data-theme="a"' : '') %>><a href="/silkjs-docs/why.jst">Why JavaScript?</a></li>
+			<li<%= (req.uri.endsWith('global.jst') ? ' data-theme="a"' : '') %>><a href="/silkjs-docs/global.jst">Server Side JavaScript</a></li>
+		</ul>
+	</div>
+</div>

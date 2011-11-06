@@ -1,0 +1,555 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+ 
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"> 
+<head> 
+  <meta http-equiv="content-type" content="text/html;charset=UTF-8" /> 
+  <meta name="description" content="The code refactoring community."> 
+  <title>Socket read line in C - RefactorMyCode.com</title> 
+  <link href="/stylesheets/base_1299175381.css" media="screen" rel="Stylesheet" type="text/css" /> 
+  <script src="/javascripts/base_1300984646.js?1303320085" type="text/javascript"></script> 
+ 
+  <link href="/prettify/prettify.css" type="text/css" rel="stylesheet" /> 
+  <script type="text/javascript" src="/prettify/prettify.js"></script> 
+ 
+  <script type="text/javascript"> 
+      (function() {
+          var uv = document.createElement('script'); uv.type = 'text/javascript'; uv.async = true;
+          uv.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'widget.uservoice.com/SE9gVee0GhqyixYLoIKrw.js';
+          var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(uv, s);
+        })();
+  </script> 
+ 
+  
+  <script type="text/javascript"> 
+    Application.init();
+    
+    Event.observe(window, 'load', function() {
+      // Corner roundin yo!
+      Nifty('div.position');
+      // Page specific script
+      
+    });
+  </script> 
+  
+    <script type="text/javascript"> 
+ 
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-167049-3']);
+      _gaq.push(['_trackPageview']);
+ 
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+ 
+    </script> 
+  
+</head> 
+<body id="codes" onload="prettyPrint()"> 
+  
+<div id="header"> 
+  <h1> 
+    <a href="/" title="Home"> 
+      <span class="Class">Refactor</span> 
+      <span class="Symbol">:my</span> 
+      =&gt;
+      <span class="String">'code'</span> 
+    </a> 
+  </h1> 
+  
+  <ul id="menu" class="show"> 
+    <li class="first"><a href="/" class="codes">Codes</a></li> 
+    <li><a href="/refactorings/recent" class="refactorings">Refactorings</a></li> 
+    <li><a href="/codes/popular" class="popular">Popular</a></li> 
+    <li><a href="/refactorers/best" class="best">Best</a></li> 
+    <li><a href="/codes/new" class="submit">Submit</a></li> 
+    <li class="if_admin" style="display:none"><a href="/spam" class="spam">Spam</a></li> 
+    <li class="if_logged_in" style="display:none"><a href="/account" class="account">Account</a></li> 
+    <li class="if_logged_in" style="display:none"><a href="/logout" class="logout">Logout</a></li> 
+    <li class="unless_logged_in"><a href="/login?return_to=%2Fcodes%2F174-socket-read-line-in-c" class="login">Login</a></li> 
+  </ul> 
+  
+  <noscript> 
+    JavaScript doesn't seem to be activated, expect things to be ugly and sloppy!
+  </noscript> 
+  <!--[if lt IE 7]>
+ 
+    <div id="ie6_warning">
+      <p>
+        This site doesn't play very nice on MS Internet Explorer 6.
+        <a href="http://www.lockergnome.com/news/2004/06/15/why-you-should-dump-internet-explorer/" target="_blank">Do the Internet a favour</a> and <a href="http://www.microsoft.com/windows/products/winfamily/ie/" target="_blank">upgrade to MSIE7</a>.
+        Better yet, make the switch to <a href="http://browsehappy.com/browsers/" target="_blank">a better browser</a>.
+      </p>
+    </div>
+ 
+  <![endif]--> 
+</div> 
+ 
+<div id="container"> 
+  <div id="sidebar"> 
+    
+    
+    <!-- No search for now sorry...
+<div class="search">
+  <form action="/search" method="get">
+    <input id="q" name="q" type="text" />
+    <input class="button" name="commit" type="submit" value="Search" />
+  </form>
+</div> --> 
+ 
+<div class="ad"> 
+  <p>Learn How to Create Your Own Programming Language<br/> 
+  <a href="http://createyourproglang.com/">createyourproglang.com</a></p> 
+  <script type="text/javascript"><!--
+    google_ad_client = "pub-3465117494742004";
+    /* RmC 160x90 */
+    google_ad_slot = "2432790807";
+    google_ad_width = 160;
+    google_ad_height = 90;
+    //-->
+  </script> 
+  <script type="text/javascript" src="http://pagead2.googlesyndication.com/pagead/show_ads.js"></script> 
+</div> 
+ 
+ 
+  
+    <h2>Recent</h2> 
+    <ul class="codes"> 
+    
+      <li><a href="/codes/1721-reduce-duplication-in-jquery-callback">Remove duplicate declarations in jQuery callback</a></li> 
+    
+      <li><a href="/codes/1720-get-base-without-file-path">Get base without file/path</a></li> 
+    
+      <li><a href="/codes/1719-find-a-horizontal-line-in-an-image-or-consecutive-array-elements">find a horizontal line in an image, or consecutive array elements</a></li> 
+    
+      <li><a href="/codes/1718-fnv-1-and-fnv-1a-hash-for-32-and-64-bits">FNV-1 and FNV-1a Hash for 32 and 64 bits</a></li> 
+    
+      <li><a href="/codes/1717-tallying-scores">Tallying scores</a></li> 
+    
+      <li><a href="/codes/1716-this-ifxtransaction-has-completed-it-is-no-longer-usable">This IfxTransaction has completed; it is no longer usable</a></li> 
+    
+      <li><a href="/codes/1715-output-to-html-attachment-instead-of-email-body">output to html attachment instead of email body</a></li> 
+    
+      <li><a href="/codes/1714-string-concat">string concat</a></li> 
+    
+      <li><a href="/codes/1713-rental_has_been_refunded">rental_has_been_refunded?</a></li> 
+    
+      <li><a href="/codes/1712-check-all-tasks-are-finished-before-closing">Check all tasks are finished before closing</a></li> 
+    
+    </ul> 
+  
+  
+  
+    <h2>Popular</h2> 
+    <ul class="codes"> 
+    
+      <li><a href="/codes/1721-reduce-duplication-in-jquery-callback">Remove duplicate declarations in jQuery callback</a></li> 
+    
+      <li><a href="/codes/1697-keyboard-input-manager-help-removing-foreaches">keyboard input manager, help removing foreaches</a></li> 
+    
+      <li><a href="/codes/1709-substring-according-to-sign">substring according to sign</a></li> 
+    
+      <li><a href="/codes/1718-fnv-1-and-fnv-1a-hash-for-32-and-64-bits">FNV-1 and FNV-1a Hash for 32 and 64 bits</a></li> 
+    
+      <li><a href="/codes/1719-find-a-horizontal-line-in-an-image-or-consecutive-array-elements">find a horizontal line in an image, or consecutive array elements</a></li> 
+    
+      <li><a href="/codes/1703-c-code-to-replace-accents-in-a-string">C# code to replace accents in a string</a></li> 
+    
+      <li><a href="/codes/1714-string-concat">string concat</a></li> 
+    
+      <li><a href="/codes/1707-existence-of-activerecord-attribute">Existence of ActiveRecord attribute</a></li> 
+    
+      <li><a href="/codes/1694-how-to-refactor-base-class-method">how to Refactor Base Class method ?</a></li> 
+    
+      <li><a href="/codes/1710-code-refactoring-reduntant-model">code refactoring reduntant model</a></li> 
+    
+    </ul> 
+  
+ 
+  </div> 
+ 
+  <div id="content"> 
+    <div id="error" class="flash flash_error" style="display:none"></div> 
+    <div id="notice" class="flash flash_notice" style="display:none"></div> 
+    <script type="text/javascript"> 
+      Flash.transferFromCookies();
+      Flash.writeDataTo('error', $('error'));
+      Flash.writeDataTo('notice', $('notice'));
+      Flash.dropOut('notice');
+    </script> 
+  
+    
+ 
+<script type="text/javascript" charset="utf-8"> 
+  CurrentUser.author = false;
+</script> 
+ 
+<a href="/users/398"><img alt="55502f40dc8b7c769880b10874abc9d0" class="avatar" height="80" src="http://www.gravatar.com/avatar/55502f40dc8b7c769880b10874abc9d0" width="80" /></a> 
+<div id="banner"> 
+  <h1> 
+    <span class="language c">C</span> 
+    Socket read line in C
+  </h1> 
+ 
+  <div class="info"> 
+    Posted <span id="time_ago_1197007994">December 06, 2007 22:13</span><script type="text/javascript"> 
+//<![CDATA[
+$('time_ago_1197007994').update(DateHelper.timeAgoInWords(1197007994000) + ' ago')
+//]]>
+</script> 
+    by <a href="/users/398">bugmenot2.myopenid.com</a>, tagged with <a href="/tags/c">c</a>, <a href="/tags/sockets">sockets</a> 
+  </div> 
+ 
+  <ul class="nav"> 
+    <li></li> 
+    <li></li> 
+    <li><a href="/codes/174-socket-read-line-in-c/pastable" class="paste">Pastable</a></li> 
+    <li><a href="#new_refactor_form" class="add_comment" onclick="new Effect.ScrollTo('new_refactor_form', { offset: -60 }); new Effect.Highlight('new_refactor', { queue: 'end' }); return false">Refactor it!</a></li> 
+    <li><a href="#refactors" class="comments" id="refactors_count" onclick="new Effect.ScrollTo('refactors', { offset: -60 });  return false">3 refactorings</a></li> 
+  </ul> 
+</div> 
+ 
+ 
+  <div class="comment"> 
+    <p>I don't like the char** out, it just feels ugly to me. But seeing as I have to return a -1 for a socket error, else the string length, it seems to be the only way. Unless I switch the result and out so I return the char* and write the size/status to an output argument. Thoughts? Also, comments on the actual algorithm are appreciated.</p> 
+  </div> 
+ 
+  <pre class='prettyprint' language='c'>int socket_read_line_alloc(int sock, char** out) {
+        /* current buffer size */
+        unsigned int size = 128;
+        /* current location in buffer */
+        int i = 0;
+        /* whether the previous char was a \r */
+        int cr = 0;
+        char ch;
+
+        /* result, grows as we need it to */
+        *out = malloc(sizeof(char) * size);
+
+        for ( ; ; ) {
+                if (recv(sock, &amp;ch, 1, 0) == -1) {
+                        return -1;
+                }
+
+                if (i &gt;= size) {
+                        /* grow buffer */
+                        size *= 2;
+                        *out = realloc(*out, size);
+                }
+
+                if (ch == '\n') {
+                        /* if preceded by a \r, we overwrite it */
+                        if (cr) {
+                                assert(i &gt; 0);
+                                i--;
+                        }
+
+                        (*out)[i] = '\0';
+                        break;
+
+                } else {
+                        cr = (ch == '\r' ? 1 : 0);
+                        (*out)[i] = ch;
+                }
+
+                i++;
+        }
+
+        return i + 1;
+}</pre> 
+  <div id="unformated_code" style="display:none">int socket_read_line_alloc(int sock, char** out) {
+        /* current buffer size */
+        unsigned int size = 128;
+        /* current location in buffer */
+        int i = 0;
+        /* whether the previous char was a \r */
+        int cr = 0;
+        char ch;
+
+        /* result, grows as we need it to */
+        *out = malloc(sizeof(char) * size);
+
+        for ( ; ; ) {
+                if (recv(sock, &amp;ch, 1, 0) == -1) {
+                        return -1;
+                }
+
+                if (i &gt;= size) {
+                        /* grow buffer */
+                        size *= 2;
+                        *out = realloc(*out, size);
+                }
+
+                if (ch == '\n') {
+                        /* if preceded by a \r, we overwrite it */
+                        if (cr) {
+                                assert(i &gt; 0);
+                                i--;
+                        }
+
+                        (*out)[i] = '\0';
+                        break;
+
+                } else {
+                        cr = (ch == '\r' ? 1 : 0);
+                        (*out)[i] = ch;
+                }
+
+                i++;
+        }
+
+        return i + 1;
+}
+
+</div> 
+ 
+ 
+<h2>Refactorings</h2> 
+<div id="refactors"> 
+  <p id="no_refactoring">No refactoring yet !</p> 
+  <script type="text/javascript"> 
+//<![CDATA[
+$('no_refactoring').hide()
+//]]>
+</script> 
+  
+    <div class="refactor" id="refactor_1019"> 
+  <a href="/users/399"><img alt="B849433e0e1a3f4ca0cf7cc55b8acd53" class="avatar" height="80" src="http://www.gravatar.com/avatar/b849433e0e1a3f4ca0cf7cc55b8acd53" width="80" /></a> 
+ 
+<div class="side_actions"> 
+  
+  
+</div> 
+ 
+<h3><a href="/users/399">Casper</a></h3> 
+<h4> 
+  December  6, 2007,
+  <span id="time_ago_1197011754">December 06, 2007 23:15</span><script type="text/javascript"> 
+//<![CDATA[
+$('time_ago_1197011754').update(DateHelper.timeAgoInWords(1197011754000) + ' ago')
+//]]>
+</script>,
+  <a href="/codes/174-socket-read-line-in-c#refactor_1019">permalink</a> 
+</h4> 
+ 
+<div class="rating"> 
+  <span id="rating_1019"></span> 
+  <img alt="Spinner" class="spinner" id="rating_1019_spinner" src="/images/spinner.gif?1303320084" style="display:none" /> 
+  <span id="rating_1019_count" class="count"> 
+    1 rating.
+ 
+  <a href="/login?return_to=%2Fcodes%2F174-socket-read-line-in-c">Login</a> to rate!
+ 
+  </span> 
+</div> 
+<script type="text/javascript" charset="utf-8"> 
+  var rating_1019 = new Rating('rating_1019', 4, {
+    onClick: function(rating) {
+      $('rating_1019_spinner').show();
+      $('rating_1019_count').hide();
+      this.disable();
+      new Ajax.Request('/codes/174-socket-read-line-in-c/refactors/1019/rate', {asynchronous:true, evalScripts:true, onComplete:function(request){$('rating_1019_spinner').hide(); $('rating_1019_count').show();}, parameters:'rating=' + rating})
+    }
+  });
+  
+    rating_1019.disable();
+  
+</script> 
+ 
+ 
+ 
+  <div class="comment"> 
+    <p>Several comments.</p> 
+ 
+<p>1: What do you do with the string that is returned from the socket? In many cases when you use sockets you process some data or commands that you receive, and then discard the string you read. If you do something similar here it's innefficient and unnecessary to every time realloc a new string in memory for every call to your function.</p> 
+ 
+<p>Look at how standard C-library read functions are coded (read() or fgets() for example). In most cases it's the callee's responsibility to preallocate the string. Since in most cases the callee (i.e. you) will know what the maximum line length or string length that is about to be read is.</p> 
+ 
+<p>It's much more efficient, and less memory fragmenting, to code it that way, and less error prone. You preallocate one buffer. Say char my_buffer[MAX_LINE_LENGTH]. This you then give to your method:</p> 
+ 
+<p>while (i_want_to_read_some_stuff) {
+<br />  socket_read_line(sock, my_buffer, MAX_LINE_LENGHT);
+<br />  /* process the data you received... */
+<br />}</p> 
+ 
+<p>2: If you're reading lines anyway you can convert the socket description into a standard C FILE stream and use fgets() instead: FILE *socket_stream_in = fdopen(sock, &quot;r&quot;); fgets(my_buffer, MAX_LINE_LENGTH, socket_stream_in); Why reinvent the wheel? :)</p> 
+ 
+<p>3: The line cr = (ch == '\r' ? 1 : 0); can be refactored as simply cr = (ch == '\r'); I would use a more descriptive variable name though. I like those to make the code more readable. So rename it to something like int got_cr = 0; got_cr = (ch == '\r'); But I'm kind of nitpicky on these..but it still makes if statements read more fluently: if (got_cr) { ...do stuff... }..</p> 
+ 
+<p></p> 
+  </div> 
+ 
+  
+ 
+</div> 
+  
+    <div class="refactor" id="refactor_1083"> 
+  <img alt="D41d8cd98f00b204e9800998ecf8427e" class="avatar" height="80" src="http://www.gravatar.com/avatar/d41d8cd98f00b204e9800998ecf8427e" width="80" /> 
+ 
+<div class="side_actions"> 
+  
+  
+</div> 
+ 
+<h3>Steve</h3> 
+<h4> 
+  December 11, 2007,
+  <span id="time_ago_1197427189">December 11, 2007 18:39</span><script type="text/javascript"> 
+//<![CDATA[
+$('time_ago_1197427189').update(DateHelper.timeAgoInWords(1197427189000) + ' ago')
+//]]>
+</script>,
+  <a href="/codes/174-socket-read-line-in-c#refactor_1083">permalink</a> 
+</h4> 
+ 
+<div class="rating"> 
+  <span id="rating_1083"></span> 
+  <img alt="Spinner" class="spinner" id="rating_1083_spinner" src="/images/spinner.gif?1303320084" style="display:none" /> 
+  <span id="rating_1083_count" class="count"> 
+    No rating.
+ 
+  <a href="/login?return_to=%2Fcodes%2F174-socket-read-line-in-c">Login</a> to rate!
+ 
+  </span> 
+</div> 
+<script type="text/javascript" charset="utf-8"> 
+  var rating_1083 = new Rating('rating_1083', 0, {
+    onClick: function(rating) {
+      $('rating_1083_spinner').show();
+      $('rating_1083_count').hide();
+      this.disable();
+      new Ajax.Request('/codes/174-socket-read-line-in-c/refactors/1083/rate', {asynchronous:true, evalScripts:true, onComplete:function(request){$('rating_1083_spinner').hide(); $('rating_1083_count').show();}, parameters:'rating=' + rating})
+    }
+  });
+  
+    rating_1083.disable();
+  
+</script> 
+ 
+ 
+ 
+  <div class="comment"> 
+    <p>You might consider using a static buffer inside the function like strtok(). 
+<br />I also extended the idea of binding the socket to a FILE and then calling fgets() mentioned by Casper.
+<br />I was lazy on checking malloc returns, you might want to make that better.
+<br />This may not be exactly what you want for sockets, but you might be able to adapt it to your needs.</p> 
+  </div> 
+ 
+  <pre class='prettyprint' language='c'>const char *fgetLine( FILE* pFile )
+{
+   static size_t bufSize = 128;
+   static char *pLine = (char*)malloc( 1, bufSize );
+   size_t index;
+   bool success = false;
+
+   assert( pLine );
+   pData[0] = '\0';
+
+   /* If the file isn't there or at the end, can't do anything */
+   if ( ( NULL == pFile ) || feof( pFile ) || ferror( pFile ) )
+   {
+   }
+   else
+   {
+      index = 0;
+      while ( !( feof( pFile ) || ferror( pFile ) ) )
+      {
+         fgets( &amp;pLine[index], (int)( bufSize - index ), pFile );
+         index += strlen( &amp;pLine[index] );
+
+         /* If we filled the buffer w/o finding newline */
+         if ( ( index == ( bufSize - 1 ) ) &amp;&amp; ( '\n' != pLine[index-1] ) )
+         {
+            /* End of file doesn't necessarily end in newline */
+            if ( feof( pFile ) || ferror( pFile ) )
+            {
+               success = ( index &gt; 0 );
+               break;
+            }
+            /* Extend the line length */
+            else
+            {
+               bufSize &lt;&lt;= 1;
+               pLine = realloc( pLine, bufSize );
+               assert( pLine );
+            }
+         }
+         /* Finished */
+         else
+         {
+            success = true;
+            break;
+         }
+      }
+   }
+   return( ( success ) ? pLine : NULL );
+}</pre> 
+ 
+</div> 
+  
+</div> 
+ 
+<div id="new_refactor"> 
+  <h2>Your refactoring</h2> 
+  <div id="new_refactor_notice" class="notice" style="display:none"></div> 
+<form action="/codes/174-socket-read-line-in-c/refactors" id="new_refactor_form" method="post" onsubmit="new Ajax.Request('/codes/174-socket-read-line-in-c/refactors', {asynchronous:true, evalScripts:true, onComplete:function(request){$('new_refactor_actions').show(); $('new_refactor_spinner').hide()}, onLoading:function(request){$('new_refactor_actions').hide(); $('new_refactor_spinner').show()}, parameters:Form.serialize(this)}); return false;">  
+    <p> 
+      <label for="refactor_user_name">Name</label><br/> 
+      <input id="refactor_user_name" name="refactor[user_name]" size="30" type="text" /> 
+    </p> 
+    <p> 
+      <label for="refactor_user_email">Email</label><br/> 
+      <input id="refactor_user_email" name="refactor[user_email]" size="30" type="text" /> 
+    </p> 
+    <p> 
+      <label for="refactor_user_website">Website</label><br/> 
+      <input id="refactor_user_website" name="refactor[user_website]" size="30" type="text" /> 
+    </p> 
+  
+  <p> 
+    <label for="refactor_comment">Comment</label><br/> 
+    <textarea cols="40" id="refactor_comment" name="refactor[comment]" rows="4"></textarea> 
+  </p> 
+  <p> 
+    <a href="/help/code" class="action" target="_blank">Format</a> 
+    <a class="action" href="#" onclick="$('refactor_code').update($('unformated_code').innerHTML); return false;">Copy from initial code</a> 
+    <label for="refactor_code">Code</label><br/> 
+    <textarea class="code" cols="40" id="refactor_code" name="refactor[code]" rows="20"></textarea> 
+  </p> 
+  <!-- <p>
+    <input id="refactor_notify_me" name="refactor[notify_me]" type="checkbox" value="1" /><input name="refactor[notify_me]" type="hidden" value="0" />
+    <label for="refactor_notify_me">Notify me of new refactorings by email</label>
+  </p> --> 
+  
+  <div id="new_refactor_actions"> 
+    <input name="commit" type="submit" value="Submit" /> 
+    or
+    <a href="#banner" class="cancel" onclick="new Effect.ScrollTo('banner', { offset: -60 });  return false">Cancel</a> 
+    <span id="new_refactor_error" class="error"></span>    
+  </div>  
+  <img alt="Spinner" id="new_refactor_spinner" src="/images/spinner.gif?1303320084" style="display:none" /> 
+</form>  
+</div> 
+ 
+  </div>  
+</div> 
+ 
+<div id="footer"> 
+  <a href="/help/api">API</a>,
+  <a href="http://twitter.com/intridea">Follow us on Twitter for updates</a>,
+  <script type="text/javascript">eval(unescape('%64%6f%63%75%6d%65%6e%74%2e%77%72%69%74%65%28%27%3c%61%20%68%72%65%66%3d%22%6d%61%69%6c%74%6f%3a%72%65%66%61%63%74%6f%72%6d%79%63%6f%64%65%40%69%6e%74%72%69%64%65%61%2e%63%6f%6d%22%3e%45%2d%6d%61%69%6c%20%75%73%3c%2f%61%3e%27%29%3b'))</script> 
+  
+  &copy; A project by <a href="http://intridea.com">Intridea</a> 
+</div> 
+ 
+<script type="text/javascript"> 
+//<![CDATA[
+Application.onBodyLoaded();
+//]]>
+</script> 
+ 
+</body> 
+</html> 

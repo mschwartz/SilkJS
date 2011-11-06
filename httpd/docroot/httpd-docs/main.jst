@@ -1,0 +1,11 @@
+<%
+	title = 'HTTP Server';
+	heading = 'HTTPD Main Program';
+	menu = '/httpd-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+	<pre class="code">
+<%= fs.readFile('httpd/main.js').replace(/</gm, '&lt;').replace(/\t/gm, '    ') %>
+	</pre>
+
+<%= include('/include/footer.jst') %>

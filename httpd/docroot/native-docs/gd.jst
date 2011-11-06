@@ -1,0 +1,26 @@
+<%
+	title = 'Native API Docs';
+	heading = 'gd API';
+	menu = '/native-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+
+<h2>About gd</h2>
+<p>gd is a graphics library. It allows your code to quickly draw images complete with lines, arcs, text, multiple colors, cut and paste from other images, and flood fills, and write out the result as a PNG or JPEG file. This is particularly useful in World Wide Web applications, where PNG and JPEG are two of the formats accepted for inline images by most browsers.</p>
+
+<p>gd is not a paint program. If you are looking for a paint program, you are looking in the wrong place. If you are not a programmer, you are looking in the wrong place, unless you are installing a required library in order to run an application.</p>
+
+<p>gd does not provide for every possible desirable graphics operation. It is not necessary or desirable for gd to become a kitchen-sink graphics package, but version 2.0 does include most frequently requested features, including both truecolor and palette images, resampling (smooth resizing of truecolor images) and so forth.</p>
+
+	<h3>var image = gd.imageCreate(sx, sy);</h3>
+	<p>gd.imageCreate is called to create palette-based images, with no more than 256 colors. Invoke gd.imageCreate with the x and y dimensions of the desired image. gdImageCreate returns a gdImagePtr to the new image, or NULL if unable to allocate the image. The image must eventually be destroyed using gd.imageDestroy().</p>
+
+	<h3>var image = gd.imageCreateTrueColor(sx, sy);</h3>
+	<p>gdImageCreateTrueColor is called to create truecolor images, with an essentially unlimited number of colors. Invoke gdImageCreateTrueColor with the x and y dimensions of the desired image. gdImageCreateTrueColor returns a gdImagePtr to the new image, or NULL if unable to allocate the image. The image must eventually be destroyed using gd.imageDestroy().</p>
+	<p>Truecolor images are always filled with black at creation time. There is no concept of a "background" color index.</p>
+
+	<h3>var image = gd.imageCreateFromJpeg(filename);<br/>
+	var image = gd.imageCreateFromJpeg64(base64String);</h3>
+	<p>gd.imageCreateFromJpeg is called to load truecolor images from JPEG format files. Invoke gdImageCreateFromJpeg with a filename of a file containing the desired image. gdImageCreateFromJpeg returns a gdImagePtr to the new truecolor image, or NULL if unable to load the image (most often because the file is corrupt or does not contain a JPEG image). gdImageCreateFromJpeg does not close the file. You can inspect the sx and sy members of the image to determine its size. The image must eventually be destroyed using gdImageDestroy(). The returned image is always a truecolor image.</p>
+	<p>If you already have the image file in memory, pass the basse64 encoded data to gd.imageCreateFromJpeg64, which is otherwise identical to gd.imageCreateFromJpeg.</p>
+<%= include('/include/footer.jst') %>

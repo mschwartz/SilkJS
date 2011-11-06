@@ -1,0 +1,65 @@
+<%
+	title = 'Apache Benchmark';
+	heading = 'Apache Benchmark<br/>20000 Concurrent Requests';
+	menu = '/httpd-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+<pre class="console">
+# ab -t 30 -c 20000 -k http://localhost:9090/sprite.png
+This is ApacheBench, Version 2.3 <$Revision: 655654 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking localhost (be patient)
+Completed 5000 requests
+Completed 10000 requests
+Completed 15000 requests
+Completed 20000 requests
+Completed 25000 requests
+Completed 30000 requests
+Completed 35000 requests
+Completed 40000 requests
+Completed 45000 requests
+Completed 50000 requests
+Finished 50000 requests
+
+
+Server Software:        SILK
+Server Hostname:        localhost
+Server Port:            9090
+
+Document Path:          /sprite.png
+Document Length:        13263 bytes
+
+Concurrency Level:      20000
+<span class="highlight">Time taken for tests:   2.213 seconds</span>
+Complete requests:      50000
+Failed requests:        0
+Write errors:           0
+Keep-Alive requests:    50000
+Total transferred:      672450000 bytes
+HTML transferred:       663150000 bytes
+<span class="highlight">Requests per second:    22598.83 [#/sec] (mean)</span>
+Time per request:       885.002 [ms] (mean)
+<span class="highlight">Time per request:       0.044 [ms] (mean, across all concurrent requests)</span>
+Transfer rate:          296808.26 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    2  22.0      0     315
+Processing:     0   22  59.4     12    1117
+Waiting:        0   21  59.5     11    1117
+Total:          0   24  74.9     12    1432
+
+Percentage of the requests served within a certain time (ms)
+  50%     12
+  66%     13
+  75%     16
+  80%     19
+  90%     32
+  95%     71
+  98%    204
+  99%    283
+ 100%   1432 (longest request)
+#
+<%= include('/include/footer.jst') %>

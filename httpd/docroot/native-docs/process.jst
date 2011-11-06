@@ -1,0 +1,46 @@
+<%
+	title = 'Native API Docs';
+	heading = 'process API';
+	menu = '/native-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+
+	<h2>About process</h2>
+<p>The process API provides functions for working with Linux processes, including the main process (your main
+program).</p>
+	<p>The process API is a work in progress and should be greatly expanded.</p>
+
+	<h3>var errorMessage = process.error();</h3>
+	<p>This function returns the error message for the last system error.  It is equivalent to calling
+	strerror().</p>
+
+	<h3>var pid = process.getpid();</h3>
+	<p>This function returns the pid of the calling process.</p>
+
+	<h3>var pid = process.fork();</h3>
+	<p>Yep, you can fork() from within the JavaScript engine.  process.fork() returns 0 to the child
+	process and the pid of the child process to the calling process, or -1 on error.</p>
+	<p>The child process continues execution within a copy of the parent's context, as it was at the
+	time process.fork() was called.  This means that the child gets a copy of any open sockets (serverSocket),
+	open file handles, all global functions defined by SilkJS or via include() are present, etc.  However,
+	the parent and child processes may make changes to variables in their own context that doesn't affect
+	the other process(es).</p>
+	<p>There is currently no implementation of shared memory, semaphores, or other interprocess communication
+	methods.  Shared memory is in the works, and fs.flock() is suitable (if not the fastest means) for
+	implementing semaphores.</p>
+
+	<h3>process.exit(status);</h3>
+	<p>This function terminates the calling process "immediately."  The parent process will be sent the
+	value of status, if it calls process.wait() (see below).</p>
+
+	<h3>process.sleep(numSeconds);</h3>
+	<p>This function puts the calling process to sleep for the specified number of seconds.</p>
+
+	<h3>var result = process.wait();</h3>
+	<p>This function basically calls waitpid(-1, &status, 0), and returns an object with the following members:</p>
+	<ul>
+	<li>pid - the pid returned by waitpid()</li>
+	<li>status - the status returned by waitpid()</li>
+	</ul>
+	
+<%= include('/include/footer.jst') %>

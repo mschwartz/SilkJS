@@ -1,0 +1,18 @@
+<%
+	title = 'API Docs';
+	heading = 'About the API';
+	menu = '/http-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+	<p>SilkJS includes an HTTP server written almost entirely in JavaScript.  The server is capable of serving static files, loading and executing .jst files,
+	and running pre-loaded JavaScript functions to generate responses.</p>
+	<p>These pages document the API available to your custom applications when running within the HTTP server context.</p>
+<p>The server gets its configuration from a Config Object defined in config.js.  Your custom applications will deal with incoming request information via
+the global req Object, and will deal with outbound responses via the global res Object.  The HttpChild object has one property you can override, requestHandler,
+which can be a function that handles incoming requests in any manner you choose.</p>
+<h3>Usage</h3>
+<pre class="console">$ silkjs httpd/main.js [application.js]</pre>
+<p>If you specify an application.js file on the command line, it will be compiled and loaded so it is permanently resident.</p>
+
+
+<%= include('/include/footer.jst') %>

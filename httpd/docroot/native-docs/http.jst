@@ -1,0 +1,40 @@
+<%
+	title = 'Native API Docs';
+	heading = 'http API';
+	menu = '/native-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+
+	<h2>About http</h2>
+<p>HTTP protocol involves streams of data read and written to sockets.  For the most part, the data read or written is
+plain text, which is not an issue for JavaScript.  There are situations where data in these streams is binary, and for
+these situations, the http API can be used.  The streams are buffered to avoid many single character reads from the
+socket.</p>
+
+	<h3>var stream = http.openStream(socket);</h3>
+	<p>This function associates a "stream" structure, that is external to the JavaScript environment, to the specified
+	socket (fd).  The stream should only be used for reading from the socket.</p>
+
+	<h3>http.closeStream(stream);</h3>
+	<p>This function must be called when the program is done using the stream, or a memory leak will occur.</p>
+
+	<h3>var rawHeaders = http.readHeaders(stream);</h3>
+	<p>This function reads lines from the input stream until two newlines in a row are read, and returns the
+	resulting string.  The string will not contain '\\r' characters, but the lines will be separated by '\\n'
+	characters.  The string WILL be terminated with '\\n\\n'.  If an error occurs reading from the stream, null is
+	returned.</p>
+
+	<h3>var postText = http.readPost(stream, size);</h3>
+	<p>This function reads size bytes from the input stream.  If an error occurs reading from the input stream, null
+	is returned.  '\\r' characters are NOT removed.</p>
+
+	<h3>var mimeText = http.readMime(stream, size, boundary);</h3>
+	<p>This function reads size bytes from the input stream and parses it as multi-part mime post data.  The boundary
+	parameter is a string that is the mime boundary text.</p>
+	<p>When binary data is encountered in the input stream, it is converted to base64 and a "Content-Encoding: base64"
+	header and a "Content-Length" header with the length of the base64 encoded text are added to the resulting string.</p>
+	<p>The returned string is the complete post data with boundaries preserved, but binary data converted to base64 with
+	the extra headers added.</p>
+	<p>On error, this function returns null.</p>
+	
+	<%= include('/include/footer.jst') %>

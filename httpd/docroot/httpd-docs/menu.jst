@@ -1,0 +1,20 @@
+<div class="content-secondary">
+	<div data-role="collapsible" data-collapsed="true" data-theme="b">
+		<h3>More in this section</h3>
+		<ul data-role="listview"  data-theme="c" data-dividertheme="d">
+			<li data-role="list-divider">httpd</li>
+			<li<%= (req.uri.endsWith('/') ? ' data-theme="a"' : '') %>><a href="/httpd-docs/">SilkJS HTTP Server</a></li>
+			<li<%= (req.uri.endsWith('prefork.jst') ? ' data-theme="a"' : '') %>><a href="/httpd-docs/prefork.jst">Prefork vs. Event Driven</a></li>
+			<li data-role="list-divider">Benchmarks</li>
+			<li<%= (req.uri.endsWith('ab50.jst') ? ' data-theme="a"' : '') %>><a href="/httpd-docs/ab50.jst">50 Concurrent Requests</a></li>
+			<li<%= (req.uri.endsWith('ab5000.jst') ? ' data-theme="a"' : '') %>><a href="/httpd-docs/ab5000.jst">5000 Concurrent Requests</a></li>
+			<li<%= (req.uri.endsWith('ab20000.jst') ? ' data-theme="a"' : '') %>><a href="/httpd-docs/ab20000.jst">20000 Concurrent Requests</a></li>
+			<li data-role="list-divider">Source Code</li>
+			<li<%= (req.uri.endsWith('main.jst') ? ' data-theme="a"' : '') %>><a href="/httpd-docs/main.jst">HTTPD Main Program</a></li>
+			<li<%= (req.uri.endsWith('child.jst') ? ' data-theme="a"' : '') %>><a href="/httpd-docs/child.jst">HTTPD Child Process</a></li>
+			<li<%= (req.uri.endsWith('request.jst') ? ' data-theme="a"' : '') %>><a href="/httpd-docs/request.jst">HTTPD Request Object</a></li>
+			<li<%= (req.uri.endsWith('response.jst') ? ' data-theme="a"' : '') %>><a href="/httpd-docs/response.jst">HTTPD Response Object</a></li>
+			<li<%= (req.uri.endsWith('config.jst') ? ' data-theme="a"' : '') %>><a href="/httpd-docs/config.jst">HTTPD Configuration Object</a></li>
+		</ul>
+	</div>
+</div>

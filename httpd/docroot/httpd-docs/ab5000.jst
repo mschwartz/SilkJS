@@ -1,0 +1,65 @@
+<%
+	title = 'Apache Benchmark';
+	heading = 'Apache Benchmark<br/>5000 Concurrent Requests';
+	menu = '/httpd-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+<pre class="console">
+# ab -t 30 -c 5000 -k http://localhost:9090/anchor.png
+This is ApacheBench, Version 2.3 <$Revision: 655654 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking localhost (be patient)
+Completed 5000 requests
+Completed 10000 requests
+Completed 15000 requests
+Completed 20000 requests
+Completed 25000 requests
+Completed 30000 requests
+Completed 35000 requests
+Completed 40000 requests
+Completed 45000 requests
+Completed 50000 requests
+Finished 50000 requests
+
+
+Server Software:        SILK
+Server Hostname:        localhost
+Server Port:            9090
+
+Document Path:          /anchor.png
+Document Length:        523 bytes
+
+Concurrency Level:      5000
+<span class="highlight">Time taken for tests:   1.474 seconds</span>
+Complete requests:      50000
+Failed requests:        0
+Write errors:           0
+Keep-Alive requests:    50000
+Total transferred:      35350000 bytes
+HTML transferred:       26150000 bytes
+<span class="highlight">Requests per second:    33925.56 [#/sec] (mean)</span>
+Time per request:       147.382 [ms] (mean)
+<span class="highlight">Time per request:       0.029 [ms] (mean, across all concurrent requests)</span>
+Transfer rate:          23423.21 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   4.0      0      84
+Processing:     0    7  15.5      5     271
+Waiting:        0    7  15.5      5     271
+Total:          0    7  17.9      5     335
+
+Percentage of the requests served within a certain time (ms)
+  50%      5
+  66%      6
+  75%      7
+  80%      8
+  90%     14
+  95%     22
+  98%     34
+  99%     60
+ 100%    335 (longest request)</pre>
+#
+<%= include('/include/footer.jst') %>

@@ -1,0 +1,218 @@
+<%
+	title = 'Native API Docs';
+	heading = 'fs API';
+	menu = '/native-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+
+<h2>About fs</h2>
+
+<p>The fs methods are used to access the filesystem.  If one of these functions returns an error
+condition (typically -1), the fs.error() method can be called to get the error message as a string.</p>
+
+<h3>Constants</h3>
+<p>The following constants are identical to their equivalents in native "C" header files:</p>
+<ul>
+<li>fs.O_RDONLY</li>
+<li>fs.O_WRONLY</li>
+<li>fs.O_RDWR</li>
+<li>fs.O_CREAT</li>
+<li>fs.O_TRUNC</li>
+<li>fs.LOCK_EX</li>
+<li>fs.LOCK_UN</li>
+<li>fs.LOCK_SH</li>
+</ul>
+<p>Additionally, the following constants are identical to their equivalents in native "C" header files,
+and are used for permissions bits where called for by fs methods or for testing mode flags for stat()
+type results.</p>
+<ul>
+<li>fs.S_IFMT - bit mask for the file type bit fields</li>
+<li>fs.S_IFSOCK - socket</li>
+<li>fs.S_IFLNK - symbolic link</li>
+<li>fs.S_IFREG - regular file</li>
+<li>fs.S_IFBLK - block device</li>
+<li>fs.S_IFDIR - directory</li>
+<li>fs.S_IFCHR - character device</li>
+<li>fs.S_IFIFO - FIFO</li>
+<li>fs.S_ISUID - set UID bit</li>
+<li>fs.S_ISGID - set-group-ID bit (see below)</li>
+<li>fs.S_ISVTX - sticky bit (see below)</li>
+<li>fs.S_IRWXU - mask for file owner permissions</li>
+<li>fs.S_IRUSR - owner has read permission</li>
+<li>fs.S_IWUSR - owner has write permission</li>
+<li>fs.S_IXUSR - owner has execute permission</li>
+<li>fs.S_IRWXG - mask for group permissions</li>
+<li>fs.S_IRGRP - group has read permission</li>
+<li>fs.S_IWGRP - group has write permission</li>
+<li>fs.S_IXGRP - group has execute permission</li>
+<li>fs.S_IRWXO - mask for permissions for others (not in group)</li>
+<li>fs.S_IROTH - others have read permission</li>
+<li>fs.S_IWOTH - others have write permission</li>
+<li>fs.S_IXOTH - others have execute permission</li>
+</ul>
+	
+<h3>var string = fs.error();</h3>
+<p>Returns an error message for the last fs method call that returned an error condition.</p>
+<p>This is equivalent to calling strerror().</p>
+
+<h3>var string = fs.getcwd();</h3>
+<p>Returns a string containing an absolute pathname that is the current working directory of the calling process.</p>
+
+<p>This is equivalent to calling getcwd(NULL, 0).</p>
+
+<h3>var fd = fs.open(path, flags, mode);</h3>
+<p>Attempts to open the specified file with the given flags and mode.  The flags parameter should be some combination
+of the fs.O_* constants, and mode is the Unix style permissions value for the file.  Note that the mode argument is
+ignored unless flags includes fs.O_CREATE.  The fd of the opened file is returned, or error code.</p>
+
+<p>This is equivalent to calling open().</p>
+
+<h3>var success = fs.close(fd);</h3>
+<p>Closes the specified file handle.  If you open a file with fs.open() and do not call this function when done,
+your program will leak memory.  Returns 0 on success, -1 on failure.</p>
+<p>This is equivalent to calling close().</p>
+
+<h3>var success = fs.flock(fd, operation);</h3>
+<p>Attempts to apply or remove an advisory lock on the open file specified by fd.  The operation parameter should
+be one of the fs.LOCK_* constants.  On error, -1 is returned, otherwise 0.</p>
+<p>This is equivalent to calling flock().</p>
+
+	<h3>var success = fs.rename(oldPath, newPath);</h3>
+	<p>Renames a file, moving it between directories if required.  Returns 0 on success, -1 on failure.</p>
+	<p>This is equivalent to calling rename().</p>
+
+	<h3>var success = fs.truncate(file, size);</h3>
+	<p>Truncates a file to the specified size.  The file parameter may be either an already open fd or a
+	string containing the path to the file to be truncated.  Returns 0 on success, -1 on failure.</p>
+	<p>This is equivalent to calling truncate() if the file parameter is a string, or ftruncate() if the file
+	parameter is an fd.</p>
+
+	<h3>var success = fs.chmod(file, mode);</h3>
+	<p>Changes the permissions of a file.  The file parameter may be an open fd or a string containing the path
+	to the file to have its permissions changed.  The mode parameter is a Unix style permissions mask, typically
+	specified as an octal number: 0664 (-rw-rw-r--), for example.  Returns 0 on success, -1 on failure.</p>
+	<p>This is equivalent to calling chmod() if the file parameter is a string, or fchmod() if the file parameter
+	is an fd.</p>
+
+<h2>"stat" object</h2>
+	<p>The return value from the 3 flavors of fs.stat() methods is an object containing the following members:</p>
+	<ul>
+	<li>dev: id of the device containing the file</li>
+	<li>ino: inode number of the file</li>
+	<li>mode: permissions the file</li>
+	<li>nlink: number of hard links to the file</li>
+	<li>uid: user ID of owner of  the file</li>
+	<li>gid: group ID of owner of  the file</li>
+	<li>rdev: device ID of  the file (if special file)</li>
+	<li>size: size of  the file (in bytes)</li>
+	<li>blksize: blocksize for file system I/O</li>
+	<li>blkcnt: number of 512B blocks allocated</li>
+	<li>atime: time of last access</li>
+	<li>mtime: time of last modification</li>
+	<li>ctime: time of last status change</li>
+	</ul>
+	<p>If the functions succeed, the stat object is returned, otherwise null is returned.</p>
+
+	<h3>var stat = fs.stat(path);</h3>
+	<p>Return information about the file specified by the path string.</p>
+	<p>Equivalent to calling stat().</p>
+
+	<h3>var stat = fs.lstat(path);</h3>
+	<p>This function is identical to fs.stat(), except that if path is a symbolic link, then the
+	link itself is stat-ed, not the file the link refers to.</p>
+	<p>Equivalent to calling lstat().</p>
+
+	<h3>var stat = fs.fstat(fd);</h3>
+	<p>This function is identical to fs.stat(), except that the file to be stat-ed is specified by the file
+	descriptor fd.</p>
+	<p>Equivalent to calling fstat().</p>
+
+	<h3>var success = fs.link(oldPath, newPath);</h3>
+	<p>This function creates a hard link to an existing file.  If newPath exists, it will not be overwritten.
+	Returns 0 on success or -1 on failure.</p>
+	<p>Equivalent to calling link().</p>
+
+	<h3>var success = fs.symlink(oldPath, newPath);</h3>
+	<p>This function creates a symbolic link named newPath to oldPath.  If oldPath does not exist, the link
+	is created anyway, but is what is considered a dangling link.  Returns 0 on success or -1 on failure.</p>
+	<p>Equivalent to calling symlink().</p>
+
+	<h3>var path = fs.readlink(path);</h3>
+	<p>This function returns the contents of the symbolic link path.  On error, null is returned.</p>
+	<p>Equivalent to calling readlink().</p>
+
+	<h3>var resolvedPath = fs.realpath(path);</h3>
+	<p>This function expands all symbolic links and resolves references to /./ and /../ and extra '/' characters
+	in the specified path string to produce a cannonicalized absolute pathname.  The resulting path will have no
+	symbolic link, /./ or /../ components.  On error, null is returned.</p>
+	<p>Equivalent to calling realpath().</p>
+
+	<h3>var success = fs.unlink(name);</h3>
+	<p>This function deletes a name from the file system.  If that name was the last link to a file and no processes
+	have the file open, the file is deleted and the space it was using is made available for reuse.  If the name
+	was the last link to a file but at least one process has the file open, the file will remain in existence
+	until the last file descriptor referring to it is closed.  If the name is a symbolic link, it is removed.
+	Returns 0 on success, -1 on error.</p>
+	<p>Equivalent to calling unlink().</p>
+
+	<h3>var success = fs.rmdir(pathname);</h3>
+	<p>This function deletes a directory, if the directory is not empty.  If successful, 0 is returned, otherwise -1.</p>
+	<p>Equivalent to calling rmdir().</p>
+
+	<h3>var success = fs.mkdir(pathname, permissions);</h3>
+	<p>This function attempts to create a directory named pathname with the given permissions.  Returns 0 on success,
+	-1 on error.</p>
+	<p>Equivalent to calling mkdir().</p>
+
+	<h3>var filenames = fs.readdir(path);</h3>
+	<p>This function returns an array of file names for the directory specified by path.  The file names may be
+	names of files, directories, links, etc.  On error, null is returned.</p>
+	<p>There is no direct equivalent in Linux.  This function is a combination of opendir(), readdir(), and closedir().</p>
+
+	<h3>var content = fs.readFile(path);</h3>
+	<p>This function reads the entire file specified by path and returns its contents as a string.  This function
+	will not work for reading binary files.  On error, null is returned.</p>
+	<p>There is no direct equivalent in Linux.  This function is a combination of open(), lseek(), read(), and close().</p>
+
+	<h3>var content = fs.readFile64(path);</h3>
+	<p>This function reads the entire file specified by path, base64 encodes it, and returns the encoded value as a
+	string.  This function works for reading binary files.  There are many functions in the API that can handle
+	base64 encoded strings where binary data would otherwise be required.</p>
+	<p>There is no direct equivalent in Linux.  This function is a combination of open(), lseek(), read(), and close(),
+	as well as calling the base64 encoder function.</p>
+
+	<h3>var success = fs.writeFile(path, content [,size [,permissions]]);</h3>
+	<p>This function writes the specified content (string) to the file specified by path.  If the file does not
+	exist, it is created.  If it does exist, it is overwritten.  If the optional size parameter is passed, it will
+	specify how much of the string is to be written to disk.  If the optional permissions parameter is passed, it will
+	specify the permissions of the file, otherwise 0644 will be used.  On success, true is returned, otherwise false.</p>
+	<p>There is no direct equivalent in Linux.  This function is a combination of open(), write(), and close().</p>
+
+	<h3>var success = fs.writeFile64(path, content [,permissions]);</h3>
+	<p>This function writes a base64 encoded string to to the file specified by path.  The string is decoded before
+	being written to disk.  If the file does not exist, it is created.  If it does not exist, it is overwritten.  If
+	the option permissions parameter is passed, it will specify the permissions of the file, otherwise 0644 will be used.
+	On success, this function returns true, on error false.</p>
+	<p>There is no direct equivalent in Linux.  This function is a combination of open(), write(), and close(), as well
+	as calling the base64 decoder function.</p>
+
+	<h3>var truth = fs.isFile(path);</h3>
+	<p>This function returns true if the file specified by path is a file, otherwise false.  This is a bit faster
+	than calling fs.stat().</p>
+	<p>Equivalent to calling stat() and S_ISREG() on the st_mode of the returned buffer.</p>
+
+	<h3>var truth = fs.isDir(path);</h3>
+	<p>This function returns true if the file specified by path is a directory, otherwise false.  This is a bit faster
+	than calling fs.stat().</p>
+	<p>Equivalent to calling stat() and S_ISDIR() on the st_mode of the returned buffer.</p>
+
+	<h3>var size = fs.fileSize(path);</h3>
+	<p>This function returns the size of the file specified by path.  On error, false is returned.</p>
+	<p>Equivalent to calling stat() and returning st_size of the returned buffer.</p>
+
+	<h3>var timestamp = fs.fileModified(path);</h3>
+	<p>This function returns the timestamp when the file specified by path was last modified.  On error, false is
+	returned.</p>
+	<p>Equivalent to calling stat() and returning st_mtime of the returned buffer.</p>
+
+<%= include('/include/footer.jst') %>

@@ -1,0 +1,15 @@
+<div class="content-secondary">
+	<div data-role="collapsible" data-collapsed="true" data-theme="b">
+		<h3>More in this section</h3>
+		<ul data-role="listview"  data-theme="c" data-dividertheme="d">
+			<li data-role="list-divider">SilkJS API Docs</li>
+			<li<%= (req.uri.endsWith('/') ? ' data-theme="a"' : '') %>><a href="/javascript-docs/">About the API</a></li>
+			<li data-role="list-divider">JavaScript APIs</li>
+			<li<%= (req.uri.endsWith('exceptions.jst') ? ' data-theme="a"' : '') %>><a href="/javascript-docs/exceptions.jst">Exceptions</a></li>
+			<li<%= (req.uri.endsWith('forEach.jst') ? ' data-theme="a"' : '') %>><a href="/javascript-docs/forEach.jst">forEach</a></li>
+			<li<%= (req.uri.endsWith('print_r.jst') ? ' data-theme="a"' : '') %>><a href="/javascript-docs/print_r.jst">print_r</a></li>
+			<li<%= (req.uri.endsWith('object.jst') ? ' data-theme="a"' : '') %>><a href="/javascript-docs/object.jst">Object Extensions</a></li>
+			<li<%= (req.uri.endsWith('string.jst') ? ' data-theme="a"' : '') %>><a href="/javascript-docs/string.jst">String extensions</a></li>
+		</ul>
+	</div>
+</div>

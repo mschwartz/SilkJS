@@ -1,0 +1,33 @@
+<%
+	title = 'Introducing SilkJs';
+	heading = 'Introducing SilkJS';
+	menu = '/silkjs-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+			<p>
+				SilkJS is elegant in its simplicity.  You simply start it from the command line:
+			</p>
+			<code>$ silkjs yourscript.js [optional arguments]</code>
+			<p>Where "yourscript.js" is a JavaScript program you provide (or one of the examples).</p>
+			<p>SilkJS initializes the global Object with raw APIs, then compiles and runs your script.  This allows your
+			script to load any additional scripts that you wish to be part of the global Object space.</p>
+			<p>Your script must provide a single function named "main" which is called by SilkJS after your script has
+			compiled and run.  When your main function returns, SilkJS exits.</p>
+			<p>Any optional arguments you provide on the command line are passed to your <code>main()</code> function
+			as arguments, verbatim.</p>
+			<p>Hello, World in SilkJS:</p>
+			<pre class="code">
+// hello.js
+function main() {
+    console.log('Hello, world');
+}
+			</pre>
+			<p>Outputs:</p>
+			<pre class="console">
+$ ./silk examples/hello.js
+SILK V0.1
+SILKJS running examples/hello.js
+Hello, world
+$
+			</pre>
+<%= include('/include/footer.jst') %>

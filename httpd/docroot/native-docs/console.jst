@@ -1,0 +1,21 @@
+<%
+	title = 'Native API Docs';
+	heading = 'console API';
+	menu = '/native-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+
+<h2>About console</h2>
+
+<p>In most browsers, there is a console object that has methods like log() and dir().  The console object
+in SilkJS mimics this console object, but only provides a few functions.</p>
+
+<h3>console.log(string);</h3>
+<p>Writes the passed string to stdout, using fprintf().  Beware that writing to the console is not a good idea
+in a multi-process application like HTTPD.</p>
+
+<h3>console.error(string);</h3>
+<p>Writes the passed string to stderr, using fprintf().  Beware that writing to the console is not a good idea
+in a multi-process application like HTTPD.</p>
+
+<%= include('/include/footer.jst') %>

@@ -1,0 +1,17 @@
+<%
+	title = 'HTTP Server';
+	heading = 'HTTPD Configuration Object';
+	menu = '/httpd-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+	<pre class="code">
+<%= fs.readFile('httpd/config.js')
+	.replace(/</gm, '&lt;')
+	.replace(/\t/gm, '    ')
+	.replace(/user:\s*'.*?'/g, 'user: \'xxx\'')
+	.replace(/passwd:\s*'.*?'/g, 'passwd: \'xxx\'')
+	.replace(/db:\s*'.*?'/g, 'db: \'xxx\'')
+%>
+	</pre>
+
+<%= include('/include/footer.jst') %>

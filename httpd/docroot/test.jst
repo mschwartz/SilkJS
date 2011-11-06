@@ -1,0 +1,14 @@
+<html>
+<head>
+<title>Jst Test</title>
+</head>
+<body>
+<h1>Test Jst</h1>
+<%
+var start = new Date().getTime();
+var rows = SQL.getDataRows('select * from STATS_1011');
+var elapsed = new Date().getTime() - start;
+print("Elapsed = " + elapsed);
+%>
+</body>
+</html>

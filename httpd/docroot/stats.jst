@@ -1,0 +1,13 @@
+<html>
+	<head>
+		<title>Jst Test</title>
+	</head>
+	<body>
+		<h1>Test Jst</h1>
+		<ul>
+			<% forEach(SQL.getDataRows('select * from STATS_1011 LIMIT 25'), function(row) { %>
+				<li><%= row.firstName %> <%= row.lastName %> (<%= row.team %>)</li>
+			<% }); %>
+		</uL>
+	</body>
+</html>

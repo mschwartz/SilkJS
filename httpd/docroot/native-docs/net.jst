@@ -1,0 +1,72 @@
+<%
+	title = 'Native API Docs';
+	heading = 'net API';
+	menu = '/native-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+
+	<h2>About net</h2>
+<p>The net API provides functions for creating and listening on sockets, accepting connections on those
+sockets, and reading and writing to the connected sockets.  The net API functions throw JavaScript exceptions
+when errors occur.</p>
+	<p>The net API is a work in progress and should be redesigned to be more useful in non-http situations.</p>
+
+	<h3>var serverSocket = net.listen(port [,backlog]);</h3>
+	<p>This function creates a socket, binds it on the specified port and listens on it.  The caller may
+	net.accept() on the socket to accept remote connections to the port.  The SO_REUSEADDR flag is set on
+	the socket to allow your program to be restarted without an error due to the previously created socket
+	being in a FIN_WAIT type state.  If the optional backlog argument is passed, it will be used as the
+	backlog argument to listen(), otherwise a default value of 30 is used.</p>
+
+	<h3>var clientSocket = net.accept(serverSocket);</h3>
+	<p>This function accepts a connection to the serverSocket and returns a socket that can be then used
+	to read or write data from/to the remote program.  The returned socket is set to TCP_CORK.</p>
+	<p>(Ideally, the TCP_CORK and other options should be callable net API methods).</p>
+
+	<h3>var ipAddress = net.remote_addr();</h3>
+	<p>This function returns a string that is the IP address of the remote machine for the last accepted
+	connection. </p>
+
+	<h3>net.cork(socket, flag);</h3>
+	<p>This function sets or clears the TCP_CORK flag on the specified socket.  The flag argument may be
+	true to set TCP_CORK, or false to clear it.</p>
+	<p>This function is equivalent to calling setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof(flag));</p>
+	<p>The documentation for TCP_CORK in the man 7 tcp page says:</p>
+	<p>If set, don't send  out  partial  frames.   All  queued  partial
+              frames  are sent when the option is cleared again.  This is use‐
+              ful for prepending headers before calling  sendfile(2),  or  for
+              throughput  optimization.   As currently implemented, there is a
+              200 millisecond ceiling on the time for which output  is  corked
+              by  TCP_CORK.   If  this ceiling is reached, then queued data is
+              automatically transmitted.  This option  can  be  combined  with
+              TCP_NODELAY  only since Linux 2.5.71.  This option should not be
+              used in code intended to be portable.</p>
+
+	<h3>net.close(socket);</h3>
+	<p>This function closes the specified socket.  Failing to close a socket when finished with it
+	can lead to memory leaks.</p>
+
+	<h3>var data = net.read(socket, count);</h3>
+	<p>This function attempts to read count bytes from the specified socket.  The function calls select()
+	to wait for there to be data to be read.  The select()
+	timeout is hard coded at 5 seconds, but this should be an optional argument to the function.  If the
+	select() call returns an error, an exception is thrown.  If the select() simply times out, null is
+	returned.  If the read() call fails, an exception is thrown.  If read() returns 0, null is returned.
+	Otherwise a string containing the data read is returned.  Note that the amount of data read may not
+	be the count desired.  The data.length value will be the size of the data returned.</p>
+
+	<h3>var countWritten = net.write(socket, data, count);</h3>
+	<p>This function attempts to write count bytes of data to the socket.  If the write fails, an
+	exception is thrown.  The function loops calling write() until count bytes are written.</p>
+
+	<h3>var countWritten = net.writeBuffer(socket, buffer, count);</h3>
+	<p>This function attempts to write count bytes from the given buffer to the socket.  See the buffer
+	API about buffers.  This function is otherwise identical to net.write().</p>
+
+	<h3>net.sendFile(socket, filename [,offset ,count]);</h3>
+	<p>This function calls the native sendfile() function to send data from the file specified by filename
+	to the specified socket.  If the optional offset is specified, data from the file starting at offset
+	is sent.  If the optional count is specified, count bytes from the file are sent (from the given offset).</p>
+	<p>Note that calling sendFile() is many times faster than calling read()/write() to send a file.</p>
+
+<%= include('/include/footer.jst') %>

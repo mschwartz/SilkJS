@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8"> 
+	<meta name="viewport" content="width=device-width, initial-scale=1"> 
+	<title>SilkJS</title>
+	<link rel="stylesheet"  href="/jquery.mobile-1.0b1/jquery.mobile-1.0b1.min.css" /> 
+	<link rel="stylesheet"  href="silk.css" />
+	<script src="/jquery-1.6.1.min.js"></script>
+	<script src="/js/docs.js"></script>
+	<script src="/jquery.mobile-1.0b1/jquery.mobile-1.0b1.min.js"></script>
+</head>
+<body>
+<div data-role="page" id="silk-home" class="type-home">
+	<div data-role="content">
+		<div class="content-secondary">
+			<div id="silk-home-header">
+				<h1 id="silk-logo"><img src="logo.png" /></h1>
+			</div>
+			<ul data-role="listview" data-inset="true" data-theme="c" data-dividertheme="f">
+				<li data-role="list-divider">Overview</li>
+				<li><a href="/silkjs-docs/">About SilkJS</a></li>
+				<li><a href="/httpd-docs/">HTTP Server</a></li>
+				<li data-role="list-divider">API Docs</li>
+				<li><a href="/native-docs/">Native API</a></li>
+				<li><a href="/javascript-docs/">JavaScript API</a></li>
+				<li><a href="/http-docs/">HTTPD API</a></li>
+			</ul>
+		</div>
+		<div class="content-primary">
+			<h2>Server Side JavaScript Your Way!</h2>
+			<p>SilkJS is a command shell wrapped around Google's v8 JavaScript engine.  It is suitable
+			for writing shell script style applications, console applications, and network servers.</p>
+			<p>The SilkJS environment provides raw APIs to access native Linux functions and an assortment
+			of additional libraries.  You can use these APIs to build your own application framework, or draw
+			from the SilkJS application framework.  It's up to you!</p>
+			<p>SilkJS comes with an assortment of example programs, including the HTTP server that powers this site.
+			The HTTP server is almost entirely written in JavaScript, and has remarkable performance characteristics.</p>
+			<p>The raw APIs provided by SilkJS include:</p>
+			<ul>
+				<li>Linux Processes</li>
+				<li>Linux Networking</li>
+				<li>Linux Filesystem</li>
+				<li>HTTP Client/Server</li>
+				<li>MySQL</li>
+				<li>GD Graphics Library</li>
+				<li>ncurses</li>
+			</ul>
+			<p><strong>Note that SilkJS currently compiles on Linux platforms, especially Ubuntu.</strong></p>
+		</div>
+	</div>
+	<%= include('/include/copyright.jst') %>
+</div>
+</body>
+</html>
+

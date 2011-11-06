@@ -1,0 +1,11 @@
+<%
+	title = 'HTTP Server';
+	heading = 'HTTPD Response Object';
+	menu = '/httpd-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+	<pre class="code">
+<%= fs.readFile('httpd/response.js').replace(/</gm, '&lt;').replace(/\t/gm, '    ') %>
+	</pre>
+
+<%= include('/include/footer.jst') %>

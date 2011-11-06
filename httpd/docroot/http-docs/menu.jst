@@ -1,0 +1,14 @@
+<div class="content-secondary">
+	<div data-role="collapsible" data-collapsed="true" data-theme="b">
+		<h3>More in this section</h3>
+		<ul data-role="listview"  data-theme="c" data-dividertheme="d">
+			<li data-role="list-divider">SilkJS HTTPD API Docs</li>
+			<li<%= (req.uri.endsWith('/') ? ' data-theme="a"' : '') %>><a href="/http-docs/">About the API</a></li>
+			<li data-role="list-divider">HTTP Environment</li>
+			<li<%= (req.uri.endsWith('req.jst') ? ' data-theme="a"' : '') %>><a href="/http-docs/request.jst">req</a></li>
+			<li<%= (req.uri.endsWith('res.jst') ? ' data-theme="a"' : '') %>><a href="/http-docs/response.jst">res</a></li>
+			<li<%= (req.uri.endsWith('HttpChild.jst') ? ' data-theme="a"' : '') %>><a href="/http-docs/HttpChild.jst">HttpChild</a></li>
+			<li<%= (req.uri.endsWith('config.jst') ? ' data-theme="a"' : '') %>><a href="/http-docs/config.jst">Config</a></li>
+		</ul>
+	</div>
+</div>

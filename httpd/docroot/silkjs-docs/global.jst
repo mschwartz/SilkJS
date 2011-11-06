@@ -1,0 +1,51 @@
+<%
+	title = 'Server Side JavaScript';
+	heading = 'Server Side JavaScript';
+	menu = '/silkjs-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+
+	<p>Server Side JavaScript has some notable differences and requirements from JavaScript code that you would
+	normally code for the browser.</p>
+
+	<h3>No window Object</h3>
+	<p>There is no <code>window</code> Object on the Server Side.  In the SilkJS JavaScript
+	environment, the <code>window</code> Object is replaced with a <code>global</code> Object.</p>
+	<pre class="code">
+myGlobalVariable = 'some string';
+function myGlobalFunction() {
+    // do something
+}
+	</pre>
+	<p>On the Client Side, <code>myGlobalVariable</code> is created as a property of the <code>window</code> Object,
+	e.g. <code>window.myGlobalVariable</code>.</p>
+	<p>On the Server Side, <code>myGlobalVariable</code> is created as a
+	property of the <code>global</code> Object, e.g. <code>global.myGlobalVariable</code>.  Similarly,
+	<code>myGlobalFunction()</code> is a property of the <code>global</code> Object, e.g.
+	<code>global.myGlobalFunction()</code>.</p>
+
+	<h3>No DOM</h3>
+	<p>There is no DOM on the Server Side.  On the Client Side, you would load your JavaScripts in the desired order by
+	including them with &lt;script> tags in your HTML document.  With SilkJS, your main JavaScript file can load
+	additional JavaScripts by calling the global <code>include()</code> function.  Any scripts loaded via
+	<code>include()</code> can define functions that your <code>main()</code> function can call, initialize global
+	variables, define classes, and so on.</p>
+	<p>Remember that SilkJS loads your main JavaScript and runs it, then calls your <code>main()</code> function.
+	Typically, your script will <code>include()</code> some other scripts that make up the environment or API or
+	framework for your application, and your <code>main()</code> function will make use of what those scripts
+	provide.</p>
+	<p><strong>Note that <code>include()</code> is the only method implemented as a <code>global</code> property.</strong></p>
+
+	<h3>No Security Restrictions</h3>
+	<p>In the browser environment, JavaScript is crippled by security restrictions.  Ajax requests must be made to
+	the same origin as the page, there is limited access to store information on hard disk (cookies and local storage),
+	and certainly there are few methods to access any resources or native APIs on the machine running the browser.</p>
+	<p>On the Server Side, SilkJS enables JavaScript to access the server's resources without these kinds of restrictions.
+	A Server Side application can perform SQL queries, manipulate images, run external programs, and whatever else makes
+	sense in a Server Side scripting environment.</p>
+
+	<h3>No Binary Data</h3>
+	<p>JavaScript has no binary Object type, so dealing with binary data can be an issue.  SilkJS can convert binary
+	data into base64 ASCII strings which are suitable for storage in databases, handling as file uploads, and so on.</p>
+
+<%= include('/include/footer.jst') %>

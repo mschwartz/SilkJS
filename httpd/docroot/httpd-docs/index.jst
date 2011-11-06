@@ -1,0 +1,15 @@
+<%
+	title = 'HTTP Server';
+	heading = 'HTTP Server';
+	menu = '/httpd-docs/menu.jst';
+%>
+<%= include('/include/header.jst') %>
+<p>SilkJS was created to enable the creation of high transaction Web Services, but has proven to be
+capable of doing many other things.  Included with SilkJS is an implementation of a WWW server - in fact, this site is being served by this
+WWW server.</p>
+<p>The httpd server consists of under 500 lines of JavaScript code in 5 files - one of those being the WWW server
+configuration file.</p>
+<p>The server implements a pre-fork model WWW server that can serve static content as well as dynamic execution of "JST"
+template files/programs.  This site is entirely composed of JST templates.</p>
+<p>The benchmarks presented here were performed on a Sager NP9280 notebook computer with a Core I7 920 processor and 12G of RAM.</p>
+<%= include('/include/footer.jst') %>
