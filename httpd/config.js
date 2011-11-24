@@ -1,6 +1,6 @@
 Config = {
 	port: 9090,
-	numChildren: 500,
+	numChildren: 50,
 	requestsPerChild: 100000,
 	documentRoot: 'httpd/docroot',
 	lockFile: '/tmp/silkf.lock',
