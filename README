@@ -1,14 +1,7 @@
 QUICKSTART
 
-Currently for Mac OSX Lion x64 and Ubuntu Natty x64 only...
+Currently for Mac OSX Lion x64 and Ubuntu only...
 
-1. Download the appropriate SilkJS.tgz file from the downloads section.
-2. Create a folder.
-3. Unpack SilkJS.tgz in the newly created folder.
-4. Open a terminal window
-5. cd to the directory you unpacked SilkJS
-6. ./SilkJS httpd/main.js
-
-
-
+See build instructions here:
+https://github.com/mschwartz/SilkJS/wiki/Build-Instructions
 
