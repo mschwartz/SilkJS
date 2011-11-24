@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
 			av[i-2] = String::New(argv[i]);
 		}
 		printf("SILKJS running %s\n", argv[1]);
-		Handle<Value> result = mainFunc->Call(context->Global(), ac, av);
+		mainFunc->Call(context->Global(), ac, av);
 	}
 }
 

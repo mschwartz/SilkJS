@@ -6,7 +6,7 @@ CFLAGS = -O6 -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-stric
 	g++ $(CFLAGS) -c -I../v8-read-only/include -I/usr/include/mysql -g -o $*.o $*.cpp
 
 SilkJS:	$(OBJ) SilkJS.h Makefile
-	g++ $(CFLAGS) -o SilkJS $(OBJ) -L../v8-read-only -lv8 -L/usr/local/lib/mysql -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread
+	g++ $(CFLAGS) -o SilkJS $(OBJ) -L../v8-read-only/out/x64.release/obj.target/tools/gyp/ -lv8_base -lv8_snapshot -L/usr/local/lib/mysql -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread
 
 clean:
 	rm SilkJS *.o

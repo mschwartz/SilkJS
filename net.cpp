@@ -95,9 +95,9 @@ static JSVAL net_accept(JSARGS args) {
 	fd_set fds;
 	FD_ZERO(&fds);
 	FD_SET(sock, &fds);
-	struct timeval timeout;
-	timeout.tv_sec = 5;
-	timeout.tv_usec = 0;
+//	struct timeval timeout;
+//	timeout.tv_sec = 5;
+//	timeout.tv_usec = 0;
 	switch (select(sock+1, &fds, NULL, NULL, NULL)) {
 		case -1:
 			perror("select");
