@@ -7,7 +7,7 @@ https://github.com/mschwartz/SilkJS/wiki/Build-Instructions
 
 Once built:
 
-	cd ~src/SilkJS
-	./SilkJS httpd/main.js
+    cd ~src/SilkJS
+    ./SilkJS httpd/main.js
 
 Then point your browser at http://localhost:9090/
