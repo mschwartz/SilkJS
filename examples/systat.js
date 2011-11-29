@@ -24,7 +24,7 @@ var imports = [
 	'clear', 
 	'refresh', 
 	'endwin' ,
-	'nodelay',
+	'halfdelay',
 	'noecho',
 	'getch',
 	'ERR'
@@ -122,9 +122,9 @@ function PrintCPU() {
 	}
 	move(row++, 0);
 	attron(A_BOLD); attron(A_STANDOUT);
-	printw( "CPU STATES           Current                   Aggregate        ");
+	printw( "CPU STATES             Current                   Aggregate         ");
 	move(row++, 0);
-	printw("             user   sys  nice   idle    user   sys  nice   idle ");
+	printw("              user    sys   nice   idle    user   sys  nice   idle ");
 	attroff(A_BOLD); attroff(A_STANDOUT);
 	forEach(stat, function(value, key) {
 		if (key.indexOf('cpu') == 0) {
@@ -147,13 +147,13 @@ function PrintCPU() {
 			current[key] = currentUser + ':::' + currentNice + ':::' + currentSystem + ':::' + currentIdle;
 			var total = deltaUser + deltaNice + deltaSystem + deltaIdle;
 			if (total) {
-				zuser = sprintf('%4.1f', parseInt(deltaUser/total*1000+.5, 10)/10);
-				znice = sprintf('%4.1f', parseInt(deltaNice/total*1000+.5, 10)/10);
-				zsystem = sprintf('%4.1f', parseInt(deltaSystem/total*1000+.5, 10)/10);
+				zuser = sprintf('%5.1f', parseInt(deltaUser/total*1000+.5, 10)/10);
+				znice = sprintf('%5.1f', parseInt(deltaNice/total*1000+.5, 10)/10);
+				zsystem = sprintf('%5.1f', parseInt(deltaSystem/total*1000+.5, 10)/10);
 				zidle = sprintf('%5.1f', parseInt(deltaIdle/total*1000+.5, 10)/10);
 			}
 			else {
-				zuser = znice = zsystem = zidle = 0.0;
+				zuser = znice = zsystem = zidle = sprintf('%5.1f', 0.0);
 			}
 //zuser = yuser; zsystem = ysystem; znice = ynice; zidle = yidle;
 			move(row++, 0);
@@ -178,7 +178,7 @@ function PrintCPU() {
 				zidle = sprintf('%5.1f', parseInt(deltaIdle/total*1000+.5, 10)/10);
 			}
 			else {
-				zuser = znice = zsystem = zidle = 0.0;
+				zuser = znice = zsystem = zidle = sprintf('%5.1f', 0.0);
 			}
 			printw('   ' + zuser + '% ' + zsystem + '% ' + znice + '% ' + zidle + '%');
 			clearEol();
@@ -223,9 +223,9 @@ function PrintDisk() {
 	}
 	attron(A_BOLD); attron(A_STANDOUT);
 	move(row++, 0);
-	printw('DISK ACTIVITY      Current          Aggregate  ');
+	printw('DISK ACTIVITY           Current             Aggregate  ');
 	move(row++, 0);
-	printw('                  IN   OUT        IN       OUT ');
+	printw(' (sectors)            IN       OUT        IN       OUT ');
 	attroff(A_BOLD); attroff(A_STANDOUT);
 	
 	var lines = fs.readFile('/proc/diskstats').split('\n');
@@ -247,10 +247,10 @@ function PrintDisk() {
 		disk_reads[drive] = reads;
 		
 		disk_writes[drive] = disk_writes[drive] || 0;
-		var writes = parseInt(arr[8], 10);
+		var writes = parseInt(arr[9], 10);
 		var deltaWrites = writes - disk_writes[drive];
 		disk_writes[drive] = writes;
-		printw(sprintf('%4d  %4d  %8d  %8d', deltaReads, deltaWrites, reads, writes));
+		printw(sprintf('%8d  %8d  %8d  %8d', deltaReads, deltaWrites, reads, writes));
 		clearEol();
 	});
 }
@@ -314,10 +314,11 @@ function main() {
 	try {
 		initscr();
 		cbreak();
-		nodelay(ncurses.stdscr, true);
+//		halfdelay(sleep*10);
 		noecho();
 		clear();
 		while (!done) {
+			halfdelay(sleep*2);
 			var c = getch();
 			if (c != ERR) {
 				c = String.fromCharCode(c);
@@ -328,6 +329,21 @@ function main() {
 						break;
 					case 'q':
 						done = true;
+						break;
+					case '1':
+						sleep = 1;
+						break;
+					case '2':
+						sleep = 2;
+						break;
+					case '3':
+						sleep = 3;
+						break;
+					case '4':
+						sleep = 4;
+						break;
+					case '5':
+						sleep = 5;
 						break;
 				}
 			}
@@ -344,7 +360,7 @@ function main() {
 			PrintVirtualMemory();
 			move(0,cols-1);
 			refresh();
-			process.sleep(1);
+			process.sleep(sleep);
 		}
 	}
 	finally {

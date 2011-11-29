@@ -58,7 +58,10 @@ extern void init_global_object();
 #define JSOBJT Handle<ObjectTemplate>
 #define JSARRAY Handle<Array>
 #define JSARGS const Arguments&
-
+static inline char JSCHAR(Handle<Value>v) {
+	String::Utf8Value str(v->ToString());
+	return (*str)[0];
+}
 #define BUFFER_STRING
 
 #ifdef BUFFER_STRING

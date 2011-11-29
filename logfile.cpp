@@ -36,7 +36,13 @@ static void unlock_logfile() {
 static void flush_logfile() {
 	if (*length) {
 		lseek(logFd, 0, 2);
-		(void)write(logFd, logBuffer, *length);
+		long toWrite = *length;
+		long offset = 0;
+		while (toWrite > 0) {
+			long written = write(logFd, &logBuffer[offset], toWrite);
+			offset += written;
+			toWrite += written;
+		}
 		*length = 0;
 	}
 }

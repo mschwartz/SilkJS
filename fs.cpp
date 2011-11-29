@@ -228,14 +228,20 @@ static JSVAL fs_readfile(JSARGS args) {
 		printf("%s\n%s\n", *path, strerror(errno));
 		return scope.Close(Null());
 	}
-	long size = lseek(fd, 0, 2); lseek(fd, 0, 0);
-	char buf[size];
-	if (read(fd, buf, size) != size) {
-		return scope.Close(Null());
+	std::string s;
+//	long size = lseek(fd, 0, 2); lseek(fd, 0, 0);
+//	printf("size = %ld\n", size);
+	char buf[1024];
+	ssize_t count;
+	while ((count = read(fd, buf, 1024))) {
+		s = s.append(buf, count);
 	}
+//	if (read(fd, buf, size) != size) {
+//		return scope.Close(Null());
+//	}
 	close(fd);
-	Handle<String>s = String::New(buf, size);
-	return scope.Close(s);
+	Handle<String>ret = String::New(s.c_str(), s.size());
+	return scope.Close(ret);
 }
 
 static JSVAL fs_readfile64(JSARGS args) {

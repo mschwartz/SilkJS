@@ -35,6 +35,12 @@ static JSVAL process_sleep(JSARGS args) {
 	return Undefined();
 }
 
+static JSVAL process_usleep(JSARGS args) {
+	HandleScope scope;
+	usleep(args[0]->IntegerValue());
+	return Undefined();
+}
+
 static JSVAL process_wait(JSARGS args) {
 	HandleScope scope;
 	int status;
@@ -71,6 +77,7 @@ void init_process_object() {
 	process->Set(String::New("fork"), FunctionTemplate::New(process_fork));
 	process->Set(String::New("exit"), FunctionTemplate::New(process_exit));
 	process->Set(String::New("sleep"), FunctionTemplate::New(process_sleep));
+	process->Set(String::New("usleep"), FunctionTemplate::New(process_usleep));
 	process->Set(String::New("wait"), FunctionTemplate::New(process_wait));
 	process->Set(String::New("exec"), FunctionTemplate::New(process_exec));
 	
