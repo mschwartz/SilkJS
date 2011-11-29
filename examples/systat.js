@@ -225,7 +225,7 @@ function PrintDisk() {
 	move(row++, 0);
 	printw('DISK ACTIVITY           Current             Aggregate  ');
 	move(row++, 0);
-	printw(' (sectors)            IN       OUT        IN       OUT ');
+	printw(' (K bytes)            IN       OUT        IN       OUT ');
 	attroff(A_BOLD); attroff(A_STANDOUT);
 	
 	var lines = fs.readFile('/proc/diskstats').split('\n');
@@ -250,7 +250,7 @@ function PrintDisk() {
 		var writes = parseInt(arr[9], 10);
 		var deltaWrites = writes - disk_writes[drive];
 		disk_writes[drive] = writes;
-		printw(sprintf('%8d  %8d  %8d  %8d', deltaReads, deltaWrites, reads, writes));
+		printw(sprintf('%8d  %8d  %8d  %8d', deltaReads*512/1024, deltaWrites*512/1024, reads*512/1024, writes*512/1024));
 		clearEol();
 	});
 }
