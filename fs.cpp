@@ -196,7 +196,11 @@ static JSVAL fs_rmdir(JSARGS args) {
 static JSVAL fs_mkdir(JSARGS args) {
 	HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
-	if (mkdir(*path, args[1]->IntegerValue()) == -1) {
+	mode_t mode = 0700;
+	if (args.Length() > 1) {
+		mode = args[1]->IntegerValue();
+	}
+	if (mkdir(*path, mode) == -1) {
 		return scope.Close(False());
 	}
 	return scope.Close(True());
@@ -322,6 +326,17 @@ static JSVAL fs_writefile64(JSARGS args) {
 	return scope.Close(True());
 }
 
+static JSVAL fs_exists(JSARGS args) {
+	HandleScope scope;
+    String::Utf8Value path(args[0]->ToString());
+
+	struct stat buf;
+	if (stat(*path, &buf)) {
+		return scope.Close(False());
+	}
+	return scope.Close(True());
+}
+
 static JSVAL fs_isfile(JSARGS args) {
 	HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
@@ -444,6 +459,7 @@ void init_fs_object() {
 	fs->Set(String::New("readFile64"), FunctionTemplate::New(fs_readfile64));
 	fs->Set(String::New("writeFile"), FunctionTemplate::New(fs_writefile));
 	fs->Set(String::New("writeFile64"), FunctionTemplate::New(fs_writefile64));
+	fs->Set(String::New("exists"), FunctionTemplate::New(fs_exists));
 	fs->Set(String::New("isFile"), FunctionTemplate::New(fs_isfile));
 	fs->Set(String::New("isDir"), FunctionTemplate::New(fs_isdir));
 	fs->Set(String::New("fileSize"), FunctionTemplate::New(fs_filesize));

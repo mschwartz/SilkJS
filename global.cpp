@@ -13,6 +13,20 @@ static Handle<Value> Log(const Arguments& args) {
     return Undefined();
 }
 
+static Handle<Value> Print(const Arguments& args) {
+    HandleScope handle_scope;
+    String::AsciiValue str(args[0]);
+	printf("%s", *str);
+    return Undefined();
+}
+
+static Handle<Value> Println(const Arguments& args) {
+    HandleScope handle_scope;
+    String::AsciiValue str(args[0]);
+	printf("%s\n", *str);
+    return Undefined();
+}
+
 struct SCRIPTNODE {
 	SCRIPTNODE *next;
 	const char *name;
@@ -26,8 +40,16 @@ static Handle<Value> Include(const Arguments& args) {
 	HandleScope scope;
 	for (int i = 0; i < args.Length(); i++) {
 		String::Utf8Value str(args[i]);
-
+		char buf[strlen(*str) + 18 + 1];
 		char *js_file = readFile(*str);
+		if (!js_file) {
+			strcpy(buf, *str);
+			if (buf[0] != '/') {
+				strcpy(buf, "/usr/share/SilkJS/");
+				strcat(buf, *str);
+				js_file = readFile(buf);
+			}
+		}
 		if (!js_file) {
 			return ThrowException(String::Concat(String::New("include file not found "), args[i]->ToString()));
 		}
@@ -71,5 +93,7 @@ void init_global_object() {
 	init_v8_object();
 	
 	globalObject->Set(String::New("log"), FunctionTemplate::New(Log));
+	globalObject->Set(String::New("print"), FunctionTemplate::New(Print));
+	globalObject->Set(String::New("println"), FunctionTemplate::New(Println));
 	globalObject->Set(String::New("include"), FunctionTemplate::New(Include));
 }

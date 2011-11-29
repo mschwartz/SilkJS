@@ -41,7 +41,7 @@ static void flush_logfile() {
 		while (toWrite > 0) {
 			long written = write(logFd, &logBuffer[offset], toWrite);
 			offset += written;
-			toWrite += written;
+			toWrite -= written;
 		}
 		*length = 0;
 	}

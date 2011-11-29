@@ -1,4 +1,7 @@
+#!/usr/local/bin/SilkJS
 // httpd/main.js
+
+//v8.gc();
 
 silk = global.silk || {};
 silk.includes = {};

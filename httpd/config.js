@@ -1,8 +1,8 @@
 Config = {
 	port: 9090,
-	numChildren: 50,
+	numChildren: 250,
 	requestsPerChild: 100000,
-	documentRoot: 'httpd/docroot',
+	documentRoot: fs.exists('httpd/docroot') ? 'httpd/docroot' : '/usr/share/SilkJS/httpd/docroot',
 	lockFile: '/tmp/silkf.lock',
 	mysql: {
 		host: 'localhost',

@@ -65,8 +65,8 @@ int main(int argc, char** argv) {
 		context = Persistent<Context>::New(Context::New(NULL, globalObject));
 		Context::Scope context_scope(context);
 
-		Debug::EnableAgent("silkjs", 9222);
-		Debug::SetDebugMessageDispatchHandler(debugger, true);
+//		Debug::EnableAgent("silkjs", 9222);
+//		Debug::SetDebugMessageDispatchHandler(debugger, true);
 
 		Handle<Script>init = Script::New(String::New("global=this;"), String::New("builtin"));
 		init->Run();
