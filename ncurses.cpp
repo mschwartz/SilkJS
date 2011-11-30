@@ -780,10 +780,6 @@ static JSVAL ncurses_wsyncdown(JSARGS args) {
 
 // see man border
 
-static chtype charArg(Local<Value> arg) {
-	String::Utf8Value str(arg->ToString());
-	return (*str)[0];
-}
 static JSVAL ncurses_border(JSARGS args) {
 	HandleScope scope;
 	return scope.Close(Integer::New(border(
