@@ -1,4 +1,4 @@
-#!/usr/local/bin/SilkJS
+#!/usr/local/bin/silkjs
 // httpd/main.js
 
 //v8.gc();

@@ -24,17 +24,17 @@ function main() {
 		process.exit(0);
 	}
 	println('-- copying SilkJS /usr/local/bin');
-	exec('cp SilkJS /usr/local/bin');
-	exec('chmod 755 /usr/local/bin/SilkJS');
+	exec('cp silkjs /usr/local/bin');
+	exec('chmod 755 /usr/local/bin/silkjs');
 
-	println('-- copying examples to /usr/share/SilkJS/');
-	exec('rm -rf /usr/share/SilkJS');
-	exec('mkdir /usr/share/SilkJS');
-	exec('cp -r examples/ /usr/share/SilkJS');
-	println('-- copying httpd to /usr/share/silkJS/');
-	exec('cp -r httpd/ /usr/share/SilkJS');
-	println('-- copying SilkJS JavaScript library files to /usr/share/SilkJS/');
-	exec('cp -r lib/ /usr/share/SilkJS');
+	println('-- copying examples to /usr/share/silkjs/');
+	exec('rm -rf /usr/share/silkjs');
+	exec('mkdir /usr/share/silkjs');
+	exec('cp -r examples/ /usr/share/silkjs');
+	println('-- copying httpd to /usr/share/silkjs/');
+	exec('cp -r httpd/ /usr/share/silkjs');
+	println('-- copying SilkJS JavaScript library files to /usr/share/silkjs/');
+	exec('cp -r lib/ /usr/share/silkjs');
 	
 	println('-- copying examples to /usr/local/bin');
 	forEach(examples, function(example) {

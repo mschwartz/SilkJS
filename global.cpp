@@ -45,7 +45,7 @@ static Handle<Value> Include(const Arguments& args) {
 		if (!js_file) {
 			strcpy(buf, *str);
 			if (buf[0] != '/') {
-				strcpy(buf, "/usr/share/SilkJS/");
+				strcpy(buf, "/usr/share/silkjs/");
 				strcat(buf, *str);
 				js_file = readFile(buf);
 			}
