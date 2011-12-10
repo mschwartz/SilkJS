@@ -142,8 +142,10 @@ HttpChild = (function() {
 	return {
 		requestHandler: null,
 		run: function(serverSocket, pid) {
-			// SQL = new MySQL();
-			// SQL.connect();
+			if (Config.mysql) {
+				SQL = new MySQL();
+				SQL.connect();
+			}
 			var REQUESTS_PER_CHILD = Config.requestsPerChild;
 			var requestHandler = HttpChild.requestHandler;
 			requestsHandled = 0;
