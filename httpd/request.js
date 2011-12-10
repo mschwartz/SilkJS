@@ -73,7 +73,7 @@ req = (function() {
 			if (headers['cookie']) {
 				forEach(headers['cookie'].split(/;\s*/), function(cookie) {
 					var cookieParts = cookie.split('=');
-					data[cookieParts[0]] = decodeUriComponent(cookieParts[1].replace(/\+/g, ' '));
+					data[cookieParts[0]] = decodeURIComponent(cookieParts[1].replace(/\+/g, ' '));
 				});
 			}
 
