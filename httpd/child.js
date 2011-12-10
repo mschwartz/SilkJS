@@ -103,10 +103,24 @@ HttpChild = (function() {
 		}
 		if (fs.isDir(fn)) {
 			if (!req.uri.endsWith('/')) {
-				Log('redirect ' + req.uri + ' ' + fn + ' ' + fn.substr(fn.length-1, 1));
+				log('redirect ' + req.uri + ' ' + fn + ' ' + fn.substr(fn.length-1, 1));
 				res.redirect(req.uri + '/');
 			}
-			fn += '/index.jst';
+			var found = '';
+			forEach(Config.directoryIndex, function(index) {
+				var f = fn;
+				f += '/';
+				f += index;
+				if (fs.exists(f)) {
+					found = f;
+				}
+			})
+			if (found) {
+				fn = found;
+			}
+			else {
+				fn += '/index.jst';
+			}
 		}
 		if (!fs.isFile(fn)) {
 			// could do a directory listing here
@@ -126,7 +140,7 @@ HttpChild = (function() {
 		}
 		var stat = fs.stat(fn);
 		if (!stat) {
-			Log('error: ' + fs.error());
+			log('error: ' + fs.error());
 		}
 		size = stat.size;
 		res.contentType = 'text/plain';

@@ -96,6 +96,9 @@ res = function() {
 			}
 			res.cookies[key] = cookie;
 		},
+		setHeader: function(key, value) {
+			res.headers[key] = value;
+		},
 		sendHeaders: function() {
 			if (!headersSent) {
 				headersSent = true;
