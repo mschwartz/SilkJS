@@ -45,7 +45,7 @@ void debugger() {
 
 int main(int argc, char** argv) {
 	signal(SIGSEGV, AnsiSignalHandler);
-    printf("SILK V0.1\n");
+//    printf("SILK V0.1\n");
     if (argc < 2) {
 		printf("usage: %s file.js\n", argv[0]);
 		exit(1);
@@ -82,7 +82,7 @@ int main(int argc, char** argv) {
 		for (int i=2; i<argc; i++) {
 			av[i-2] = String::New(argv[i]);
 		}
-		printf("SILKJS running %s\n", argv[1]);
+//		printf("SILKJS running %s\n", argv[1]);
 		mainFunc->Call(context->Global(), ac, av);
 	}
 }
