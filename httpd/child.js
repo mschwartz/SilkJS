@@ -63,8 +63,17 @@ HttpChild = (function() {
 		res.stop();
 	}
 
+	function runMarkdown(fn) {
+		var content = fs.readFile(fn);
+		var converter = new Showdown.converter();
+		var html = converter.makeHtml(content);
+		res.write(html);
+		res.stop();
+	}
+	
 	var contentTypes = {
 		jst:  { contentType: 'text/html',       handler: runJst },
+		md:   { contentType: 'text/html',       handler: runMarkdown },
 		png:  { contentType: 'image/png',       handler: sendFile },
 		ico:  { contentType: 'image/ico',       handler: sendFile },
 		gif:  { contentType: 'image/gif',       handler: sendFile },

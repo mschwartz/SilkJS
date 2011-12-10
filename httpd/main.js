@@ -35,6 +35,7 @@ include('lib/forEach.js');
 include('lib/Exceptions.js');
 include('lib/Util.js');
 include('lib/Jst.js');
+include('lib/Showdown.js');
 include('lib/MySQL.js');
 include('lib/Server.js');
 include('lib/Schema.js');
