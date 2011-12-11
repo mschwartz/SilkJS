@@ -61,7 +61,7 @@ req = (function() {
 			if (uriParts[1]) {
 				forEach(uriParts[1].split('&'), function(part) {
 					part = part.split('=');
-					data[part[0]] = decodeURIComponent(part[1].reaplce(/\+/g, ' '));
+					data[part[0]] = decodeURIComponent(part[1].replace(/\+/g, ' '));
 				});
 			}
 			req.method = first[0];
