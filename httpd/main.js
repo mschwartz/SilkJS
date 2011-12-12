@@ -34,6 +34,7 @@ include('lib/print_r.js');
 include('lib/forEach.js');
 include('lib/Exceptions.js');
 include('lib/Util.js');
+include('lib/Json.js');
 include('lib/Jst.js');
 include('lib/Showdown.js');
 include('lib/MySQL.js');

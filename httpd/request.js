@@ -77,8 +77,6 @@ req = (function() {
 				});
 			}
 
-			req.data = data;
-			
 			// process POST data
 			var post = '';
 			var mimeParts = [];
@@ -112,7 +110,7 @@ req = (function() {
 				}
 				else {
 					post = http.readPost(stream, contentLength);
-					if (headers['content-type'].toLowerCase() == 'application/x-www-form-urlencoded') {
+					if (headers['content-type'].match(/^application\/x-www-form-urlencoded/i)) {
 						forEach(post.split('&'), function(part) {
 							part = part.split('=');
 							data[part[0]] = decodeURIComponent(part[1].replace(/\+/gm, ' '));
@@ -120,6 +118,8 @@ req = (function() {
 					}
 				}
 			}
+			req.data = data;
+			
 			return true;
 		},
 		getHeader: function(key) {

@@ -13,11 +13,11 @@ static JSVAL gc(const Arguments& args) {
 static JSVAL compileScript(JSARGS args) {
 	HandleScope scope;
 
-	Persistent<Context>context = Context::New(NULL, ObjectTemplate::New());
-	Context::Scope context_scope(context);
+//	Persistent<Context>context = Context::New(NULL, ObjectTemplate::New());
+//	Context::Scope context_scope(context);
 	ScriptWrapper *wrapper = new ScriptWrapper;
 	wrapper->script = Persistent<Script>::New(Script::New(args[0]->ToString(), args[1]->ToString()));
-	context.Dispose();
+//	context.Dispose();
 	return scope.Close(External::New(wrapper));
 }
 
@@ -28,10 +28,10 @@ static JSVAL runScript(JSARGS args) {
 	Local<External>wrap = Local<External>::Cast(args[0]);
 	ScriptWrapper *wrapper = (ScriptWrapper *)wrap->Value();
 
-	Persistent<Context>context = Context::New(NULL, ObjectTemplate::New());
-	Context::Scope context_scope(context);
+//	Persistent<Context>context = Context::New(NULL, ObjectTemplate::New());
+//	Context::Scope context_scope(context);
 	Handle<Value>v = wrapper->script->Run();
-	context.Dispose();
+//	context.Dispose();
 	JSVAL ret = scope.Close(v);
 	return ret;
 }
