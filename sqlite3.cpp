@@ -253,7 +253,7 @@ static JSVAL sqlite_column_value(JSARGS args) {
 	return scope.Close(External::New(sqlite3_column_value(stmt, iCol)));
 }
 
-void init_sqlite_object() {
+void init_sqlite3_object() {
 	HandleScope scope;
 
 	JSOBJT o = ObjectTemplate::New();
