@@ -73,10 +73,23 @@ static JSVAL process_getuid(JSARGS args) {
 	return scope.Close(Integer::New(getuid()));
 }
 
+static JSVAL process_env(JSARGS args) {
+  HandleScope scope;
+  int size = 0;
+  while (environ[size]) size++;
+  Local<Array> env = Array::New(size);
+  for (int i = 0; i < size; ++i) {
+    const char* var = environ[i];
+    env->Set(i, String::New(var, strlen(var)));
+  }
+  return scope.Close(env);
+}
+
 void init_process_object() {
 	HandleScope scope;
-	
+
 	Handle<ObjectTemplate>process = ObjectTemplate::New();
+	process->Set(String::New("env"), FunctionTemplate::New(process_env));
 	process->Set(String::New("error"), FunctionTemplate::New(process_error));
 	process->Set(String::New("getpid"), FunctionTemplate::New(process_getpid));
 	process->Set(String::New("fork"), FunctionTemplate::New(process_fork));
@@ -86,6 +99,6 @@ void init_process_object() {
 	process->Set(String::New("wait"), FunctionTemplate::New(process_wait));
 	process->Set(String::New("exec"), FunctionTemplate::New(process_exec));
 	process->Set(String::New("getuid"), FunctionTemplate::New(process_getuid));
-	
+
 	globalObject->Set(String::New("process"), process);
 }
