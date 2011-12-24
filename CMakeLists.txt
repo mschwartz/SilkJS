@@ -1,4 +1,8 @@
-# CMakeLists.txt v0.0.6 20111224 (C) markc@renta.net (AGPLv3)
+# CMakeLists.txt 20111224 (C) markc@renta.net (AGPLv3)
+#
+# mkdir build && cd build
+# cmake .. && make
+# sudo make install
 
 project(silkjs)
 cmake_minimum_required(VERSION 2.6)
