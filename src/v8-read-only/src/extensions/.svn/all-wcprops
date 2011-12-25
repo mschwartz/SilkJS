@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 40
+/svn/!svn/ver/10037/trunk/src/extensions
+END
+gc-extension.cc
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/10037/trunk/src/extensions/gc-extension.cc
+END
+gc-extension.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/5853/trunk/src/extensions/gc-extension.h
+END
+externalize-string-extension.cc
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/9132/trunk/src/extensions/externalize-string-extension.cc
+END
+externalize-string-extension.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/5853/trunk/src/extensions/externalize-string-extension.h
+END

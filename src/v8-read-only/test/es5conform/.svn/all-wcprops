@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 41
+/svn/!svn/ver/10239/trunk/test/es5conform
+END
+es5conform.status
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/10239/trunk/test/es5conform/es5conform.status
+END
+harness-adapt.js
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svn/!svn/ver/2949/trunk/test/es5conform/harness-adapt.js
+END
+testcfg.py
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svn/!svn/ver/8751/trunk/test/es5conform/testcfg.py
+END
+README
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svn/!svn/ver/4988/trunk/test/es5conform/README
+END

@@ -1,0 +1,11 @@
+K 10
+svn:ignore
+V 80
+js2c.pyc  
+jsmin.pyc  
+splaytree.pyc  
+test.pyc  
+tickprocessor.pyc  
+utils.pyc
+
+END

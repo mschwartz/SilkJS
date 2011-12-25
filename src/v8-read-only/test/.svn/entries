@@ -1,0 +1,55 @@
+10
+
+dir
+10301
+http://v8.googlecode.com/svn/trunk/test
+http://v8.googlecode.com/svn
+
+
+
+2011-12-21T08:29:34.098654Z
+10288
+danno@chromium.org
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ce2b1a6d-e550-0410-aec6-3dcde31c8c00
+
+es5conform
+dir
+
+preparser
+dir
+
+message
+dir
+
+cctest
+dir
+
+mozilla
+dir
+
+mjsunit
+dir
+
+test262
+dir
+
+benchmarks
+dir
+
+sputnik
+dir
+

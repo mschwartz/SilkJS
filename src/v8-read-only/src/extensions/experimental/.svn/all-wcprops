@@ -1,0 +1,125 @@
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svn/!svn/ver/8958/trunk/src/extensions/experimental
+END
+i18n-extension.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/8130/trunk/src/extensions/experimental/i18n-extension.h
+END
+language-matcher.cc
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/svn/!svn/ver/8130/trunk/src/extensions/experimental/language-matcher.cc
+END
+i18n.js
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/8431/trunk/src/extensions/experimental/i18n.js
+END
+language-matcher.h
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/8130/trunk/src/extensions/experimental/language-matcher.h
+END
+experimental.gyp
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/8431/trunk/src/extensions/experimental/experimental.gyp
+END
+break-iterator.cc
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/8130/trunk/src/extensions/experimental/break-iterator.cc
+END
+i18n-locale.cc
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/8130/trunk/src/extensions/experimental/i18n-locale.cc
+END
+i18n-utils.cc
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/8431/trunk/src/extensions/experimental/i18n-utils.cc
+END
+break-iterator.h
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/8130/trunk/src/extensions/experimental/break-iterator.h
+END
+number-format.cc
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/!svn/ver/8733/trunk/src/extensions/experimental/number-format.cc
+END
+i18n-locale.h
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/!svn/ver/8130/trunk/src/extensions/experimental/i18n-locale.h
+END
+i18n-utils.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/8431/trunk/src/extensions/experimental/i18n-utils.h
+END
+collator.cc
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svn/!svn/ver/8130/trunk/src/extensions/experimental/collator.cc
+END
+number-format.h
+K 25
+svn:wc:ra_dav:version-url
+V 68
+/svn/!svn/ver/8431/trunk/src/extensions/experimental/number-format.h
+END
+i18n-js2c.py
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svn/!svn/ver/8130/trunk/src/extensions/experimental/i18n-js2c.py
+END
+collator.h
+K 25
+svn:wc:ra_dav:version-url
+V 63
+/svn/!svn/ver/8130/trunk/src/extensions/experimental/collator.h
+END
+datetime-format.cc
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svn/!svn/ver/8958/trunk/src/extensions/experimental/datetime-format.cc
+END
+datetime-format.h
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/8178/trunk/src/extensions/experimental/datetime-format.h
+END
+i18n-natives.h
+K 25
+svn:wc:ra_dav:version-url
+V 67
+/svn/!svn/ver/8130/trunk/src/extensions/experimental/i18n-natives.h
+END
+i18n-extension.cc
+K 25
+svn:wc:ra_dav:version-url
+V 70
+/svn/!svn/ver/8431/trunk/src/extensions/experimental/i18n-extension.cc
+END

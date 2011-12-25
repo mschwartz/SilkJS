@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 43
+/svn/!svn/ver/10089/trunk/test/mjsunit/bugs
+END
+bug-941049.js
+K 25
+svn:wc:ra_dav:version-url
+V 55
+/svn/!svn/ver/267/trunk/test/mjsunit/bugs/bug-941049.js
+END
+bug-617.js
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/5716/trunk/test/mjsunit/bugs/bug-617.js
+END
+bug-618.js
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svn/!svn/ver/10089/trunk/test/mjsunit/bugs/bug-618.js
+END
+618.js
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svn/!svn/ver/9132/trunk/test/mjsunit/bugs/618.js
+END
+bug-1344252.js
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svn/!svn/ver/267/trunk/test/mjsunit/bugs/bug-1344252.js
+END
+bug-222.js
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svn/!svn/ver/1243/trunk/test/mjsunit/bugs/bug-222.js
+END

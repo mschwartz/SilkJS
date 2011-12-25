@@ -1,0 +1,41 @@
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svn/!svn/ver/8635/trunk/test/message/regress
+END
+regress-1527.js
+K 25
+svn:wc:ra_dav:version-url
+V 61
+/svn/!svn/ver/8635/trunk/test/message/regress/regress-1527.js
+END
+regress-73.out
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/572/trunk/test/message/regress/regress-73.out
+END
+regress-75.out
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svn/!svn/ver/1495/trunk/test/message/regress/regress-75.out
+END
+regress-1527.out
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svn/!svn/ver/8635/trunk/test/message/regress/regress-1527.out
+END
+regress-73.js
+K 25
+svn:wc:ra_dav:version-url
+V 58
+/svn/!svn/ver/572/trunk/test/message/regress/regress-73.js
+END
+regress-75.js
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svn/!svn/ver/1495/trunk/test/message/regress/regress-75.js
+END
