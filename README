@@ -2,12 +2,14 @@ QUICKSTART
 
 Currently for Mac OSX Lion x64 and Ubuntu only...
 
-See build instructions here:
-https://github.com/mschwartz/SilkJS/wiki/Build-Instructions
+    git clone https://github.com/mschwartz/SilkJS SilkJS
+    cd SilkJS
+    make
+
+(See https://github.com/mschwartz/SilkJS/wiki/Build-Instructions for dependent libraries)
 
 Once built:
 
-    cd ~src/SilkJS
     ./silkjs httpd/main.js
 
 Then point your browser at http://localhost:9090/
