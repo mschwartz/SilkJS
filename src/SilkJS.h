@@ -38,7 +38,9 @@
 #ifndef __APPLE__
 #include <sys/sendfile.h>
 #endif
+#ifndef BOOTSTRAP_SILKJS
 #include <mm.h>
+#endif
 #include <v8.h>
 
 #include <string>
