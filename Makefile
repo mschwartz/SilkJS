@@ -1,12 +1,17 @@
+UNAME := $(shell uname -s)
+
+ifeq ($(UNAME),Darwin)
+    MAKEFILE=Makefile.osx
+else
+    MAKEFILE=Makefile
+endif
+
 all:
-	cd src && make
+	cd src && make -f$(MAKEFILE)
 	cp src/silkjs .
 
-osx:
-	cd src && make -fMakefile.osx
-	
 bootstrap:
-	cd src && make bootstrap
+	cd src && make -f$(MAKEFILE) bootstrap
 	cp src/bootstrap-silkjs .
 
 clean:
