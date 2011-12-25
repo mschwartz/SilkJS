@@ -15,25 +15,23 @@ var main = function () {
 
   if (fs.exists("jslint.js")) {
     include("jslint.js");
-  } else {
-    console.log("wget https://raw.github.com/douglascrockford/JSLint/master/jslint.js");
-    process.exit();
-  }
+    if (argc) {
+      str = fs.readFile(argv[0]);
+      res = JSLINT(str.replace(/[\w\W]+?\n+?/, ''), {
+        node: true,
+        nomen: false,
+        indent: 2
+      });
 
-  if (argc) {
-    str = fs.readFile(argv[0]);
-    res = JSLINT(str.replace(/[\w\W]+?\n+?/, ''), {
-      node: true,
-      nomen: false,
-      indent: 2
-    });
-
-    if (res) {
-      console.log(argv[0] + " passed the lint test");
+      if (res) {
+        console.log(argv[0] + " passed the lint test");
+      } else {
+        console.log(argv[0] + " did NOT pass, check at http://www.jslint.com");
+      }
     } else {
-      console.log(argv[0] + " did NOT pass the lint test");
+      console.log("Usage: [silkjs] lint.js file_to_check.js");
     }
   } else {
-    console.log("Usage: [silkjs] lint.js file_to_check.js");
+    console.log("wget https://raw.github.com/douglascrockford/JSLint/master/jslint.js");
   }
 };
