@@ -15,6 +15,7 @@ var main = function () {
 
   if (fs.exists("jslint.js")) {
     include("jslint.js");
+
     if (argc) {
       str = fs.readFile(argv[0]);
       res = JSLINT(str.replace(/[\w\W]+?\n+?/, ''), {
