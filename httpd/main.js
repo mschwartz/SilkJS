@@ -2,12 +2,11 @@
 // httpd/main.js
 
 //v8.gc();
-
 silk = global.silk || {};
 silk.includes = {};
 silk.include = function(fn) {
-    silk.includes[fn] = fs.fileModified(fn);
-    include(fn);
+    silk.includes[fn] = 0; // fs.fileModified(fn);
+//    include(fn);
 };
 
 silk.checkIncludes = function() {
@@ -50,7 +49,7 @@ function main() {
 	// load any user provided JavaScripts
 	forEach(arguments, function(arg) {
 		if (arg.endsWith('.js')) {
-			silk.include(arg);
+			include(arg);
 		}
 	});
     var pid;
