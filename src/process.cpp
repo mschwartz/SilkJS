@@ -73,23 +73,21 @@ static JSVAL process_getuid(JSARGS args) {
 	return scope.Close(Integer::New(getuid()));
 }
 
-// 20121225 markc, return an object instead of an array
+// 20111227 markc@renta.net MIT license
 static JSVAL process_env(JSARGS args) {
-  HandleScope scope;
-  int size = 0;
-  while (environ[size]) size++;
-//  Local<Array> env = Array::New(size);
-  Handle<Object>env = Object::New();
-  for (int i = 0; i < size; ++i) {
-    const char* key = environ[i];
-//    env->Set(i, String::New(var, strlen(var)));
-    const char* val = strchr(key, '=');
-    const int klen = val ? val - key : strlen(key);
-    if (val[0] == '=') val = val + 1;
-    const int vlen = val ? strlen(val) : 0;
-    env->Set(String::New(key, klen), String::New(val, vlen));
-  }
-  return scope.Close(env);
+	HandleScope scope;
+	int size = 0;
+	while (environ[size]) size++;
+	Handle<Object>env = Object::New();
+	for (int i = 0; i < size; ++i) {
+		const char* key = environ[i];
+		const char* val = strchr(key, '=');
+		const int klen = val ? val - key : strlen(key);
+		if (val[0] == '=') val = val + 1;
+		const int vlen = val ? strlen(val) : 0;
+		env->Set(String::New(key, klen), String::New(val, vlen));
+	}
+	return scope.Close(env);
 }
 
 void init_process_object() {
