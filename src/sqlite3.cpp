@@ -265,7 +265,9 @@ void init_sqlite3_object() {
 	o->Set(String::New("SQLITE_OPEN_DELETEONCLOSE"), Integer::New(SQLITE_OPEN_DELETEONCLOSE));
 	o->Set(String::New("SQLITE_OPEN_EXCLUSIVE"), Integer::New(SQLITE_OPEN_EXCLUSIVE));
 	o->Set(String::New("SQLITE_OPEN_AUTOPROXY"), Integer::New(SQLITE_OPEN_AUTOPROXY));
+#ifdef SQLITE_OPEN_URI
 	o->Set(String::New("SQLITE_OPEN_URI"), Integer::New(SQLITE_OPEN_URI));
+#endif
 	o->Set(String::New("SQLITE_OPEN_MAIN_DB"), Integer::New(SQLITE_OPEN_MAIN_DB));
 	o->Set(String::New("SQLITE_OPEN_TEMP_DB"), Integer::New(SQLITE_OPEN_TEMP_DB));
 	o->Set(String::New("SQLITE_OPEN_TRANSIENT_DB"), Integer::New(SQLITE_OPEN_TRANSIENT_DB));
@@ -334,14 +336,24 @@ void init_sqlite3_object() {
 	o->Set(String::New("IOERR_SHMOPEN"), Integer::New(SQLITE_IOERR_SHMOPEN));
 	o->Set(String::New("IOERR_SHMSIZE"), Integer::New(SQLITE_IOERR_SHMSIZE));
 	o->Set(String::New("IOERR_SHMLOCK"), Integer::New(SQLITE_IOERR_SHMLOCK));
+#ifdef IOERR_SHMMAP
 	o->Set(String::New("IOERR_SHMMAP"), Integer::New(SQLITE_IOERR_SHMMAP));
+#endif
+#ifdef IOERR_SEEK
 	o->Set(String::New("IOERR_SEEK"), Integer::New(SQLITE_IOERR_SEEK));
+#endif
 	o->Set(String::New("LOCKED_SHAREDCACHE"), Integer::New(SQLITE_LOCKED_SHAREDCACHE));
 	o->Set(String::New("BUSY_RECOVERY"), Integer::New(SQLITE_BUSY_RECOVERY));
 	o->Set(String::New("CANTOPEN_NOTEMPDIR"), Integer::New(SQLITE_CANTOPEN_NOTEMPDIR));
+#ifdef SQLITE_CORRUPT_VTAB
 	o->Set(String::New("CORRUPT_VTAB"), Integer::New(SQLITE_CORRUPT_VTAB));
+#endif
+#ifdef SQLITE_READONLY_RECOVERY
 	o->Set(String::New("READONLY_RECOVERY"), Integer::New(SQLITE_READONLY_RECOVERY));
+#endif
+#ifdef READONLY_CANTLOCK
 	o->Set(String::New("READONLY_CANTLOCK"), Integer::New(SQLITE_READONLY_CANTLOCK));
+#endif
 
 	// fundamental data types
 	o->Set(String::New("INTEGER"), Integer::New(SQLITE_INTEGER));

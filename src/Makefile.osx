@@ -2,16 +2,52 @@ OBJ=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o mysql.o ht
 
 CFLAGS = -O6 -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-strict-aliasing -fno-rtti -fno-exceptions -fvisibility=hidden -Wall -W -Wno-unused-parameter -Wnon-virtual-dtor -m64 -O3 -fomit-frame-pointer -fdata-sections -ffunction-sections -ansi -fno-strict-aliasing
 
-%.o: %.cpp SilkJS.h Makefile
-	g++ $(CFLAGS) -c -I/usr/include/mysql -g -o $*.o $*.cpp
+V8 = ./v8-read-only
 
-SilkJS:	$(OBJ) SilkJS.h Makefile
-	g++ $(CFLAGS) -o silkjs $(OBJ) -lv8 -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3
+V8_LIB = $(V8)/libv8.a
+
+MYSQL = $(CURDIR)/mysql-5.1.58
+
+JPEG = $(CURDIR)/jpeg-8b
+
+GD2 = $(CURDIR)/libgd2_2.0.36~rc1~dfsg.orig
+
+MM = $(CURDIR)/mm-1.4.2
+
+LIBDIR = $(CURDIR)/osx_dependencies
+
+DEPENDENCIES = $(MYSQL) $(JPEG) $(GD2) $(MM)
+
+%.o: %.cpp SilkJS.h Makefile
+	g++ $(CFLAGS) -c -I$(MYSQL)/include -Iv8-read-only/include -g -o $*.o $*.cpp
+
+SilkJS:	$(V8_LIB) $(DEPENDENCIES) $(OBJ) SilkJS.h Makefile
+	g++ $(CFLAGS) -o silkjs $(OBJ) -Lv8-read-only -lv8 -L$(LIBDIR)/lib/mysql -lmysqlclient -L$(LIBDIR)/lib -lmm -ljpeg -lgd -lncurses -lssl -lpthread -lsqlite3
 
 clean:
-	rm -f silkjs *.o
+	rm -rf silkjs *.o $(MYSQL) $(JPEG) $(GD2) $(MM) $(LIBDIR)
 
 release: silkjs
 	tar czvfp ~/silkjs.tgz silkjs examples httpd lib
 
 $(OBJ): SilkJS.h Makefile
+
+$(V8_LIB):
+	cd $(V8) && scons arch=x64
+
+$(MYSQL):
+	tar xzvfp dependencies/mysql-5.1.58.tar.gz
+	cd $(MYSQL) && ./configure --prefix $(LIBDIR) && make && make install
+
+$(JPEG):
+	tar xzvfp dependencies/libjpeg8_8b.orig.tar.gz
+	cd $(JPEG) && ./configure --prefix $(LIBDIR) && make && make install
+
+$(GD2):
+	tar xzvfp dependencies/libgd2_2.0.36~rc1~dfsg.orig.tar.gz
+	cd $(GD2) && ./configure --prefix $(LIBDIR) --with-jpeg=$(LIBDIR) && make && make install
+
+$(MM):
+	tar xzvfp dependencies/mm_1.4.2.orig.tar.gz
+	cd $(MM) && ./configure --prefix $(LIBDIR) && make && make install
+

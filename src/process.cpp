@@ -75,6 +75,7 @@ static JSVAL process_getuid(JSARGS args) {
 
 // 20111227 markc@renta.net MIT license
 static JSVAL process_env(JSARGS args) {
+	extern char **environ;
 	HandleScope scope;
 	int size = 0;
 	while (environ[size]) size++;

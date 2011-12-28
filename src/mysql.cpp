@@ -1,5 +1,9 @@
 #include "SilkJS.h"
+#ifdef __APPLE__
+#include <mysql.h>
+#else
 #include <mysql/mysql.h>
+#endif
 
 static MYSQL *handle = NULL;
 static char *currentDb = NULL;

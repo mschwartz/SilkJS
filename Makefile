@@ -15,4 +15,4 @@ bootstrap:
 	cp src/bootstrap-silkjs .
 
 clean:
-	cd src && make clean
+	cd src && make -f$(MAKEFILE) clean
