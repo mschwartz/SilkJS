@@ -37,7 +37,10 @@ update:
 	git pull
 	
 clean:
-	rm -f silkjs *.o
+	rm -rf silkjs *.o
+
+realclean:
+	rm -rf silkjs *.o
 
 release: silkjs
 	tar czvfp ~/SilkJS.tgz silkjs examples httpd lib

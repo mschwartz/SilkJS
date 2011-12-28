@@ -25,7 +25,10 @@ SilkJS:	$(V8_LIB) $(DEPENDENCIES) $(OBJ) SilkJS.h Makefile
 	g++ $(CFLAGS) -o silkjs $(OBJ) -Lv8-read-only -lv8 -L$(LIBDIR)/lib/mysql -lmysqlclient -L$(LIBDIR)/lib -lmm -ljpeg -lgd -lncurses -lssl -lpthread -lsqlite3
 
 clean:
-	rm -rf silkjs *.o $(MYSQL) $(JPEG) $(GD2) $(MM) $(LIBDIR)
+	rm -rf silkjs *.o $(DEPENDENCIES)
+
+realclean:
+	rm -rf silkjs *.o $(DEPENDENCIES) $(LIBDIR)
 
 release: silkjs
 	tar czvfp ~/silkjs.tgz silkjs examples httpd lib

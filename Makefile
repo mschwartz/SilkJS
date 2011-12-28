@@ -16,3 +16,7 @@ bootstrap:
 
 clean:
 	cd src && make -f$(MAKEFILE) clean
+
+realclean:
+	cd src && make -f$(MAKEFILE) realclean
+
