@@ -2,3 +2,5 @@
 SilkJS
 .idea
 *gz
+CMakeLists.txt.user
+build/
