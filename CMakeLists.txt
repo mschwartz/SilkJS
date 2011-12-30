@@ -1,11 +1,11 @@
-# CMakeLists.txt 20111224 (C) markc@renta.net (AGPLv3)
+# CMakeLists.txt 20111227 (C) markc@renta.net (AGPLv3)
 #
 # mkdir build && cd build
 # cmake .. && make
 # sudo make install
 
 project(silkjs)
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
 include_directories(${CMAKE_SOURCE_DIR}/src)
 set(SRCS
   src/base64.cpp
@@ -27,6 +27,6 @@ set(SRCS
   src/v8.cpp
 )
 set(HDRS src/SilkJS.h)
-add_executable(silkjs ${SRCS})
+add_executable(silkjs ${SRCS} ${HDRS})
 target_link_libraries(silkjs v8 mysqlclient mm gd ncurses ssl pthread sqlite3)
 install(TARGETS silkjs DESTINATION /usr/bin)
