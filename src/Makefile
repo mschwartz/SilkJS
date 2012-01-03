@@ -2,7 +2,7 @@ ARCH := $(shell getconf LONG_BIT)
 
 CORE=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o v8.o http.o md5.o 
 
-OBJ=	mysql.o gd.o ncurses.o sem.o logfile.o sqlite3.o
+OBJ=	mysql.o gd.o ncurses.o sem.o logfile.o sqlite3.o curl.o
 
 V8DIR=	./v8-read-only
 
@@ -22,7 +22,7 @@ CFLAGS = -O6 -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-stric
 	g++ $(CFLAGS) -c -I$(V8DIR)/include -I/usr/include/mysql -g -o $*.o $*.cpp
 
 silkjs:	$(V8) $(CORE) $(OBJ) SilkJS.h Makefile
-	g++ $(CFLAGS) -o silkjs $(CORE) $(OBJ) -L$(V8LIB_DIR)/ -lv8_base -lv8_snapshot -L/usr/local/lib/mysql -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3
+	g++ $(CFLAGS) -o silkjs $(CORE) $(OBJ) -L$(V8LIB_DIR)/ -lv8_base -lv8_snapshot -L/usr/local/lib/mysql -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl
 
 bootstrap:  CFLAGS += -DBOOTSTRAP_SILKJS
 

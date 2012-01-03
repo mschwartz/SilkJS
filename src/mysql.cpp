@@ -645,11 +645,14 @@ JSVAL getDataRow(JSARGS args) {
 	if (!result) {
 		return scope.Close(False());
 	}
+	JSOBJ o = Object::New();
 	unsigned int num_fields = mysql_num_fields(result);
 	MYSQL_FIELD *fields = mysql_fetch_fields(result);
 	MYSQL_ROW row = mysql_fetch_row(result);
+	if (!row) {
+		return scope.Close(o);
+	}
 	unsigned long *lengths = mysql_fetch_lengths(result);
-	JSOBJ o = Object::New();
 	for (unsigned int i=0; i<num_fields; i++) {
 		if (row[i] == NULL) {
 			o->Set(String::New(fields[i].name), Null());
@@ -779,7 +782,7 @@ JSVAL connect(JSARGS args) {
 	    currentDb = strdup(*db);
 	}
 	mysql_ping(handle);
-	return Undefined();
+	return scope.Close(Integer::New((long)handle));
 }	
 
 JSVAL select_db(JSARGS args) {

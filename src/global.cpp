@@ -55,8 +55,8 @@ static Handle<Value> Include(const Arguments& args) {
 		}
 		Handle<String> source = String::New(js_file);
 		delete [] js_file;
-
-		Handle<Script>script = Script::New(source, args[i]);;
+		ScriptOrigin origin(String::New(*str), Integer::New(0), Integer::New(0));
+		Handle<Script>script = Script::New(source, &origin);
 		return script->Run();
 	}
 	return Undefined();
@@ -76,6 +76,7 @@ extern void init_sqlite3_object();
 extern void init_gd_object();
 extern void init_ncurses_object();
 extern void init_logfile_object();
+extern void init_xhrHelper_object();
 #endif
 
 void init_global_object() {
@@ -97,6 +98,7 @@ void init_global_object() {
 	init_sqlite3_object();
 	init_gd_object();
 	init_ncurses_object();
+	init_xhrHelper_object();
 #endif
 	globalObject->Set(String::New("log"), FunctionTemplate::New(Log));
 	globalObject->Set(String::New("print"), FunctionTemplate::New(Print));

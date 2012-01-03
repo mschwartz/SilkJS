@@ -60,7 +60,8 @@ res = function() {
 				cookies: {},
 				headers: {
 					Server: 'SILK JS Server'
-				}
+				},
+				data: {}
 			});
 			headersSent = false;
 			var ka = req.headers && req.headers.connection;
@@ -109,15 +110,15 @@ res = function() {
 					out += key +': ' + value + '\r\n';
 				});
 				forEach(res.cookies, function(cookie, key) {
-					out += 'Set-Cookie: ' + key + '=' +encodeUriComponent(cookie.value);
+					out += 'Set-Cookie: ' + key + '=' +encodeURIComponent(cookie.value);
 					if (cookie.expires) {
 						out += '; Expires='+cookie.expires;
 					}
 					if (cookie.path) {
-						out += '; Path='+encodeUriComponent(cookie.path);
+						out += '; Path='+encodeURIComponent(cookie.path);
 					}
 					if (cookie.domain) {
-						out += '; Domain='+encodeUriComponent(cookie.domain);
+						out += '; Domain='+encodeURIComponent(cookie.domain);
 					}
 					out += '\r\n';
 				});
