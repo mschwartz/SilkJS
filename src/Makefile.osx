@@ -1,4 +1,4 @@
-OBJ=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o mysql.o http.o gd.o ncurses.o sem.o logfile.o v8.o md5.o sqlite3.o curl.o
+OBJ=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o mysql.o http.o gd.o ncurses.o sem.o logfile.o v8.o md5.o sqlite3.o curl.o ssh2.o
 
 CFLAGS = -O6 -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-strict-aliasing -fno-rtti -fno-exceptions -fvisibility=hidden -Wall -W -Wno-unused-parameter -Wnon-virtual-dtor -m64 -O3 -fomit-frame-pointer -fdata-sections -ffunction-sections -ansi -fno-strict-aliasing
 
@@ -16,15 +16,17 @@ MM = $(CURDIR)/mm-1.4.2
 
 CURL = $(CURDIR)/curl-7.21.6
 
+SSH2 = $(CURDIR)/libssh2-1.2.8
+
 LIBDIR = $(CURDIR)/osx_dependencies
 
-DEPENDENCIES = $(MYSQL) $(JPEG) $(GD2) $(MM) $(CURL)
+DEPENDENCIES = $(MYSQL) $(JPEG) $(GD2) $(MM) $(CURL) $(SSH2)
 
 %.o: %.cpp SilkJS.h Makefile
-	g++ $(CFLAGS) -c -I$(MYSQL)/include -Iv8-read-only/include -g -o $*.o $*.cpp
+	g++ $(CFLAGS) -c -I$(MYSQL)/include -I$(SSH2)/include -Iv8-read-only/include -g -o $*.o $*.cpp
 
 SilkJS:	$(V8_LIB) $(DEPENDENCIES) $(OBJ) SilkJS.h Makefile
-	g++ $(CFLAGS) -o silkjs $(OBJ) -Lv8-read-only -lv8 -L$(LIBDIR)/lib/mysql -lmysqlclient -L$(LIBDIR)/lib -lmm -ljpeg -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl
+	g++ $(CFLAGS) -o silkjs $(OBJ) -Lv8-read-only -lv8 -L$(LIBDIR)/lib/mysql -lmysqlclient -L$(LIBDIR)/lib -lmm -ljpeg -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2
 
 clean:
 	rm -rf silkjs *.o $(DEPENDENCIES)
@@ -59,4 +61,8 @@ $(MM):
 $(CURL):
 	tar xzvfp dependencies/curl_7.21.6.orig.tar.gz
 	cd $(CURL) && ./configure --prefix $(LIBDIR) && make && make install
+
+$(SSH2):
+	tar xzvfp dependencies/libssh2_1.2.8.orig.tar.gz
+	cd $(SSH2) && ./configure --prefix $(LIBDIR) && make && make install
 
