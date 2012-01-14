@@ -77,6 +77,7 @@ extern void init_gd_object();
 extern void init_ncurses_object();
 extern void init_logfile_object();
 extern void init_xhrHelper_object();
+extern void init_ssh_object();
 #endif
 
 void init_global_object() {
@@ -99,6 +100,7 @@ void init_global_object() {
 	init_gd_object();
 	init_ncurses_object();
 	init_xhrHelper_object();
+	init_ssh_object();
 #endif
 	globalObject->Set(String::New("log"), FunctionTemplate::New(Log));
 	globalObject->Set(String::New("print"), FunctionTemplate::New(Print));

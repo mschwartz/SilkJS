@@ -14,6 +14,10 @@ bootstrap:
 	cd src && make -f$(MAKEFILE) bootstrap
 	cp src/bootstrap-silkjs .
 
+debug:
+	cd src && make -f$(MAKEFILE) debug
+	cp src/silkjs .
+
 clean:
 	cd src && make -f$(MAKEFILE) clean
 

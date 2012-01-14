@@ -286,17 +286,6 @@ static JSVAL net_sendfile(JSARGS args) {
     return Undefined();
 }
 
-//static JSVAL net_flush(JSARGS args) {
-//    HandleScope scope;
-//	int fd = args[0]->IntegerValue();
-//#ifdef USE_CORK	
-//    int flag = 0;
-//    setsockopt( fd, IPPROTO_TCP, TCP_CORK, (char *)&flag, sizeof(flag) );
-//    flag = 1;
-//    setsockopt( fd, IPPROTO_TCP, TCP_CORK, (char *)&flag, sizeof(flag) );
-//#endif
-//	return Undefined();
-//}
 
 void init_net_object() {
 	HandleScope scope;
@@ -312,7 +301,6 @@ void init_net_object() {
 	net->Set(String::New("write"), FunctionTemplate::New(net_write));
 	net->Set(String::New("writeBuffer"), FunctionTemplate::New(net_writebuffer));
 	net->Set(String::New("sendFile"), FunctionTemplate::New(net_sendfile));
-//	net->Set(String::New("flush"), FunctionTemplate::New(net_flush));
 
 	globalObject->Set(String::New("net"), net);
 }
