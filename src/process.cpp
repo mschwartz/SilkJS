@@ -12,6 +12,12 @@ static JSVAL process_error(JSARGS args) {
 	return scope.Close(String::New(strerror(errno)));
 }
 
+static JSVAL process_kill(JSARGS args) {
+	HandleScope scope;
+	pid_t pid = args[0]->IntegerValue();
+	return scope.Close(Integer::New(kill(pid, SIGKILL)));
+}
+
 static JSVAL process_getpid(JSARGS args) {
 	HandleScope scope;
 	return scope.Close(Integer::New(getpid()));
@@ -97,6 +103,7 @@ void init_process_object() {
 	Handle<ObjectTemplate>process = ObjectTemplate::New();
 	process->Set(String::New("env"), FunctionTemplate::New(process_env));
 	process->Set(String::New("error"), FunctionTemplate::New(process_error));
+	process->Set(String::New("kill"), FunctionTemplate::New(process_kill));
 	process->Set(String::New("getpid"), FunctionTemplate::New(process_getpid));
 	process->Set(String::New("fork"), FunctionTemplate::New(process_fork));
 	process->Set(String::New("exit"), FunctionTemplate::New(process_exit));
