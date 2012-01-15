@@ -4,6 +4,10 @@
  */
 
 include('lib/forEach.js');
+include('lib/require.js');
+
+process = require('builtin/process');
+
 var examples = [
 	'systat.js'
 ];
