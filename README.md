@@ -9,9 +9,16 @@ to be far more useful in numerous console and server-side applications.  The HTT
 entirely in JavaScript!
 
 Some people say SilkJS is a synchronous version of NodeJS.  It was not designed to be such, but it was designed to be a faster alternative to NodeJS for 
-Linux-based server applications.  
+Linux-based server applications.  You might think of it as the command-line version of JavaScript, akin to command-line versions of PHP or Perl.  Like in those languages,
+you can implement alternatives to shell scripts, command-line applications, and even full blown Internet servers.
 
 ## Features
+
+Perhaps the greatest feature of SilkJS is that you write synchronous code; there are no callback function implementations required on your part.  The theory of
+operation is exactly the opposite of NodeJS - that synchronous programming is more natural, and the code actually runs faster if you let the OS do its thing.  There 
+is no "nested callback hell" with SilkJS.  Not only is your code more readable (top-to-bottom, left-to-right), various sample programs we've converted from NodeJS to
+SilkJS are quite a few lines shorter.  On top of this, your synchronous code makes sense in both server and command line applications (why do you need to do async
+I/O in a command-line program?).
 
 * CommonJS require 1.1 implementation
 * XMLHttpRequest implementation for accessing WWW services
@@ -26,6 +33,8 @@ Linux-based server applications.
 * Implementation of NETWORK functions (sockets, etc.).
 * Implementation of SSH2 functions (exec remote commands, etc.).
 * Implementation of functions to manipulate the V8 engine itself.
+* JSP-like JavaScript templates
+* Showdown/Markdown templates
 * and more!
 
 ## License
@@ -38,6 +47,20 @@ http://www.opensource.org/licenses/alphabetical
 
 Pick whichever license you choose, as long as it is OSI approved.
 
+## HTTP Server
+
+The SilkJS HTTP server is fast... REALLY fast.  It's also robust enough to handle 20,000 concurrent requests (as tested with ab).
+
+On a I7-2630QM CPU @ 2.00GHz, SilkJS HTTP outperforms lighthttpd and nodejs (v0.6.5):
+```
+silkjs = 26759 rps
+lighttpd = 17183 rps (v1.4.29)
+nodejs = 2212 (v0.6.5 - single core, simple static server)
+```
+
+The HTTP server requires a tiny bit of code that is not in JavaScript.  The reading of mulit-part MIME POST data containing binary data
+cannot be done in JavaScript because JavaScript does not natively support a binary data type.  Otherwise, the server is written almost entirely
+in JavaScript.  Even the CommonJS require() method is written in JavaScript.  
 
 ## QUICKSTART
 
