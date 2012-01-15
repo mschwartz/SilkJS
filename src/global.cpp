@@ -3,6 +3,7 @@
 using namespace v8;
 
 Persistent<ObjectTemplate> globalObject;
+Persistent<ObjectTemplate> builtinObject;
 extern Persistent<Context> context;
 extern char *readFile(const char *s);
 
@@ -83,6 +84,7 @@ extern void init_ssh_object();
 void init_global_object() {
 	HandleScope scope;
 	globalObject = Persistent<ObjectTemplate>::New(ObjectTemplate::New());
+	builtinObject = Persistent<ObjectTemplate>::New(ObjectTemplate::New());
 	
 	init_buffer_object();
 	init_console_object();
@@ -93,7 +95,7 @@ void init_global_object() {
 	init_v8_object();
 
 #if !BOOTSTRAP_SILKJS
-        init_logfile_object();
+    init_logfile_object();
 	init_sem_object();
 	init_mysql_object();
 	init_sqlite3_object();
@@ -102,6 +104,7 @@ void init_global_object() {
 	init_xhrHelper_object();
 	init_ssh_object();
 #endif
+	globalObject->Set(String::New("builtin"), builtinObject);
 	globalObject->Set(String::New("log"), FunctionTemplate::New(Log));
 	globalObject->Set(String::New("print"), FunctionTemplate::New(Print));
 	globalObject->Set(String::New("println"), FunctionTemplate::New(Println));

@@ -26,6 +26,15 @@ silk.checkIncludes = function() {
     }
 };
 
+include('lib/require.js');
+console = require('builtin/console');
+fs = require('builtin/fs');
+logfile = require('builtin/logfile');
+net = require('builtin/net');
+process = require('builtin/process');
+v8 = require('builtin/v8');
+http = require('builtin/http');
+
 include('lib/string.js');
 include('lib/object.js');
 include('lib/phpjs.js');
@@ -39,13 +48,17 @@ include('lib/Showdown.js');
 include('lib/MySQL.js');
 include('lib/Server.js');
 include('lib/Schema.js');
-
+////
 include('httpd/config.js');
 include('httpd/request.js');
 include('httpd/response.js');
 include('httpd/child.js');
 
 function main() {
+//	println('main');
+//	println(print_r(process));
+//	return;
+	
 	// load any user provided JavaScripts
 	forEach(arguments, function(arg) {
 		if (arg.endsWith('.js')) {

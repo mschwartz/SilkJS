@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
 //		Debug::EnableAgent("silkjs", 9222);
 //		Debug::SetDebugMessageDispatchHandler(debugger, true);
 
-		Handle<Script>init = Script::New(String::New("global=this;"), String::New("builtin"));
+		Handle<Script>init = Script::New(String::New("global=this; module = {};"), String::New("builtin"));
 		init->Run();
 		
 		mainScript = Persistent<Script>::New(Script::Compile(String::New(startup), String::New(argv[1])));

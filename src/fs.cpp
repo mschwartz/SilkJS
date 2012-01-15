@@ -536,5 +536,5 @@ void init_fs_object() {
     fs->Set(String::New("md5"), FunctionTemplate::New(fs_md5));
     fs->Set(String::New("cmp"), FunctionTemplate::New(fs_cmp));
 
-    globalObject->Set(String::New("fs"), fs);
+    builtinObject->Set(String::New("fs"), fs);
 }

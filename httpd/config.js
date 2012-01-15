@@ -1,4 +1,5 @@
 // httpd/config.js
+var fs = require('builtin/fs');
 Config = {
 	port: 9090,
 	numChildren: 250,

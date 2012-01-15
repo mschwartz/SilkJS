@@ -38,5 +38,5 @@ void init_sem_object() {
 	sem->Set(String::New("wait"), FunctionTemplate::New(sem_Wait));
 	sem->Set(String::New("post"), FunctionTemplate::New(sem_Post));
 
-	globalObject->Set(String::New("sem"), sem);
+	builtinObject->Set(String::New("sem"), sem);
 }

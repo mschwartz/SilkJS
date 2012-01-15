@@ -106,5 +106,5 @@ void init_process_object() {
 	process->Set(String::New("exec"), FunctionTemplate::New(process_exec));
 	process->Set(String::New("getuid"), FunctionTemplate::New(process_getuid));
 
-	globalObject->Set(String::New("process"), process);
+	builtinObject->Set(String::New("process"), process);
 }

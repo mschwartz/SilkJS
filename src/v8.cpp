@@ -55,6 +55,6 @@ void init_v8_object() {
 	v8->Set(String::New("runScript"), FunctionTemplate::New(runScript));
 	v8->Set(String::New("freeScript"), FunctionTemplate::New(freeScript));
 
-	globalObject->Set(String::New("v8"), v8);
+	builtinObject->Set(String::New("v8"), v8);
 }
 

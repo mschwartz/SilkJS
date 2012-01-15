@@ -1339,5 +1339,5 @@ void init_gd_object() {
     gd->Set(String::New("imageCompare"), FunctionTemplate::New(gd_imageCompare));
     gd->Set(String::New("imageInterlace"), FunctionTemplate::New(gd_imageInterlace));
 
-    globalObject->Set(String::New("gd"), gd);
+    builtinObject->Set(String::New("gd"), gd);
 }

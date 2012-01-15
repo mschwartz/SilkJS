@@ -99,5 +99,5 @@ void init_logfile_object() {
 	logfile->Set(String::New("init"), FunctionTemplate::New(logfile_init));
 	logfile->Set(String::New("write"), FunctionTemplate::New(logfile_write));
 	logfile->Set(String::New("flush"), FunctionTemplate::New(logfile_flush));
-	globalObject->Set(String::New("logfile"), logfile);
+	builtinObject->Set(String::New("logfile"), logfile);
 }

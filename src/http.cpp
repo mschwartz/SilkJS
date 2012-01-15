@@ -159,5 +159,5 @@ void init_http_object() {
 	http->Set(String::New("readPost"), FunctionTemplate::New(ReadPost));
 	http->Set(String::New("readMime"), FunctionTemplate::New(ReadMime));
 	
-	globalObject->Set(String::New("http"), http);
+	builtinObject->Set(String::New("http"), http);
 }

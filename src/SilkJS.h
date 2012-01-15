@@ -52,6 +52,7 @@ extern string Base64Encode(unsigned char const* bytes_to_encode, unsigned long i
 extern string Base64Decode(const char *encodedString);
 
 extern Persistent<ObjectTemplate> globalObject;
+extern Persistent<ObjectTemplate> builtinObject;
 
 extern void init_global_object();
 

@@ -302,5 +302,5 @@ void init_net_object() {
 	net->Set(String::New("writeBuffer"), FunctionTemplate::New(net_writebuffer));
 	net->Set(String::New("sendFile"), FunctionTemplate::New(net_sendfile));
 
-	globalObject->Set(String::New("net"), net);
+	builtinObject->Set(String::New("net"), net);
 }

@@ -393,5 +393,5 @@ void init_sqlite3_object() {
 	o->Set(String::New("column_text16"), FunctionTemplate::New(sqlite_column_text16));
 	o->Set(String::New("column_value"), FunctionTemplate::New(sqlite_column_value));
 	
-	globalObject->Set(String::New("sqlite3"), o);
+	builtinObject->Set(String::New("sqlite3"), o);
 }

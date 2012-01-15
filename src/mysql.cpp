@@ -871,5 +871,5 @@ void init_mysql_object() {
     o->Set(String::New("store_result"), FunctionTemplate::New(store_result));
     o->Set(String::New("real_connect"), FunctionTemplate::New(real_connect));
     o->Set(String::New("query"), FunctionTemplate::New(query));
-	globalObject->Set(String::New("mysql"), o);
+	builtinObject->Set(String::New("mysql"), o);
 }

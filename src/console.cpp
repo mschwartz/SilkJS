@@ -23,6 +23,6 @@ void init_console_object() {
 	console->Set(String::New("log"), FunctionTemplate::New(log));
 	console->Set(String::New("error"), FunctionTemplate::New(error));
 	
-	globalObject->Set(String::New("console"), console);
+	builtinObject->Set(String::New("console"), console);
 }
 

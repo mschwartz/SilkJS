@@ -65,5 +65,5 @@ void init_xhrHelper_object() {
 
 	JSOBJT o = ObjectTemplate::New();
 	o->Set(String::New("request"), FunctionTemplate::New(request));
-	globalObject->Set(String::New("xhrHelper"), o);
+	builtinObject->Set(String::New("xhrHelper"), o);
 }

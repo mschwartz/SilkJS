@@ -1259,5 +1259,5 @@ void init_ncurses_object() {
 	ncurses->SetAccessor(String::New("newscr"), ncurses_get_newscr, ncurses_set_newscr);
 	ncurses->SetAccessor(String::New("stdscr"), ncurses_get_stdscr, ncurses_set_stdscr);
 	
-	globalObject->Set(String::New("ncurses"), ncurses);
+	builtinObject->Set(String::New("ncurses"), ncurses);
 }

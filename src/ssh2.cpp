@@ -200,5 +200,5 @@ void init_ssh_object() {
 	ssh->Set(String::New("exit_code"), FunctionTemplate::New(ssh2_exit_code));
 	ssh->Set(String::New("response"), FunctionTemplate::New(ssh2_response));
 
-	globalObject->Set(String::New("ssh2"), ssh);
+	builtinObject->Set(String::New("ssh2"), ssh);
 }
