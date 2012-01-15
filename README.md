@@ -54,6 +54,8 @@ The SilkJS HTTP server is fast... REALLY fast.  It's also robust enough to handl
 On a I7-2630QM CPU @ 2.00GHz, SilkJS HTTP outperforms lighthttpd and nodejs (v0.6.5):
 
 ```
+REQUESTS PER SECOND
+
 silkjs = 26759 rps
 lighttpd = 17183 rps (v1.4.29)
 nodejs = 2212 (v0.6.5 - single core, simple static server)
