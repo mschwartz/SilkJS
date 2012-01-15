@@ -52,11 +52,11 @@ Pick whichever license you choose, as long as it is OSI approved.
 The SilkJS HTTP server is fast... REALLY fast.  It's also robust enough to handle 20,000 concurrent requests (as tested with ab).
 
 On a I7-2630QM CPU @ 2.00GHz, SilkJS HTTP outperforms lighthttpd and nodejs (v0.6.5):
-```
+'''
 silkjs = 26759 rps
 lighttpd = 17183 rps (v1.4.29)
 nodejs = 2212 (v0.6.5 - single core, simple static server)
-```
+'''
 
 The HTTP server requires a tiny bit of code that is not in JavaScript.  The reading of mulit-part MIME POST data containing binary data
 cannot be done in JavaScript because JavaScript does not natively support a binary data type.  Otherwise, the server is written almost entirely
