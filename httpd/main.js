@@ -48,11 +48,16 @@ include('lib/Showdown.js');
 include('lib/MySQL.js');
 include('lib/Server.js');
 include('lib/Schema.js');
+include('lib/ssh.js');
 ////
 include('httpd/config.js');
 include('httpd/request.js');
 include('httpd/response.js');
 include('httpd/child.js');
+
+console.dir = function(o) {
+	println(Util.print_r(o));
+}
 
 function main() {
 //	println('main');
