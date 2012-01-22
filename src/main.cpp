@@ -64,26 +64,45 @@ int main(int argc, char** argv) {
 		HandleScope scope;
 		context = Persistent<Context>::New(Context::New(NULL, globalObject));
 		Context::Scope context_scope(context);
-
+        V8::SetCaptureStackTraceForUncaughtExceptions(true);
 //		Debug::EnableAgent("silkjs", 9222);
 //		Debug::SetDebugMessageDispatchHandler(debugger, true);
 
 		Handle<Script>init = Script::New(String::New("global=this; module = {};"), String::New("builtin"));
 		init->Run();
 		
+
 		mainScript = Persistent<Script>::New(Script::Compile(String::New(startup), String::New(argv[1])));
-		mainScript->Run();
+		TryCatch tryCatch;
+		Handle<Value>v = mainScript->Run();
+		if (v.IsEmpty()) {
+		    Handle<Message>message = tryCatch.Message();
+//		    Handle<String>text = message->Get();
+            String::AsciiValue exception(tryCatch.Exception());
+            String::AsciiValue filename(message->GetScriptResourceName());
+		    printf("%s in %s line %d\n", *exception, *filename, message->GetLineNumber());
+		    exit(1);
+		}
 		Handle<String> process_name = String::New("main");
 		Handle<Value> process_val = context->Global()->Get(process_name);
-		Handle<Function> process_fun = Handle<Function>::Cast(process_val);
-		mainFunc = Persistent<Function>::New(process_fun);
-		const int ac = argc-2;
-		Handle<Value>av[ac];
-		for (int i=2; i<argc; i++) {
-			av[i-2] = String::New(argv[i]);
-		}
-//		printf("SILKJS running %s\n", argv[1]);
-		mainFunc->Call(context->Global(), ac, av);
+		if (!process_val.IsEmpty()) {
+            Handle<Function> process_fun = Handle<Function>::Cast(process_val);
+            mainFunc = Persistent<Function>::New(process_fun);
+            const int ac = argc-2;
+            Handle<Value>av[ac];
+            for (int i=2; i<argc; i++) {
+                av[i-2] = String::New(argv[i]);
+            }
+    //		printf("SILKJS running %s\n", argv[1]);
+            v = mainFunc->Call(context->Global(), ac, av);
+            if (v.IsEmpty()) {
+                Handle<Message>message = tryCatch.Message();
+    //		    Handle<String>text = message->Get();
+                String::AsciiValue exception(tryCatch.Exception());
+                String::AsciiValue filename(message->GetScriptResourceName());
+                printf("%s in %s line %d\n", *exception, *filename, message->GetLineNumber());
+            }
+        }
 	}
 }
 
