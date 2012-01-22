@@ -42,7 +42,7 @@ function main() {
 	
 	println('-- copying examples to /usr/local/bin');
 	forEach(examples, function(example) {
-		exec('cp examples'+example+'  /usr/local/bin');
+		exec('cp examples/'+example+'  /usr/local/bin');
 		exec('chmod 755 /usr/local/bin/'+example);
 	});
 	

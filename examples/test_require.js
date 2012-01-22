@@ -3,11 +3,13 @@
  */
 
 include('lib/require.js');
-include('lib/print_r.js');
 var console = require('builtin/console');
-println(print_r(console));
-var foo = require('test_module').foo;
 
 function main() {
-	console.log(foo());
+    var inc = require('increment').increment;
+    var a = 1;
+    console.log(inc(a)); // 2
+
+    var foo = require('test_module').foo;
+    console.log(foo());
 }
