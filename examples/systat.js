@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-
+include('lib/require.js');
 include('lib/forEach.js');
 include('lib/phpjs.js');
 include('lib/print_r.js');
@@ -30,6 +30,10 @@ var imports = [
 	'getch',
 	'ERR'
 ];
+ncurses = require('builtin/ncurses');
+fs = require('builtin/fs');
+process = require('builtin/process');
+
 forEach(imports, function(value) {
 	global[value] = ncurses[value];
 });
