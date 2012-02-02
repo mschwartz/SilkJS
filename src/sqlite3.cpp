@@ -345,10 +345,10 @@ void init_sqlite3_object() {
 #ifdef SQLITE_IOERR_SHMLOCK
 	o->Set(String::New("IOERR_SHMLOCK"), Integer::New(SQLITE_IOERR_SHMLOCK));
 #endif
-#ifdef IOERR_SHMMAP
+#ifdef SQLITE_IOERR_SHMMAP
 	o->Set(String::New("IOERR_SHMMAP"), Integer::New(SQLITE_IOERR_SHMMAP));
 #endif
-#ifdef IOERR_SEEK
+#ifdef SQLITE_IOERR_SEEK
 	o->Set(String::New("IOERR_SEEK"), Integer::New(SQLITE_IOERR_SEEK));
 #endif
 	o->Set(String::New("LOCKED_SHAREDCACHE"), Integer::New(SQLITE_LOCKED_SHAREDCACHE));
@@ -364,7 +364,7 @@ void init_sqlite3_object() {
 #ifdef SQLITE_READONLY_RECOVERY
 	o->Set(String::New("READONLY_RECOVERY"), Integer::New(SQLITE_READONLY_RECOVERY));
 #endif
-#ifdef READONLY_CANTLOCK
+#ifdef SQLITE_READONLY_CANTLOCK
 	o->Set(String::New("READONLY_CANTLOCK"), Integer::New(SQLITE_READONLY_CANTLOCK));
 #endif
 
