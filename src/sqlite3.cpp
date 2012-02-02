@@ -264,7 +264,9 @@ void init_sqlite3_object() {
 	o->Set(String::New("OPEN_CREATE"), Integer::New(SQLITE_OPEN_CREATE));
 	o->Set(String::New("SQLITE_OPEN_DELETEONCLOSE"), Integer::New(SQLITE_OPEN_DELETEONCLOSE));
 	o->Set(String::New("SQLITE_OPEN_EXCLUSIVE"), Integer::New(SQLITE_OPEN_EXCLUSIVE));
+#ifdef SQLITE_OPEN_AUTOPROXY
 	o->Set(String::New("SQLITE_OPEN_AUTOPROXY"), Integer::New(SQLITE_OPEN_AUTOPROXY));
+#endif
 #ifdef SQLITE_OPEN_URI
 	o->Set(String::New("SQLITE_OPEN_URI"), Integer::New(SQLITE_OPEN_URI));
 #endif
@@ -279,8 +281,9 @@ void init_sqlite3_object() {
 	o->Set(String::New("OPEN_FULLMUTEX"), Integer::New(SQLITE_OPEN_FULLMUTEX));
 	o->Set(String::New("OPEN_SHAREDCACHE"), Integer::New(SQLITE_OPEN_SHAREDCACHE));
 	o->Set(String::New("OPEN_PRIVATECACHE"), Integer::New(SQLITE_OPEN_PRIVATECACHE));
+#ifdef SQLITE_OPEN_WAL
 	o->Set(String::New("OPEN_WAL"), Integer::New(SQLITE_OPEN_WAL));
-	
+#endif
 	
 	// Result Codes
 	o->Set(String::New("OK"), Integer::New(SQLITE_OK));
@@ -333,9 +336,15 @@ void init_sqlite3_object() {
 	o->Set(String::New("IOERR_LOCK"), Integer::New(SQLITE_IOERR_LOCK));
 	o->Set(String::New("IOERR_CLOSE"), Integer::New(SQLITE_IOERR_CLOSE));
 	o->Set(String::New("IOERR_DIR_CLOSE"), Integer::New(SQLITE_IOERR_DIR_CLOSE));
+#ifdef SQLITE_IOERR_SHMOPEN
 	o->Set(String::New("IOERR_SHMOPEN"), Integer::New(SQLITE_IOERR_SHMOPEN));
+#endif
+#ifdef SQLITE_IOERR_SHMSIZE
 	o->Set(String::New("IOERR_SHMSIZE"), Integer::New(SQLITE_IOERR_SHMSIZE));
+#endif
+#ifdef SQLITE_IOERR_SHMLOCK
 	o->Set(String::New("IOERR_SHMLOCK"), Integer::New(SQLITE_IOERR_SHMLOCK));
+#endif
 #ifdef IOERR_SHMMAP
 	o->Set(String::New("IOERR_SHMMAP"), Integer::New(SQLITE_IOERR_SHMMAP));
 #endif
@@ -343,8 +352,12 @@ void init_sqlite3_object() {
 	o->Set(String::New("IOERR_SEEK"), Integer::New(SQLITE_IOERR_SEEK));
 #endif
 	o->Set(String::New("LOCKED_SHAREDCACHE"), Integer::New(SQLITE_LOCKED_SHAREDCACHE));
+#ifdef SQLITE_BUSY_RECOVERY
 	o->Set(String::New("BUSY_RECOVERY"), Integer::New(SQLITE_BUSY_RECOVERY));
+#endif
+#ifdef SQLITE_CANTOPEN_NOTEMPDIR
 	o->Set(String::New("CANTOPEN_NOTEMPDIR"), Integer::New(SQLITE_CANTOPEN_NOTEMPDIR));
+#endif
 #ifdef SQLITE_CORRUPT_VTAB
 	o->Set(String::New("CORRUPT_VTAB"), Integer::New(SQLITE_CORRUPT_VTAB));
 #endif
