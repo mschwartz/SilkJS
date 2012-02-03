@@ -63,7 +63,9 @@ public:
 			close(mSock);
 			mSock = -1;
 		}
+#ifdef libssh2_exit
 		libssh2_exit();
+#endif
 	}
 public:
 	bool Alive() {
