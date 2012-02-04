@@ -75,6 +75,7 @@ HttpChild = (function() {
 		jst:  { contentType: 'text/html',       handler: runJst },
 		md:   { contentType: 'text/html',       handler: runMarkdown },
 		ogg:  { contentType: 'audio/ogg',       handler: sendFile },
+		mp3:  { contentType: 'audio/mpeg3',     handler: sendFile },
 		png:  { contentType: 'image/png',       handler: sendFile },
 		ico:  { contentType: 'image/ico',       handler: sendFile },
 		gif:  { contentType: 'image/gif',       handler: sendFile },
