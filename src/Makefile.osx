@@ -29,7 +29,7 @@ SilkJS:	$(V8_LIB) $(DEPENDENCIES) $(OBJ) SilkJS.h Makefile
 	g++ $(CFLAGS) -o silkjs $(OBJ) -Lv8-read-only -lv8 -L$(LIBDIR)/lib/mysql -lmysqlclient -L$(LIBDIR)/lib -lmm -ljpeg -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2
 
 clean:
-	rm -rf silkjs *.o $(DEPENDENCIES)
+	rm -rf silkjs *.o 
 
 realclean:
 	rm -rf silkjs *.o $(DEPENDENCIES) $(LIBDIR)
