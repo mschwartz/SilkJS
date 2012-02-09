@@ -33,6 +33,7 @@ var imports = [
 ncurses = require('builtin/ncurses');
 fs = require('builtin/fs');
 process = require('builtin/process');
+v8 = require('builtin/v8');
 
 forEach(imports, function(value) {
 	global[value] = ncurses[value];
@@ -365,6 +366,7 @@ function main() {
 			PrintVirtualMemory();
 			move(0,cols-1);
 			refresh();
+			v8.gc();
 			process.sleep(sleep);
 		}
 	}

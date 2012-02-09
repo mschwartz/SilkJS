@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
 	init_global_object();
 	{
 		HandleScope scope;
-		context = Persistent<Context>::New(Context::New(NULL, globalObject));
+		context = Context::New(NULL, globalObject);
 		Context::Scope context_scope(context);
         V8::SetCaptureStackTraceForUncaughtExceptions(true);
 //		Debug::EnableAgent("silkjs", 9222);
