@@ -23,7 +23,7 @@ LIBDIR = $(CURDIR)/osx_dependencies
 DEPENDENCIES = $(MYSQL) $(JPEG) $(GD2) $(MM) $(CURL) $(SSH2)
 
 %.o: %.cpp SilkJS.h Makefile
-	g++ $(CFLAGS) -c -I$(MYSQL)/include -I$(SSH2)/include -Iv8-read-only/include -g -o $*.o $*.cpp
+	g++ $(CFLAGS) -c -I$(CURDIR)/osx_dependencies/include -I$(MYSQL)/include -I$(SSH2)/include -Iv8-read-only/include -g -o $*.o $*.cpp
 
 SilkJS:	$(V8_LIB) $(DEPENDENCIES) $(OBJ) SilkJS.h Makefile
 	g++ $(CFLAGS) -o silkjs $(OBJ) -Lv8-read-only -lv8 -L$(LIBDIR)/lib/mysql -lmysqlclient -L$(LIBDIR)/lib -lmm -ljpeg -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2
