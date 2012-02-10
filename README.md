@@ -20,6 +20,14 @@ is no "nested callback hell" with SilkJS.  Not only is your code more readable (
 SilkJS are quite a few lines shorter.  On top of this, your synchronous code makes sense in both server and command line applications (why do you need to do async
 I/O in a command-line program?).
 
+SilkJS runs CoffeeScript pages, Showdown/Markdown pages, and JSP-like JST JavaScript pages.  If you
+have a file in your documentRoot with a .coffee extension, it is loaded, compiled, cached, and run
+upon request.  If the file is changed on disk, it is automatically reloaded, compiled, cached, and 
+run.  The same is true for JST programs, files ending with .jst extension.  Files ending with .md
+extension are loaded and interpreted each time using Showdown (Markdown processor).  If you have
+a file named index.coffee, index.jst, or index.md, that file is run for URIs for that directory that end with /.
+
+
 * CommonJS require 1.1 implementation
 * XMLHttpRequest implementation for accessing WWW services
 * Basic implementation of console as you typically would call in browser code.
