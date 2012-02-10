@@ -7,6 +7,7 @@ Config = {
 	documentRoot: fs.exists('httpd/docroot') ? 'httpd/docroot' : '/usr/share/silkjs/httpd/docroot',
 	directoryIndex: [
 		'index.jst',
+		'index.coffee',
 		'index.md',
 		'index.html'
 	],

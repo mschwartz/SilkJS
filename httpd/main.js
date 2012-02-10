@@ -35,6 +35,7 @@ process = require('builtin/process');
 v8 = require('builtin/v8');
 http = require('builtin/http');
 
+include('lib/coffee-script.js');
 include('lib/string.js');
 include('lib/object.js');
 include('lib/phpjs.js');

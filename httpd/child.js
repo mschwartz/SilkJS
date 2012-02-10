@@ -63,6 +63,28 @@ HttpChild = (function() {
 		res.stop();
 	}
 
+	var coffee_cache = {};
+	function getCachedCoffee(fn) {
+		var coffee = coffee_cache[fn];
+		if (!coffee || fs.stat(fn).mtime < coffee.mtime) {
+			var source = fs.readFile(fn);
+			coffee = {
+				mtime: fs.stat(fn).mtime,
+				compiled: CoffeeScript.compile(source)
+			};
+			coffee_cache[fn] = coffee;
+		}
+		return coffee.compiled;
+	}
+	
+	function runCoffee(fn) {
+		var coffee = getCachedCoffee(fn);
+		var out = eval(coffee);
+//		res.contentLength = out.length;
+//		res.write(out);
+		res.stop();
+	}
+	
 	function runMarkdown(fn) {
 		var content = fs.readFile(fn);
 		var converter = new Showdown.converter();
@@ -72,19 +94,20 @@ HttpChild = (function() {
 	}
 	
 	var contentTypes = {
-		jst:  { contentType: 'text/html',       handler: runJst },
-		md:   { contentType: 'text/html',       handler: runMarkdown },
-		ogg:  { contentType: 'audio/ogg',       handler: sendFile },
-		mp3:  { contentType: 'audio/mpeg3',     handler: sendFile },
-		png:  { contentType: 'image/png',       handler: sendFile },
-		ico:  { contentType: 'image/ico',       handler: sendFile },
-		gif:  { contentType: 'image/gif',       handler: sendFile },
-		jpg:  { contentType: 'image/jpeg',      handler: sendFile },
-		jpeg: { contentType: 'image/jpeg',      handler: sendFile },
-		html: { contentType: 'text/html',       handler: sendFile },
-		js:   { contentType: 'text/javascript', handler: sendFile },
-		css:  { contentType: 'text/css',        handler: sendFile },
-		xml:  { contentType: 'text/xml',        handler: sendFile }
+		coffee:	{ contentType: 'text/html',		  handler: runCoffee },
+		jst:	{ contentType: 'text/html',       handler: runJst },
+		md:		{ contentType: 'text/html',       handler: runMarkdown },
+		ogg:	{ contentType: 'audio/ogg',       handler: sendFile },
+		mp3:	{ contentType: 'audio/mpeg3',     handler: sendFile },
+		png:	{ contentType: 'image/png',       handler: sendFile },
+		ico:	{ contentType: 'image/ico',       handler: sendFile },
+		gif:	{ contentType: 'image/gif',       handler: sendFile },
+		jpg:	{ contentType: 'image/jpeg',      handler: sendFile },
+		jpeg:	{ contentType: 'image/jpeg',      handler: sendFile },
+		html:	{ contentType: 'text/html',       handler: sendFile },
+		js:		{ contentType: 'text/javascript', handler: sendFile },
+		css:	{ contentType: 'text/css',        handler: sendFile },
+		xml:	{ contentType: 'text/xml',        handler: sendFile }
 	};
 
 	function handleRequest() {
