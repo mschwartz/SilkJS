@@ -42,6 +42,7 @@ a file named index.coffee, index.jst, or index.md, that file is run for URIs for
 * Implementation of SSH2 functions (exec remote commands, etc.).
 * Implementation of functions to manipulate the V8 engine itself.
 * JSP-like JavaScript templates
+* Execute CoffeeScript programs server-side to generate HTML
 * Showdown/Markdown templates
 * and more!
 
