@@ -12,6 +12,12 @@ Some people say SilkJS is a synchronous version of NodeJS.  It was not designed 
 Linux-based server applications.  You might think of it as the command-line version of JavaScript, akin to command-line versions of PHP or Perl.  Like in those languages,
 you can implement alternatives to shell scripts, command-line applications, and even full blown Internet servers.
 
+## CoffeeScript
+
+SilkJS HTTPD is a full featured CoffeeScript server.  For more details, see:
+
+https://github.com/mschwartz/SilkJS/wiki/CoffeeScript
+
 ## Features
 
 Perhaps the greatest feature of SilkJS is that you write synchronous code; there are no callback function implementations required on your part.  The theory of
