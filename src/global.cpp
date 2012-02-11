@@ -58,7 +58,7 @@ static Handle<Value> Include(const Arguments& args) {
 		delete [] js_file;
 		ScriptOrigin origin(String::New(*str), Integer::New(0), Integer::New(0));
 		Handle<Script>script = Script::New(source, &origin);
-		return script->Run();
+		script->Run();
 	}
 	return Undefined();
 }

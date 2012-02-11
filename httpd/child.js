@@ -66,20 +66,27 @@ HttpChild = (function() {
 	var coffee_cache = {};
 	function getCachedCoffee(fn) {
 		var coffee = coffee_cache[fn];
-		if (!coffee || fs.stat(fn).mtime < coffee.mtime) {
+		var mtime = fs.stat(fn).mtime;
+		if (!coffee || mtime > coffee.mtime) {
+			if (coffee) {
+				v8.freeScript(coffee.script);
+			}
+			
 			var source = fs.readFile(fn);
+			var compiled = CoffeeScript.compile(source);
+			var script = v8.compileScript(compiled);
 			coffee = {
-				mtime: fs.stat(fn).mtime,
-				compiled: CoffeeScript.compile(source)
+				mtime: mtime,
+				script: script
 			};
 			coffee_cache[fn] = coffee;
 		}
-		return coffee.compiled;
+		return coffee.script;
 	}
 	
 	function runCoffee(fn) {
 		var coffee = getCachedCoffee(fn);
-		var out = eval(coffee);
+		var out = v8.runScript(coffee);
 //		res.contentLength = out.length;
 //		res.write(out);
 		res.stop();

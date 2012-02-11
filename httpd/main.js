@@ -1,6 +1,9 @@
 #!/usr/local/bin/silkjs
 // httpd/main.js
 
+include('lib/include.js');
+include('lib/require.js');
+
 //v8.gc();
 silk = global.silk || {};
 silk.includes = {};
@@ -26,7 +29,6 @@ silk.checkIncludes = function() {
     }
 };
 
-include('lib/require.js');
 console = require('builtin/console');
 fs = require('builtin/fs');
 logfile = require('builtin/logfile');
@@ -67,7 +69,7 @@ function main() {
 	
 	// load any user provided JavaScripts
 	forEach(arguments, function(arg) {
-		if (arg.endsWith('.js')) {
+		if (arg.endsWith('.js') || arg.endsWith('.coffee')) {
 			include(arg);
 		}
 	});
