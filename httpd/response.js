@@ -158,7 +158,30 @@ res = function() {
 				throw new SilkException(e);
 			}
 		},
-		
+
+		sendFile: function (fn) {
+			res.reset();	// so extra stuff sent with res.write() isn't sent'
+			var modified = fs.fileModified(fn);
+			var size = fs.fileSize(fn);
+			res.headers['last-modified'] = new Date(modified*1000).toGMTString();
+			var ifModifiedSince = req.headers['if-modified-since'];
+			if (ifModifiedSince) {
+				ifModifiedSince = Date.parse(ifModifiedSince)/1000;
+				if (modified <= ifModifiedSince) {
+					res.status = 304;
+					res.stop();
+				}
+			}
+			res.contentLength = size;
+			try {
+				res.sendHeaders();
+				net.sendFile(res.sock, fn, 0, size); // (FileSystem.readfile64(fn));
+			}
+			catch (e) {
+			}
+			res.stop();
+		},
+
 		flush: function() {
 			var len = buffer.size(buf);
 			if (len) {
