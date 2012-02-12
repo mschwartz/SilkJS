@@ -279,8 +279,12 @@ void init_sqlite3_object() {
 	o->Set(String::New("SQLITE_OPEN_MASTER_JOURNAL"), Integer::New(SQLITE_OPEN_MASTER_JOURNAL));
 	o->Set(String::New("OPEN_NOMUTEX"), Integer::New(SQLITE_OPEN_NOMUTEX));
 	o->Set(String::New("OPEN_FULLMUTEX"), Integer::New(SQLITE_OPEN_FULLMUTEX));
+#ifdef SQLITE_OPEN_SHAREDCACHE
 	o->Set(String::New("OPEN_SHAREDCACHE"), Integer::New(SQLITE_OPEN_SHAREDCACHE));
+#endif
+#ifdef SQLITE_OPEN_PRIVATECACHE
 	o->Set(String::New("OPEN_PRIVATECACHE"), Integer::New(SQLITE_OPEN_PRIVATECACHE));
+#endif
 #ifdef SQLITE_OPEN_WAL
 	o->Set(String::New("OPEN_WAL"), Integer::New(SQLITE_OPEN_WAL));
 #endif
