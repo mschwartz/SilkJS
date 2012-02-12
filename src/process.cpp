@@ -1,5 +1,7 @@
 #include "SilkJS.h"
-
+#include "v8-read-only/src/v8.h"
+#include "v8-read-only/src/objects.h"
+#include "v8-read-only/src/isolate.h"
 // TODO:
 // getcwd()
 // chdir()
@@ -24,8 +26,14 @@ static JSVAL process_getpid(JSARGS args) {
 }
 
 static JSVAL process_fork(JSARGS args) {
-	HandleScope scope;
+	extern Persistent<Context> context;
+//	Isolate *isolate = Isolate::GetCurrent();
+	context->Exit();
+//	isolate->Exit();
 	pid_t pid = fork();
+//	isolate->Enter();
+	context->Enter();
+	HandleScope scope;
 	return scope.Close(Integer::New(pid));
 }
 

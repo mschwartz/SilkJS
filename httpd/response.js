@@ -50,6 +50,7 @@ res = function() {
 		contentLength: 0,
 		contentType: 'text/html',
 		headers: {},
+		
 		init: function(sock, keepAlive, requestsHandled) {
 			buffer.reset(buf);
 			res.apply({
@@ -75,12 +76,15 @@ res = function() {
 			}
 			return keepAlive;
 		},
+		
 		stop: function() {
 			throw 'RES.STOP';
 		},
+		
 		reset: function() {
 			buffer.reset(buf);
 		},
+		
 		setCookie: function(key, value, expires, path, domain) {
 			var cookie = {
 				value: value
@@ -97,9 +101,11 @@ res = function() {
 			}
 			res.cookies[key] = cookie;
 		},
+		
 		setHeader: function(key, value) {
 			res.headers[key] = value;
 		},
+		
 		sendHeaders: function() {
 			if (!headersSent) {
 				headersSent = true;
@@ -134,6 +140,7 @@ res = function() {
 				
 			}
 		},
+		
 		write: function(s) {
 			try {
 				buffer.write(buf, s, s.length);
@@ -142,6 +149,16 @@ res = function() {
 				throw new SilkException(e);
 			}
 		},
+		
+		write64: function(s) {
+			try {
+				buffer.write64(buf, s, s.length);
+			}
+			catch (e) {
+				throw new SilkException(e);
+			}
+		},
+		
 		flush: function() {
 			var len = buffer.size(buf);
 			if (len) {
@@ -154,6 +171,7 @@ res = function() {
 			}
 			net.cork(res.sock, false);
 		},
+		
 		redirect: function(uri) {
 			res.status = 302;
 			var base = 'http://'+req.host;
@@ -163,6 +181,7 @@ res = function() {
 			res.setHeader('Location', base + uri);
 			res.stop();
 		},
+		
 		close: function() {
 			buffer.destroy(buf);
 		}

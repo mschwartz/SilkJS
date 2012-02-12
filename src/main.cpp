@@ -27,7 +27,7 @@ char *readFile(const char *fn) {
 
 void AnsiSignalHandler(int sig) {
     signal(sig, AnsiSignalHandler);
-    printf("Caught Signal %d for thread: %ld\n", sig, (size_t)getpid());
+    printf("Caught Signal %d for process: %ld\n", sig, (size_t)getpid());
 	exit(11);
 }
 
@@ -38,6 +38,7 @@ Persistent<Script> mainScript;
 Persistent<Function> mainFunc;
 
 void debugger() {
+	HandleScope scope;
 	Locker lock;
 	Debug::ProcessDebugMessages();
 	Unlocker unlocker;
@@ -59,9 +60,13 @@ int main(int argc, char** argv) {
 	if (startup[0] == '#' && startup[1] == '!') {
 		startup[0] = startup[1] = '/';
 	}
-	init_global_object();
 	{
+//		Isolate *isolate = Isolate::New();
+//		isolate->Enter();
+//		Locker lock(isolate);
 		HandleScope scope;
+		
+		init_global_object();
 		context = Context::New(NULL, globalObject);
 		Context::Scope context_scope(context);
         V8::SetCaptureStackTraceForUncaughtExceptions(true);

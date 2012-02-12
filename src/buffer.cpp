@@ -58,6 +58,15 @@ static JSVAL buffer_write(JSARGS args) {
 	return Undefined();
 }
 
+static JSVAL buffer_write64(JSARGS args) {
+	HandleScope scope;
+	Local<External>wrap = Local<External>::Cast(args[0]);
+	Buffer *buf = (Buffer *)wrap->Value();
+    String::Utf8Value data(args[1]);
+	buf->s += Base64Decode(*data);
+	return Undefined();
+}
+
 static JSVAL buffer_read(JSARGS args) {
 	HandleScope scope;
 	Local<External>wrap = Local<External>::Cast(args[0]);
@@ -88,6 +97,7 @@ void init_buffer_object() {
 	buffer->Set(String::New("reset"), FunctionTemplate::New(buffer_reset));
 	buffer->Set(String::New("destroy"), FunctionTemplate::New(buffer_destroy));
 	buffer->Set(String::New("write"), FunctionTemplate::New(buffer_write));
+	buffer->Set(String::New("write64"), FunctionTemplate::New(buffer_write64));
 	buffer->Set(String::New("read"), FunctionTemplate::New(buffer_read));
 	buffer->Set(String::New("size"), FunctionTemplate::New(buffer_size));
 
