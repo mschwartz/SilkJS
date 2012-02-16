@@ -120,7 +120,7 @@ class HttpRequest
         contentLength = headers['content-length']
         if (contentLength)
             contentType = headers['content-type']
-            if contentType?.toLwerCase().indexOf('multipart/form-data') != -1
+            if contentType?.toLowerCase().indexOf('multipart/form-data') != -1
                 boundary = contentType.replace /^.*?boundary=/i, ''
                 post = http.readMime stream, contentLength, boundary
                 mimeParts = post.split '--'+boundary
