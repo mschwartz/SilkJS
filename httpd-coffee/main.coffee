@@ -103,7 +103,7 @@ class HttpRequest
         if uriParts[1]
             for part in uriParts[1].split '&'
                 [key,value] = part.split '&'
-                data[key] = decodeUriComponent value.replace(/\+/g, '')
+                data[key] = decodeUriComponent value.replace(/\+/g, ' ')
 
         @method = first[0]
         @uri = uriParts[0]
