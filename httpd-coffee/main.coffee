@@ -10,6 +10,9 @@ Config = require 'Config'
 String::beginsWith = (str) -> if @match(new RegExp "^#{str}") then true else false
 String::endsWith = (str) -> if @match(new RegExp "#{str}$") then true else false
 
+String::beginsWtih = (str) -> !!@match new RegExp "^#{str}"
+String::endsWith = (str) -> (@substr 0, str.length) is str
+
 ########################################################################################################################
 
 class Logfile
@@ -34,7 +37,7 @@ class Semaphore
     { open, close, exists, flock, LOCK_EX, LOCK_UN, O_RDONLY, O_WRONLY, O_CREAT, O_TRUNC } = require 'builtin/fs'
 
     constructor: (@lockFile) ->
-        if !exists(@lockFile)
+        unless exists(@lockFile)
             @fd = open @lockFile, O_WRONLY|O_CREAT|O_TRUNC, 0644
         else
             @fd = open @lockFile, O_RDONLY
@@ -89,9 +92,8 @@ class HttpRequest
         host = 'localhost'
         port = Config.port
         if headers.host
-            host = headers.host.split ':'
-            port = host[1] || 80
-            host = host[0]
+            [host,oport] = headers.host.split ':'
+            port = oport or 80
         @host = host;
         @port = port
 
@@ -219,7 +221,7 @@ class HttpResponse
         @data = {}
         @headersSent = false
 
-        ka = if req.headers then req.headers.connection else false
+        ka = req.headers?.connection
         if ka && keepAlive
             @headers.Connection = 'Keep-Alive'
             @headers['keep-alive'] = 'timeout: 5; max=' + (Config.requestsPerChild - requestsHandled)
@@ -338,7 +340,7 @@ class HttpChild
     notFound = () ->
         res.reset()
         res.result = 404
-        global.notFound_action() if global.notFound_action
+        global.notFound_action?()
         res.write '<h1>Not Found</h1>'
         res.stop()
 
@@ -497,8 +499,7 @@ class HttpChild
                 try
                     break unless req.init clientSocket
                     keepAlive = res.init clientSocket, keepAlive, requestsHandled
-                    if requestHandler?
-                        requestHandler()
+                    requestHandler?()
                     handleRequest()
                 catch e
                     Error.exceptionHandler e unless e == 'RES.STOP'
