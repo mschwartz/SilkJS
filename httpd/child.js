@@ -5,7 +5,7 @@ HttpChild = (function() {
 
 	function notFound() {
 		res.reset();
-		res.result = 404;
+		res.status = 404;
 		res.write('<h1>Not Found</h1>');
 		res.stop();
 	}
@@ -156,7 +156,6 @@ HttpChild = (function() {
 		if (!stat) {
 			log('error: ' + fs.error());
 		}
-		size = stat.size;
 		res.contentType = 'text/plain';
 		res.sendHeaders();
 		net.sendFile(res.sock, fn, 0, stat.size);
@@ -185,7 +184,6 @@ HttpChild = (function() {
                 silk.checkIncludes();
 				var keepAlive = true;
 				while (keepAlive) {
-					requestsHandled++;
 					if (++requestsHandled > REQUESTS_PER_CHILD) {
 						keepAlive = false;
 					}

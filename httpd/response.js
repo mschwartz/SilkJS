@@ -94,10 +94,10 @@ res = function() {
 				cookie.expires = expires;
 			}
 			if (path) {
-				expires.path = path;
+				cookie.path = path;
 			}
 			if (domain) {
-				expires.domain = domain;
+				cookie.domain = domain;
 			}
 			res.cookies[key] = cookie;
 		},

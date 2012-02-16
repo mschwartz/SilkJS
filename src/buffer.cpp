@@ -101,5 +101,5 @@ void init_buffer_object() {
 	buffer->Set(String::New("read"), FunctionTemplate::New(buffer_read));
 	buffer->Set(String::New("size"), FunctionTemplate::New(buffer_size));
 
-	globalObject->Set(String::New("buffer"), buffer);
+	builtinObject->Set(String::New("buffer"), buffer);
 }

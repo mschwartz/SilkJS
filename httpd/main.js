@@ -36,6 +36,7 @@ net = require('builtin/net');
 process = require('builtin/process');
 v8 = require('builtin/v8');
 http = require('builtin/http');
+buffer = require('builtin/buffer');
 
 include('lib/coffee-script.js');
 include('lib/string.js');
