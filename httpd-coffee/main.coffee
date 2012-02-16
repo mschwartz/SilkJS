@@ -7,8 +7,8 @@ require.path.unshift('./lib/');
 console = require 'builtin/console'
 Config = require 'Config'
 
-String::beginsWith = (str) -> if @match(new RegExp "^#{str}") then true else false
-String::endsWith = (str) -> if @match(new RegExp "#{str}$") then true else false
+#String::beginsWith = (str) -> if @match(new RegExp "^#{str}") then true else false
+#String::endsWith = (str) -> if @match(new RegExp "#{str}$") then true else false
 
 String::beginsWtih = (str) -> !!@match new RegExp "^#{str}"
 String::endsWith = (str) -> (@substr 0, str.length) is str
