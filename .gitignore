@@ -4,3 +4,4 @@ SilkJS
 *gz
 CMakeLists.txt.user
 build/
+/nbproject/private/

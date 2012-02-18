@@ -4,6 +4,7 @@ HttpChild = (function() {
     var requestsHandled;
 
 	function notFound() {
+        global.notFound_action && global.notFound_action();
 		res.reset();
 		res.status = 404;
 		res.write('<h1>Not Found</h1>');
