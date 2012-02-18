@@ -25,10 +25,6 @@ HttpChild = (function() {
 		return jst.parsed;
 	}
 
-	function sendFile(fn) {
-		res.sendFile(fn);
-	}
-
 	function includeJst(fn) {
 		var jst = getCachedJst(Config.documentRoot + fn);
 		return Jst.includeParsed(jst, {
@@ -45,6 +41,10 @@ HttpChild = (function() {
 		res.write(out);
 		res.stop();
 	}
+
+    function sendFile(fn) {
+        res.sendFile(fn);
+    }
 
 	var coffee_cache = {};
 	function getCachedCoffee(fn) {
