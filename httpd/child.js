@@ -26,6 +26,9 @@ HttpChild = (function() {
 	}
 
 	function includeJst(fn) {
+        if (fn[0] !== '/') {
+            fn = '/' + fn;
+        }
 		var jst = getCachedJst(Config.documentRoot + fn);
 		return Jst.includeParsed(jst, {
 			include: includeJst
