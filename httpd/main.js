@@ -1,8 +1,9 @@
 #!/usr/local/bin/silkjs
 // httpd/main.js
 
+include('lib/coffee-script.js');
 include('lib/include.js');
-include('lib/require.js');
+include('./lib/require.js');
 
 //v8.gc();
 silk = global.silk || {};
@@ -38,7 +39,6 @@ v8 = require('builtin/v8');
 http = require('builtin/http');
 buffer = require('builtin/buffer');
 
-include('lib/coffee-script.js');
 include('lib/string.js');
 include('lib/object.js');
 include('lib/phpjs.js');

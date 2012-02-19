@@ -83,8 +83,38 @@ HttpChild = (function() {
 		res.write(html);
 		res.stop();
 	}
-	
+
+	var less_cache = {};
+	function getCachedLess(fn) {
+		var cached = less_cache[fn];
+		var mtime = fs.stat(fn).mtime;
+		if (!cached || mtime > cached.mtime) {
+			var less = require('less-silkjs-1.2.2');
+			var content = fs.readFile(fn);
+			var parser = new (less.Parser);
+			parser.parse(content, function(e, root) {
+				if (e) {
+					console.dir(e);
+				}
+				else {
+					cached = {
+						mtime: mtime,
+						css: root.toCSS()
+					};
+					less_cache[fn] = cached;
+				}
+			});
+		}
+		return cached.css;
+	}
+	function runLess(fn) {
+		var css = getCachedLess(fn);
+		res.write(css);
+		res.stop();
+	}
+
 	var contentTypes = {
+		less:	{ contentType: 'text/css',		  handler: runLess },
 		coffee:	{ contentType: 'text/html',		  handler: runCoffee },
 		jst:	{ contentType: 'text/html',       handler: runJst },
 		md:		{ contentType: 'text/html',       handler: runMarkdown },
