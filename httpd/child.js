@@ -72,9 +72,7 @@ HttpChild = (function() {
 	
 	function runCoffee(fn) {
 		var coffee = getCachedCoffee(fn);
-		var out = v8.runScript(coffee);
-//		res.contentLength = out.length;
-//		res.write(out);
+		v8.runScript(coffee);
 		res.stop();
 	}
 	
