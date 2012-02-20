@@ -1,9 +1,11 @@
 #!/usr/local/bin/silkjs
 // httpd/main.js
 
+include('lib/print_r.js');
 include('lib/coffee-script.js');
 include('lib/include.js');
-include('./lib/require.js');
+include('lib/require.js');
+
 
 //v8.gc();
 silk = global.silk || {};
@@ -30,7 +32,7 @@ silk.checkIncludes = function() {
     }
 };
 
-console = require('builtin/console');
+console = require('console');
 fs = require('builtin/fs');
 logfile = require('builtin/logfile');
 net = require('builtin/net');
@@ -39,10 +41,11 @@ v8 = require('builtin/v8');
 http = require('builtin/http');
 buffer = require('builtin/buffer');
 
+uglify = require('UglifyJS/uglify-js');
+
 include('lib/string.js');
 include('lib/object.js');
 include('lib/phpjs.js');
-include('lib/print_r.js');
 include('lib/forEach.js');
 include('lib/Exceptions.js');
 include('lib/Util.js');
@@ -58,10 +61,6 @@ include('httpd/config.js');
 include('httpd/request.js');
 include('httpd/response.js');
 include('httpd/child.js');
-
-console.dir = function(o) {
-	println(Util.print_r(o));
-}
 
 function main() {
 //	println('main');

@@ -39,7 +39,9 @@ function main() {
 	exec('cp -r httpd /usr/share/silkjs');
 	println('-- copying SilkJS JavaScript library files to /usr/share/silkjs/');
 	exec('cp -r lib /usr/share/silkjs');
-	
+	println('-- copying SilkJS JavaScript module files to /usr/share/silkjs/');
+	exec('cp -r modules /usr/share/silkjs');
+
 	println('-- copying examples to /usr/local/bin');
 	forEach(examples, function(example) {
 		exec('cp examples/'+example+'  /usr/local/bin');
