@@ -40,7 +40,7 @@ buffer = require('builtin/buffer');
 
 include('lib/coffee-script.js');
 include('lib/string.js');
-include('lib/object.js');
+//include('lib/object.js');
 include('lib/phpjs.js');
 include('lib/print_r.js');
 include('lib/forEach.js');
