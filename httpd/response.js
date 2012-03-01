@@ -53,7 +53,7 @@ res = function() {
 		
 		init: function(sock, keepAlive, requestsHandled) {
 			buffer.reset(buf);
-			res.apply({
+			Util.apply(res, {
 				sock: sock,
 				status: 200,
 				contentLength: 0,
