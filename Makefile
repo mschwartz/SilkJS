@@ -7,7 +7,7 @@ else
 endif
 
 all:
-	cd src && make -j 4 -f$(MAKEFILE)
+	cd src && make -f$(MAKEFILE)
 	cp src/silkjs .
 
 bootstrap:
