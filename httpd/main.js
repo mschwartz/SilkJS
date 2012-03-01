@@ -44,7 +44,7 @@ buffer = require('builtin/buffer');
 uglify = require('UglifyJS/uglify-js');
 
 include('lib/string.js');
-//include('lib/object.js');
+include('lib/object.js');
 include('lib/phpjs.js');
 include('lib/forEach.js');
 include('lib/Exceptions.js');
@@ -63,10 +63,6 @@ include('httpd/response.js');
 include('httpd/child.js');
 
 function main() {
-//	println('main');
-//	println(print_r(process));
-//	return;
-	
 	// load any user provided JavaScripts
 	forEach(arguments, function(arg) {
 		if (arg.endsWith('.js') || arg.endsWith('.coffee')) {
