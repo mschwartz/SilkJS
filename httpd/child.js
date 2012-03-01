@@ -4,6 +4,7 @@ HttpChild = (function() {
     var requestsHandled;
 
 	function notFound() {
+        global.notFound_action && global.notFound_action();
 		res.reset();
 		res.status = 404;
 		res.write('<h1>Not Found</h1>');
@@ -24,11 +25,10 @@ HttpChild = (function() {
 		return jst.parsed;
 	}
 
-	function sendFile(fn) {
-		res.sendFile(fn);
-	}
-
 	function includeJst(fn) {
+        if (fn[0] !== '/') {
+            fn = '/' + fn;
+        }
 		var jst = getCachedJst(Config.documentRoot + fn);
 		return Jst.includeParsed(jst, {
 			include: includeJst
@@ -44,6 +44,10 @@ HttpChild = (function() {
 		res.write(out);
 		res.stop();
 	}
+
+    function sendFile(fn) {
+        res.sendFile(fn);
+    }
 
 	var coffee_cache = {};
 	function getCachedCoffee(fn) {
@@ -68,9 +72,7 @@ HttpChild = (function() {
 	
 	function runCoffee(fn) {
 		var coffee = getCachedCoffee(fn);
-		var out = v8.runScript(coffee);
-//		res.contentLength = out.length;
-//		res.write(out);
+		v8.runScript(coffee);
 		res.stop();
 	}
 	
@@ -81,8 +83,38 @@ HttpChild = (function() {
 		res.write(html);
 		res.stop();
 	}
-	
+
+	var less_cache = {};
+	function getCachedLess(fn) {
+		var cached = less_cache[fn];
+		var mtime = fs.stat(fn).mtime;
+		if (!cached || mtime > cached.mtime) {
+			var less = require('less-silkjs-1.2.2');
+			var content = fs.readFile(fn);
+			var parser = new (less.Parser);
+			parser.parse(content, function(e, root) {
+				if (e) {
+					console.dir(e);
+				}
+				else {
+					cached = {
+						mtime: mtime,
+						css: root.toCSS()
+					};
+					less_cache[fn] = cached;
+				}
+			});
+		}
+		return cached.css;
+	}
+	function runLess(fn) {
+		var css = getCachedLess(fn);
+		res.write(css);
+		res.stop();
+	}
+
 	var contentTypes = {
+		less:	{ contentType: 'text/css',		  handler: runLess },
 		coffee:	{ contentType: 'text/html',		  handler: runCoffee },
 		jst:	{ contentType: 'text/html',       handler: runJst },
 		md:		{ contentType: 'text/html',       handler: runMarkdown },

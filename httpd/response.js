@@ -150,6 +150,10 @@ res = function() {
 			}
 		},
 		
+		writeln: function(s) {
+            res.write(s + '\n');
+		},
+
 		write64: function(s) {
 			try {
 				buffer.write64(buf, s, s.length);

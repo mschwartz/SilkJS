@@ -2,7 +2,7 @@ ARCH := $(shell getconf LONG_BIT)
 
 CORE=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o v8.o http.o md5.o 
 
-OBJ=	mysql.o gd.o ncurses.o sem.o logfile.o sqlite3.o curl.o ssh2.o
+OBJ=	mysql.o gd.o ncurses.o sem.o logfile.o sqlite3.o curl.o ssh2.o mongodb.o
 
 V8DIR=	./v8-read-only
 
@@ -16,13 +16,17 @@ V8VERSION := $(V8VERSION_$(ARCH))
 
 V8=	$(V8LIB_DIR)/libv8_base.a $(V8LIB_DIR)/libv8_snapshot.a
 
-CFLAGS = -O6 -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-strict-aliasing -fno-rtti -fno-exceptions -fvisibility=hidden -Wall -W -Wno-unused-parameter -Wnon-virtual-dtor -m$(ARCH) -O3 -fomit-frame-pointer -fdata-sections -ffunction-sections -ansi -fno-strict-aliasing
+INCDIRS=    -I$(V8DIR)/include -I/usr/include/mysql -I/usr/include/mongo
 
-%.o: %.cpp SilkJS.h Makefile
-	g++ $(CFLAGS) -c -I$(V8DIR)/include -I/usr/include/mysql -o $*.o $*.cpp
+LIBDIRS=    -L$(V8LIB_DIR)/ 
+
+CFLAGS = -O6 -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-strict-aliasing -fvisibility=hidden -Wall -W -Wno-ignored-qualifiers -Wno-unused-function -Wno-unused-parameter -Wnon-virtual-dtor -m$(ARCH) -O3 -fomit-frame-pointer -fdata-sections -ffunction-sections -ansi -fno-strict-aliasing
+
+%.o: %.cpp SilkJS.h 
+	g++ $(CFLAGS) -c $(INCDIRS) -o $*.o $*.cpp
 
 silkjs:	$(V8) $(CORE) $(OBJ) SilkJS.h Makefile
-	g++ $(CFLAGS) -o silkjs $(CORE) $(OBJ) -L$(V8LIB_DIR)/ -lv8_base -lv8_snapshot -L/usr/local/lib/mysql -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2
+	g++ $(CFLAGS) -o silkjs $(CORE) $(OBJ) $(LIBDIRS) -lv8_base -lv8_snapshot -lmongoclient -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lboost_system
 
 debug:	    CFLAGS += -g
 debug:	    silkjs
