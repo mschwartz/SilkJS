@@ -68,10 +68,35 @@
 // Modifications are tagged with "GFM"
 // **************************************************
 
+// **************************************************
+// Node.JS port by Isaac Z. Schlueter
+//
+// Modifications are tagged with "isaacs"
+// **************************************************
+
 //
 // Showdown namespace
 //
 var Showdown = {};
+
+//
+// isaacs: export the Showdown object
+//
+if (typeof exports === "object") {
+  Showdown = exports;
+  // isaacs: expose top-level parse() method, like other to-html parsers.
+  Showdown.parse = function (md, gh) {
+    var converter = new Showdown.converter();
+    return converter.makeHtml(md, gh);
+  };
+}
+
+//
+// isaacs: Declare "GitHub" object in here, since Node modules
+// execute in a closure or separate context, rather than right
+// in the global scope.  If in the browser, this does nothing.
+//
+var GitHub;
 
 //
 // converter
@@ -94,8 +119,13 @@ var g_html_blocks;
 // (see _ProcessListItems() for details):
 var g_list_level = 0;
 
+// isaacs - Allow passing in the GitHub object as an argument.
+this.makeHtml = function(text, gh) {
+  if (typeof gh !== "undefined") {
+    if (typeof gh === "string") gh = {nameWithOwner:gh};
+    GitHub = gh;
+  }
 
-this.makeHtml = function(text) {
 //
 // Main function. The order in which other subs are called here is
 // essential. Link and image substitutions need to happen before
@@ -158,8 +188,7 @@ this.makeHtml = function(text) {
   text = text.replace(/https?\:\/\/[^"\s\<\>]*[^.,;'">\:\s\<\>\)\]\!]/g, function(wholeMatch,matchIndex){
     var left = text.slice(0, matchIndex), right = text.slice(matchIndex)
     if (left.match(/<[^>]+$/) && right.match(/^[^>]*>/)) {return wholeMatch}
-    href = wholeMatch.replace(/^http:\/\/github.com\//, "https://github.com/")
-    return "<a href='" + href + "'>" + wholeMatch + "</a>";
+    return "<a href='" + wholeMatch + "'>" + wholeMatch + "</a>";
   });
   text = text.replace(/[a-z0-9_\-+=.]+@[a-z0-9\-]+(\.[a-z0-9-]+)+/ig, function(wholeMatch){return "<a href='mailto:" + wholeMatch + "'>" + wholeMatch + "</a>";});
 
@@ -419,6 +448,7 @@ var _RunBlockGamut = function(text) {
 	text = text.replace(/^[ ]{0,2}([ ]?\_[ ]?){3,}[ \t]*$/gm,key);
 
 	text = _DoLists(text);
+	text = _DoCodeFencing(text);
 	text = _DoCodeBlocks(text);
 	text = _DoBlockQuotes(text);
 
@@ -947,6 +977,28 @@ var _DoCodeBlocks = function(text) {
 	// attacklab: strip sentinel
 	text = text.replace(/~0/,"");
 
+	return text;
+}
+
+//
+// Code Fencing is a GitHub flavored MD concept. Basically you can wrap
+// your code like this:
+// 
+// ```{language}
+// {code}
+// ```
+// 
+// Where {language} is the language of the code (useful for coloring code)
+// and {code} is your code
+// 
+var _DoCodeFencing = function(text) {
+	text = text.replace(/`{3}(?:(.*$)\n)?([\s\S]*?)`{3}/gm,
+		function(wholeMatch,m1,m2){
+			//HTML for this is copied from GitHub directly for compatibility, except the lang="" attribute
+			var codeblock = '<div class="highlight"><pre lang="'+m1+'">'+m2+'</pre></div>';
+			return codeblock;
+		}
+	)
 	return text;
 }
 
