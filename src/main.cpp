@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
 //		Debug::EnableAgent("silkjs", 9222);
 //		Debug::SetDebugMessageDispatchHandler(debugger, true);
 
-		Handle<Script>init = Script::New(String::New("global=this; module = {};"), String::New("builtin"));
+		Handle<Script>init = Script::New(String::New("global=this;"), String::New("builtin"));
 		init->Run();
 		
 

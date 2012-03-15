@@ -1,6 +1,7 @@
 #!/usr/local/bin/silkjs
 // httpd/main.js
 
+log(module);
 include('lib/print_r.js');
 include('lib/coffee-script.js');
 include('lib/include.js');

@@ -1,3 +1,10 @@
+/**
+ * SilkJS builtin fs object
+ * 
+ * Usage:
+ * require('builtin/fs');
+ * 
+ */
 #include "SilkJS.h"
 
 
@@ -267,11 +274,6 @@ static JSVAL fs_readfile64(JSARGS args) {
     return scope.Close(s);
 }
 
-/**
- * writeFile(path, data, size [,mode=0644])
- * @param args
- * @return 
- */
 static JSVAL fs_writefile(JSARGS args) {
     HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
@@ -298,11 +300,6 @@ static JSVAL fs_writefile(JSARGS args) {
     return scope.Close(True());
 }
 
-/**
- * writeFile(path, data, size [,mode=0644])
- * @param args
- * @return 
- */
 static JSVAL fs_writefile64(JSARGS args) {
     HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
