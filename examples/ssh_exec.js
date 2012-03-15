@@ -3,7 +3,6 @@
 /* 
  * Sample program to test ssh exec
  */
-include('lib/require.js');
 include('lib/ssh.js');
 
 function main(hostname, username, password) {

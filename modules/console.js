@@ -1,6 +1,6 @@
 (function() {
 	console = builtin.console;
-	print_r = require('print_r');
+	print_r = require('builtin/print_r');
 	exports = {
 		log: console.log,
 		dir: function(o) {

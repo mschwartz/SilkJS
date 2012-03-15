@@ -2,7 +2,7 @@ Error.stackTraceLimit = 50;
 
 Error.prepareStackTrace = function(error, structuredStackTrace) {
 	var stack = [];
-	forEach(structuredStackTrace, function(item) {
+	forstructuredStackTrace.each(function(item) {
 		stack.push({
 			scriptName: item.getScriptNameOrSourceURL(),
 			typeName: item.getTypeName(),
@@ -92,7 +92,7 @@ Error.exceptionHandler = function(e) {
 	if (ex.stack) {
 //		ex.stack.pop();
 		var stack = '';
-		forEach(ex.stack, function(item) {
+		ex.stack.each(function(item) {
 			if (res) {
 				stack += '<li>';
 			}

@@ -153,7 +153,7 @@ HttpChild = (function() {
 				res.redirect(req.uri + '/');
 			}
 			var found = '';
-			forEach(Config.directoryIndex, function(index) {
+			Config.directoryIndex.each(function(index) {
 				var f = fn;
 				f += '/';
 				f += index;

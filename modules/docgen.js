@@ -7,11 +7,6 @@
  * Generate documentation from jsdoc-like comments in JS and C++ files.
  */
 
-if (!this.require) {
-	include('lib/require.js');
-	require('each');
-}
-
 fs = require('builtin/fs');
 console = require('console');
 markdown = require('github-flavored-markdown').parse;
@@ -107,7 +102,6 @@ if (require.main == module) {
     exports = processFile;
 }
 else {
-		log('main');
     function main() {
         arguments.each(function(filename) {
             if (fs.isDir(filename)) {

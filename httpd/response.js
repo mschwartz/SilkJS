@@ -112,10 +112,10 @@ res = function() {
 				var out = '';
 				out += req.proto + ' ' + res.status + ' ' +  responseCodeText[res.status] + '\r\n';
 				out += 'Date: ' + new Date().toGMTString() + '\r\n';
-				forEach(res.headers, function(value, key) {
+				res.headers.each(function(value, key) {
 					out += key +': ' + value + '\r\n';
 				});
-				forEach(res.cookies, function(cookie, key) {
+				res.cookies.each(function(cookie, key) {
 					out += 'Set-Cookie: ' + key + '=' +encodeURIComponent(cookie.value);
 					if (cookie.expires) {
 						out += '; Expires='+cookie.expires;

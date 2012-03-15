@@ -40,7 +40,7 @@ req = (function() {
 			var lines = raw.split('\n');
 			var first = lines.shift().split(/\s+/);
 			var headers = {};
-			forEach(lines, function(line) {
+			lines.each(function(line) {
 				var colon = line.indexOf(':');
 				var key = line.substr(0, colon);
 				var value = line.substr(colon+1).replace(/^\s+/, '');
@@ -59,7 +59,7 @@ req = (function() {
 			var uriParts = first[1].split('?');
 			var data = {};
 			if (uriParts[1]) {
-				forEach(uriParts[1].split('&'), function(part) {
+				uriParts[1].split('&').each(function(part) {
 					part = part.split('=');
 					data[part[0]] = decodeURIComponent(part[1].replace(/\+/g, ' '));
 				});
@@ -71,7 +71,7 @@ req = (function() {
 			
 			// process cookies
 			if (headers['cookie']) {
-				forEach(headers['cookie'].split(/;\s*/), function(cookie) {
+				headers['cookie'].split(/;\s*/).each(function(cookie) {
 					var cookieParts = cookie.split('=');
 					data[cookieParts[0]] = decodeURIComponent(cookieParts[1].replace(/\+/g, ' '));
 				});
@@ -89,7 +89,7 @@ req = (function() {
 					mimeParts = post.split('--'+boundary);
 					mimeParts.shift();
 					mimeParts.pop();
-					forEach(mimeParts, function(part) {
+					mimeParts.each(function(part) {
 						var lines = part.split('\r\n');
 						var disposition = lines[1].split(/;\s*/);
 						var name = disposition[1].replace(/name="(.*)"/, '$1');
@@ -111,7 +111,7 @@ req = (function() {
 				else {
 					post = http.readPost(stream, contentLength);
 					if (headers['content-type'].match(/^application\/x-www-form-urlencoded/i)) {
-						forEach(post.split('&'), function(part) {
+						post.split('&').each(function(part) {
 							part = part.split('=');
 							data[part[0]] = decodeURIComponent(part[1].replace(/\+/gm, ' '));
 						});

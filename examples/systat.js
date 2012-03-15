@@ -4,10 +4,7 @@
  * and open the template in the editor.
  */
 
-include('lib/require.js');
-include('lib/forEach.js');
 include('lib/phpjs.js');
-include('lib/print_r.js');
 
 var imports = [ 
 	'move', 
@@ -35,7 +32,7 @@ fs = require('builtin/fs');
 process = require('builtin/process');
 v8 = require('builtin/v8');
 
-forEach(imports, function(value) {
+imports.each(function(value) {
 	global[value] = ncurses[value];
 });
 
@@ -69,7 +66,7 @@ function PrintLn(row, col, prompt, value) {
 function GetStat() {
 	var ret = {};
 	var lines = fs.readFile('/proc/stat').split('\n');
-	forEach(lines, function(line) {
+	lines.each(function(line) {
 		var vals = line.split(/\s+/);
 		var key = vals.shift();
 		ret[key] = vals.join(' ');
@@ -82,7 +79,7 @@ function InitState() {
 	current = {};
 	initial = {};
 	stat = GetStat();
-	forEach(stat, function(value, key) {
+	stat.each(function(value, key) {
 		current[key] = value.split(/\s+/).join(':::');
 		initial[key] = value.split(/\s+/).join(':::');
 	});
@@ -132,7 +129,7 @@ function PrintCPU() {
 	move(row++, 0);
 	printw("              user    sys   nice   idle    user   sys  nice   idle ");
 	attroff(A_BOLD); attroff(A_STANDOUT);
-	forEach(stat, function(value, key) {
+	stat.each(function(value, key) {
 		if (key.indexOf('cpu') == 0) {
 			var prompt = key.toUpperCase();
 			var parts = stat[key].split(/\s+/);
@@ -198,7 +195,7 @@ function PrintMemory() {
 	}
 	var memInfo = {};
 	var lines = fs.readFile('/proc/meminfo').split('\n');
-	forEach(lines, function(line) {
+	lines.each(function(line) {
 		line = line.replace(/\s+/g, '');
 		var parts = line.split(':');
 		memInfo[parts[0]] = parseInt(parts[1], 10);
@@ -235,7 +232,7 @@ function PrintDisk() {
 	attroff(A_BOLD); attroff(A_STANDOUT);
 	
 	var lines = fs.readFile('/proc/diskstats').split('\n');
-	forEach(lines, function(line) {
+	lines.each(function(line) {
 		line = line.replace(/^\s+/g, '');
 		var arr = line.split(/\s+/);
 		var drive = arr[2];
@@ -276,7 +273,7 @@ function PrintVirtualMemory() {
 
 	var lines = fs.readFile('/proc/vmstat').split('\n');
 	var vmstat = {};
-	forEach(lines, function(line) {
+	lines.each(function(line) {
 		var parts = line.split(/\s+/);
 		vmstat[parts[0]] = parseInt(parts[1], 10);
 	});

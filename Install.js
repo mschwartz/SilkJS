@@ -3,9 +3,6 @@
  * and open the template in the editor.
  */
 
-include('lib/forEach.js');
-include('lib/require.js');
-
 process = require('builtin/process');
 
 var examples = [
@@ -37,13 +34,15 @@ function main() {
 	exec('cp -r examples /usr/share/silkjs');
 	println('-- copying httpd to /usr/share/silkjs/');
 	exec('cp -r httpd /usr/share/silkjs');
+	println('-- copying SilkJS CORE JavaScript library files to /usr/share/silkjs/');
+	exec('cp -r builtin /usr/share/silkjs');
 	println('-- copying SilkJS JavaScript library files to /usr/share/silkjs/');
 	exec('cp -r lib /usr/share/silkjs');
 	println('-- copying SilkJS JavaScript module files to /usr/share/silkjs/');
 	exec('cp -r modules /usr/share/silkjs');
 
 	println('-- copying examples to /usr/local/bin');
-	forEach(examples, function(example) {
+	examples.each(function(example) {
 		exec('cp examples/'+example+'  /usr/local/bin');
 		exec('chmod 755 /usr/local/bin/'+example);
 	});

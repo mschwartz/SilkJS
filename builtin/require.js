@@ -15,11 +15,11 @@
 	function locateFile(module) {
 		function tryFile(path) {
 			var tryPath = fs.realpath(path);
-			if (fs.isFile(tryPath)) {
+            if (tryPath  && fs.isFile(tryPath)) {
 				return tryPath;
 			}
 			tryPath = fs.realpath(require.fsPath + path);
-			if (fs.isFile(tryPath)) {
+			if (tryPath && fs.isFile(tryPath)) {
 				return tryPath;
 			}
 			return false;
