@@ -36,10 +36,14 @@ app = {
 };
 
 function main() {
+    var debugMode = false;
     // load any user provided JavaScripts
     arguments.each(function(arg) {
         if (arg.endsWith('.js') || arg.endsWith('.coffee')) {
             include(arg);
+        }
+        else if (arg === '-d') {
+            debugMode = true;
         }
     });
     var pid;
@@ -48,6 +52,13 @@ function main() {
     var serverSocket = net.listen(Config.port);
 
     logfile.init();
+    
+    if (debugMode) {
+        log('Running in debug mode');
+        HttpChild.run(serverSocket, process.getpid());
+        exit(0);
+    }
+    
     pid = process.fork();
     if (pid == 0) {
         while (1) {

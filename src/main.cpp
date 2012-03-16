@@ -37,10 +37,8 @@ Persistent<Script> mainScript;
 Persistent<Function> mainFunc;
 
 void debugger() {
-    HandleScope scope;
-    Locker lock;
+    Context::Scope scope(context);
     Debug::ProcessDebugMessages();
-    Unlocker unlocker;
 }
 
 // Extracts a C string from a V8 Utf8Value.
@@ -114,12 +112,12 @@ int main(int argc, char** argv) {
         context = Context::New(NULL, globalObject);
         Context::Scope context_scope(context);
         V8::SetCaptureStackTraceForUncaughtExceptions(true, 50, StackTrace::kDetailed);
-        //		Debug::EnableAgent("silkjs", 9222);
-        //		Debug::SetDebugMessageDispatchHandler(debugger, true);
+        Locker locker;
+		Debug::SetDebugMessageDispatchHandler(debugger, true);
+		Debug::EnableAgent("silkjs", 5858);
 
         Handle<Script>init = Script::New(String::New("global=this; include('builtin/all.js');"), String::New("builtin"));
         init->Run();
-
 
         mainScript = Persistent<Script>::New(Script::Compile(String::New(startup), String::New(argv[1])));
         V8::SetCaptureStackTraceForUncaughtExceptions(true, 50, StackTrace::kDetailed);
@@ -127,17 +125,6 @@ int main(int argc, char** argv) {
         Handle<Value>v = mainScript->Run();
         if (v.IsEmpty()) {
             ReportException(&tryCatch);
-//            Handle<Message>message = tryCatch.Message();
-//            //		    Handle<String>text = message->Get();
-//            String::AsciiValue exception(tryCatch.Exception());
-//            String::AsciiValue filename(message->GetScriptResourceName());
-//            printf("%s in %s line %d\n", *exception, *filename, message->GetLineNumber());
-//            
-//            String::Utf8Value stack_trace(tryCatch->StackTrace());
-//            if (stack_trace.length() > 0) {
-//                const char* stack_trace_string = ToCString(stack_trace);
-//                printf("%s\n", stack_trace_string);
-//            }            
             exit(1);
         }
         Handle<String> process_name = String::New("main");
@@ -150,15 +137,10 @@ int main(int argc, char** argv) {
             for (int i = 2; i < argc; i++) {
                 av[i - 2] = String::New(argv[i]);
             }
-            //		printf("SILKJS running %s\n", argv[1]);
             v = mainFunc->Call(context->Global(), ac, av);
             if (v.IsEmpty()) {
                 ReportException(&tryCatch);
-//                Handle<Message>message = tryCatch.Message();
-//                //		    Handle<String>text = message->Get();
-//                String::AsciiValue exception(tryCatch.Exception());
-//                String::AsciiValue filename(message->GetScriptResourceName());
-//                printf("%s in %s line %d\n", *exception, *filename, message->GetLineNumber());
+                exit(1);
             }
         }
     }

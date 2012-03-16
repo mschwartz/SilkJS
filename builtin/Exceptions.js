@@ -2,7 +2,7 @@ Error.stackTraceLimit = 50;
 
 Error.prepareStackTrace = function(error, structuredStackTrace) {
 	var stack = [];
-	forstructuredStackTrace.each(function(item) {
+	structuredStackTrace.each(function(item) {
 		stack.push({
 			scriptName: item.getScriptNameOrSourceURL(),
 			typeName: item.getTypeName(),

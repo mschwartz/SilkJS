@@ -213,7 +213,6 @@ HttpChild = (function() {
                 lock(lockfd);
 				var sock = net.accept(serverSocket);
                 unlock(lockfd);
-                silk.checkIncludes();
 				var keepAlive = true;
 				while (keepAlive) {
 					if (++requestsHandled > REQUESTS_PER_CHILD) {
