@@ -1,5 +1,7 @@
 #include "SilkJS.h"
 
+////////////////  IN PROGRESS - NOT READY FOR USE /////////////////////////
+
 #include <mongo/client/dbclient.h>
 #include <mongo/bson/bson.h>
 #include <mongo/scripting/v8_wrapper.h>
@@ -12,6 +14,7 @@
 
 using namespace std;
 using namespace mongo;
+
 
 static BSONObj v8ToMongo( v8::Handle<v8::Object> o , int depth );
 

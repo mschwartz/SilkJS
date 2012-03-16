@@ -200,7 +200,10 @@ HttpChild = (function() {
 
 	return {
 		requestHandler: null,
+		onStart: null,
 		run: function(serverSocket, pid) {
+			HttpChild.onStart && HttpChild.onStart();
+			// onStart is a better way for apps to initialize SQL
 			if (Config.mysql) {
 				SQL = new MySQL();
 				SQL.connect();

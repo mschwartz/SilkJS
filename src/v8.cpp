@@ -1,4 +1,5 @@
 #include "SilkJS.h"
+#include <v8-debug.h>
 
 struct ScriptWrapper {
 	Persistent<Script> script;
@@ -46,6 +47,21 @@ static JSVAL freeScript(JSARGS args) {
 	return Undefined();
 }
 
+static void debugger() {
+	extern Persistent<Context> context;
+    Context::Scope scope(context);
+    Debug::ProcessDebugMessages();
+}
+
+
+static JSVAL enableDebugger(JSARGS args) {
+	HandleScope scope;
+	Debug::SetDebugMessageDispatchHandler(debugger, true);
+	Debug::EnableAgent("silkjs", 5858);
+	return Undefined();
+}
+
+
 void init_v8_object() {
 	HandleScope scope;
 
@@ -54,6 +70,7 @@ void init_v8_object() {
 	v8->Set(String::New("compileScript"), FunctionTemplate::New(compileScript));
 	v8->Set(String::New("runScript"), FunctionTemplate::New(runScript));
 	v8->Set(String::New("freeScript"), FunctionTemplate::New(freeScript));
+	v8->Set(String::New("enableDebugger"), FunctionTemplate::New(enableDebugger));
 
 	builtinObject->Set(String::New("v8"), v8);
 }

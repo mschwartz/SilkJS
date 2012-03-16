@@ -8,7 +8,6 @@
 	var mysql = require('builtin/mysql');
 	
 	exports.MySQL = MySQL = function() {
-        log('MySQL Constructor')
 		this.queryCount = 0;
 		this.connected = false;
 	};

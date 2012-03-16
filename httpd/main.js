@@ -55,6 +55,7 @@ function main() {
     
     if (debugMode) {
         log('Running in debug mode');
+		v8.enableDebugger();
         HttpChild.run(serverSocket, process.getpid());
         exit(0);
     }

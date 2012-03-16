@@ -106,43 +106,47 @@ int main(int argc, char** argv) {
         //		Isolate *isolate = Isolate::New();
         //		isolate->Enter();
         //		Locker lock(isolate);
+		Locker locker;
         HandleScope scope;
 
         init_global_object();
+        V8::SetCaptureStackTraceForUncaughtExceptions(true, 50, StackTrace::kDetailed);
         context = Context::New(NULL, globalObject);
         Context::Scope context_scope(context);
-        V8::SetCaptureStackTraceForUncaughtExceptions(true, 50, StackTrace::kDetailed);
-        Locker locker;
-		Debug::SetDebugMessageDispatchHandler(debugger, true);
-		Debug::EnableAgent("silkjs", 5858);
+		{
+			Locker locker;
+//			Debug::SetDebugMessageDispatchHandler(debugger, true);
+//			Debug::EnableAgent("silkjs", 5858);
 
-        Handle<Script>init = Script::New(String::New("global=this; include('builtin/all.js');"), String::New("builtin"));
-        init->Run();
+			Handle<Script>init = Script::New(String::New("global=this; include('builtin/all.js');"), String::New("builtin"));
+			init->Run();
 
-        mainScript = Persistent<Script>::New(Script::Compile(String::New(startup), String::New(argv[1])));
-        V8::SetCaptureStackTraceForUncaughtExceptions(true, 50, StackTrace::kDetailed);
-        TryCatch tryCatch;
-        Handle<Value>v = mainScript->Run();
-        if (v.IsEmpty()) {
-            ReportException(&tryCatch);
-            exit(1);
-        }
-        Handle<String> process_name = String::New("main");
-        Handle<Value> process_val = context->Global()->Get(process_name);
-        if (!process_val.IsEmpty()) {
-            Handle<Function> process_fun = Handle<Function>::Cast(process_val);
-            mainFunc = Persistent<Function>::New(process_fun);
-            const int ac = argc - 2;
-            Handle<Value>av[ac];
-            for (int i = 2; i < argc; i++) {
-                av[i - 2] = String::New(argv[i]);
-            }
-            v = mainFunc->Call(context->Global(), ac, av);
-            if (v.IsEmpty()) {
-                ReportException(&tryCatch);
-                exit(1);
-            }
-        }
+			mainScript = Persistent<Script>::New(Script::Compile(String::New(startup), String::New(argv[1])));
+			V8::SetCaptureStackTraceForUncaughtExceptions(true, 50, StackTrace::kDetailed);
+			TryCatch tryCatch;
+			Handle<Value>v = mainScript->Run();
+			if (v.IsEmpty()) {
+				ReportException(&tryCatch);
+				exit(1);
+			}
+			Handle<String> process_name = String::New("main");
+			Handle<Value> process_val = context->Global()->Get(process_name);
+			if (!process_val.IsEmpty()) {
+				Handle<Function> process_fun = Handle<Function>::Cast(process_val);
+				mainFunc = Persistent<Function>::New(process_fun);
+				const int ac = argc - 2;
+				Handle<Value>av[ac];
+				for (int i = 2; i < argc; i++) {
+					av[i - 2] = String::New(argv[i]);
+				}
+				v = mainFunc->Call(context->Global(), ac, av);
+				if (v.IsEmpty()) {
+					ReportException(&tryCatch);
+					exit(1);
+				}
+			}
+		}
+		context.Dispose();
     }
 }
 
