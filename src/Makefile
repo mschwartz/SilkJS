@@ -25,7 +25,7 @@ CFLAGS = -g -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-section
 %.o: %.cpp SilkJS.h 
 	g++ $(CFLAGS) -c $(INCDIRS) -o $*.o $*.cpp
 
-silkjs:	mongodb $(V8) $(CORE) $(OBJ) SilkJS.h Makefile
+silkjs:	mongodb $(V8DIR) $(V8) $(CORE) $(OBJ) SilkJS.h Makefile
 	g++ $(CFLAGS) -o silkjs $(CORE) $(OBJ) $(LIBDIRS) -lv8_base -lv8_snapshot -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 
 
 mongodb:
@@ -39,8 +39,12 @@ bootstrap:  CFLAGS += -DBOOTSTRAP_SILKJS
 bootstrap:  $(V8) $(CORE) SilkJS.h Makefile
 	g++ $(CFLAGS) -o bootstrap-silkjs $(CORE) -L$(V8LIB_DIR)/ -lv8_base -lv8_snapshot -lpthread
 	
+$(V8DIR):
+	echo "svn checkout"
+	svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8-read-only
+
 $(V8):
-	cd $(V8DIR) && make dependencies && GYP_GENERATORS=make make $(V8VERSION)
+	cd $(V8DIR) && svn update && make dependencies && GYP_GENERATORS=make make -j 4 $(V8VERSION)
 
 update:
 	cd $(V8DIR) && svn update && make dependencies && GYP_GENERATORS=make make $(V8VERSION)
@@ -50,7 +54,7 @@ clean:
 	rm -rf silkjs *.o
 
 realclean:
-	rm -rf silkjs *.o
+	rm -rf silkjs *.o v8-read-only
 
 release: silkjs
 	tar czvfp ~/SilkJS.tgz silkjs examples httpd lib
