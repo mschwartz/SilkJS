@@ -2,7 +2,6 @@
  * program to test require
  */
 
-include('lib/require.js');
 var console = require('builtin/console');
 
 function main() {

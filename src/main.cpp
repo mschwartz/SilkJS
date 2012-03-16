@@ -10,25 +10,24 @@
 //#define DEBUGME
 //#define NOFORK
 
-
 char *readFile(const char *fn) {
-	int fd = open(fn, O_RDONLY);
-	if (fd < 0) {
-		return NULL;
-	}
-	long size = lseek(fd, 0, 2);
-	lseek(fd, 0, 0);
-	char *file = new char[size+1];
-	size = read(fd, file, size);
-	file[size] = '\0';
-	close(fd);
-	return file;
+    int fd = open(fn, O_RDONLY);
+    if (fd < 0) {
+        return NULL;
+    }
+    long size = lseek(fd, 0, 2);
+    lseek(fd, 0, 0);
+    char *file = new char[size + 1];
+    size = read(fd, file, size);
+    file[size] = '\0';
+    close(fd);
+    return file;
 }
 
 void AnsiSignalHandler(int sig) {
     signal(sig, AnsiSignalHandler);
-    printf("Caught Signal %d for process: %ld\n", sig, (size_t)getpid());
-	exit(11);
+    printf("Caught Signal %d for process: %ld\n", sig, (size_t) getpid());
+    exit(11);
 }
 
 //int serverSocket;
@@ -38,76 +37,112 @@ Persistent<Script> mainScript;
 Persistent<Function> mainFunc;
 
 void debugger() {
-	HandleScope scope;
-	Locker lock;
-	Debug::ProcessDebugMessages();
-	Unlocker unlocker;
+    Context::Scope scope(context);
+    Debug::ProcessDebugMessages();
+}
+
+// Extracts a C string from a V8 Utf8Value.
+const char* ToCString(const v8::String::Utf8Value& value) {
+  return *value ? *value : "<string conversion failed>";
+}
+
+void ReportException(v8::TryCatch* try_catch) {
+  v8::HandleScope handle_scope;
+  v8::String::Utf8Value exception(try_catch->Exception());
+  const char* exception_string = ToCString(exception);
+  v8::Handle<v8::Message> message = try_catch->Message();
+  if (message.IsEmpty()) {
+    // V8 didn't provide any extra information about this error; just
+    // print the exception.
+    printf("%s\n", exception_string);
+  } else {
+    // Print (filename):(line number): (message).
+    v8::String::Utf8Value filename(message->GetScriptResourceName());
+    const char* filename_string = ToCString(filename);
+    int linenum = message->GetLineNumber();
+    printf("%s:%i: %s\n", filename_string, linenum, exception_string);
+    // Print line of source code.
+    v8::String::Utf8Value sourceline(message->GetSourceLine());
+    const char* sourceline_string = ToCString(sourceline);
+    printf("%s\n", sourceline_string);
+    // Print wavy underline (GetUnderline is deprecated).
+    int start = message->GetStartColumn();
+    for (int i = 0; i < start; i++) {
+      printf(" ");
+    }
+    int end = message->GetEndColumn();
+    for (int i = start; i < end; i++) {
+      printf("^");
+    }
+    printf("\n");
+    v8::String::Utf8Value stack_trace(try_catch->StackTrace());
+    if (stack_trace.length() > 0) {
+      const char* stack_trace_string = ToCString(stack_trace);
+      printf("%s\n", stack_trace_string);
+    }
+    else {
+        printf("no stack trace available\n");
+    }
+  }
 }
 
 int main(int argc, char** argv) {
-	signal(SIGSEGV, AnsiSignalHandler);
-//    printf("SILK V0.1\n");
+    signal(SIGSEGV, AnsiSignalHandler);
+    //    printf("SILK V0.1\n");
     if (argc < 2) {
-		printf("usage: %s file.js\n", argv[0]);
-		exit(1);
+        printf("usage: %s file.js\n", argv[0]);
+        exit(1);
     }
-	
-	char *startup = readFile(argv[1]);
-	if (!startup) {
-		printf("%s not found\n", argv[1]);
-		exit(1);
-	}
-	if (startup[0] == '#' && startup[1] == '!') {
-		startup[0] = startup[1] = '/';
-	}
-	{
-//		Isolate *isolate = Isolate::New();
-//		isolate->Enter();
-//		Locker lock(isolate);
-		HandleScope scope;
-		
-		init_global_object();
-		context = Context::New(NULL, globalObject);
-		Context::Scope context_scope(context);
-        V8::SetCaptureStackTraceForUncaughtExceptions(true);
-//		Debug::EnableAgent("silkjs", 9222);
-//		Debug::SetDebugMessageDispatchHandler(debugger, true);
 
-		Handle<Script>init = Script::New(String::New("global=this; module = {};"), String::New("builtin"));
-		init->Run();
-		
+    char *startup = readFile(argv[1]);
+    if (!startup) {
+        printf("%s not found\n", argv[1]);
+        exit(1);
+    }
+    if (startup[0] == '#' && startup[1] == '!') {
+        startup[0] = startup[1] = '/';
+    }
+    {
+        //		Isolate *isolate = Isolate::New();
+        //		isolate->Enter();
+        //		Locker lock(isolate);
+        HandleScope scope;
 
-		mainScript = Persistent<Script>::New(Script::Compile(String::New(startup), String::New(argv[1])));
-		TryCatch tryCatch;
-		Handle<Value>v = mainScript->Run();
-		if (v.IsEmpty()) {
-		    Handle<Message>message = tryCatch.Message();
-//		    Handle<String>text = message->Get();
-            String::AsciiValue exception(tryCatch.Exception());
-            String::AsciiValue filename(message->GetScriptResourceName());
-		    printf("%s in %s line %d\n", *exception, *filename, message->GetLineNumber());
-		    exit(1);
-		}
-		Handle<String> process_name = String::New("main");
-		Handle<Value> process_val = context->Global()->Get(process_name);
-		if (!process_val.IsEmpty()) {
+        init_global_object();
+        context = Context::New(NULL, globalObject);
+        Context::Scope context_scope(context);
+        V8::SetCaptureStackTraceForUncaughtExceptions(true, 50, StackTrace::kDetailed);
+        Locker locker;
+		Debug::SetDebugMessageDispatchHandler(debugger, true);
+		Debug::EnableAgent("silkjs", 5858);
+
+        Handle<Script>init = Script::New(String::New("global=this; include('builtin/all.js');"), String::New("builtin"));
+        init->Run();
+
+        mainScript = Persistent<Script>::New(Script::Compile(String::New(startup), String::New(argv[1])));
+        V8::SetCaptureStackTraceForUncaughtExceptions(true, 50, StackTrace::kDetailed);
+        TryCatch tryCatch;
+        Handle<Value>v = mainScript->Run();
+        if (v.IsEmpty()) {
+            ReportException(&tryCatch);
+            exit(1);
+        }
+        Handle<String> process_name = String::New("main");
+        Handle<Value> process_val = context->Global()->Get(process_name);
+        if (!process_val.IsEmpty()) {
             Handle<Function> process_fun = Handle<Function>::Cast(process_val);
             mainFunc = Persistent<Function>::New(process_fun);
-            const int ac = argc-2;
+            const int ac = argc - 2;
             Handle<Value>av[ac];
-            for (int i=2; i<argc; i++) {
-                av[i-2] = String::New(argv[i]);
+            for (int i = 2; i < argc; i++) {
+                av[i - 2] = String::New(argv[i]);
             }
-    //		printf("SILKJS running %s\n", argv[1]);
             v = mainFunc->Call(context->Global(), ac, av);
             if (v.IsEmpty()) {
-                Handle<Message>message = tryCatch.Message();
-    //		    Handle<String>text = message->Get();
-                String::AsciiValue exception(tryCatch.Exception());
-                String::AsciiValue filename(message->GetScriptResourceName());
-                printf("%s in %s line %d\n", *exception, *filename, message->GetLineNumber());
+                ReportException(&tryCatch);
+                exit(1);
             }
         }
-	}
+    }
 }
 

@@ -1,37 +1,10 @@
 #!/usr/local/bin/silkjs
 // httpd/main.js
 
-include('lib/print_r.js');
 include('lib/coffee-script.js');
-include('lib/include.js');
-include('lib/require.js');
 
 
-//v8.gc();
-silk = global.silk || {};
-silk.includes = {};
-silk.include = function(fn) {
-    silk.includes[fn] = 0; // fs.fileModified(fn);
-//    include(fn);
-};
-
-silk.checkIncludes = function() {
-    var reload = false;
-    forEach(silk.includes, function(mtime, fn) {
-        var newMtime = fs.fileModified(fn);
-        if (newMtime > mtime) {
-            silk.includes[fn] = newMtime;
-            reload = true;
-        }
-    });
-    if (reload) {
-        logfile.write('reload\n');
-        forEach(silk.includes, function(mtime, fn) {
-            include(fn);
-        });
-    }
-};
-
+print_r = require('builtin/print_r');
 console = require('console');
 fs = require('builtin/fs');
 logfile = require('builtin/logfile');
@@ -43,18 +16,14 @@ buffer = require('builtin/buffer');
 
 uglify = require('UglifyJS/uglify-js');
 
-include('lib/string.js');
-include('lib/object.js');
-include('lib/phpjs.js');
+//include('lib/phpjs.js');
 include('lib/forEach.js');
-include('lib/Exceptions.js');
+//include('lib/Exceptions.js');
 include('lib/Util.js');
 include('lib/Json.js');
 include('lib/Jst.js');
 include('lib/Showdown.js');
-include('lib/MySQL.js');
-include('lib/Server.js');
-include('lib/Schema.js');
+MySQL = require('MySQL.js').MySQL;
 include('lib/ssh.js');
 ////
 include('httpd/config.js');
@@ -62,28 +31,41 @@ include('httpd/request.js');
 include('httpd/response.js');
 include('httpd/child.js');
 
+app = {
+    serverDir: fs.getcwd()
+};
+
 function main() {
-	// load any user provided JavaScripts
-	forEach(arguments, function(arg) {
-		if (arg.endsWith('.js') || arg.endsWith('.coffee')) {
-			include(arg);
-		}
-	});
+    var debugMode = false;
+    // load any user provided JavaScripts
+    arguments.each(function(arg) {
+        if (arg.endsWith('.js') || arg.endsWith('.coffee')) {
+            include(arg);
+        }
+        else if (arg === '-d') {
+            debugMode = true;
+        }
+    });
     var pid;
     var fd = fs.open(Config.lockFile, fs.O_WRONLY|fs.O_CREAT|fs.O_TRUNC, 0644);
     fs.close(fd);
     var serverSocket = net.listen(Config.port);
-	// global.acceptLock = sem.init();
 
-	logfile.init();
-	pid = process.fork();
-	if (pid == 0) {
-		while (1) {
-			process.sleep(5);
-			logfile.flush();
-		}
-	}
-//	log('main ' + print_r(acceptLock));
+    logfile.init();
+    
+    if (debugMode) {
+        log('Running in debug mode');
+        HttpChild.run(serverSocket, process.getpid());
+        exit(0);
+    }
+    
+    pid = process.fork();
+    if (pid == 0) {
+        while (1) {
+            process.sleep(5);
+            logfile.flush();
+        }
+    }
     for (var i=0; i<Config.numChildren; i++) {
         pid = process.fork();
         if (pid == 0) {
@@ -94,11 +76,11 @@ function main() {
             console.error(process.error());
         }
     }
-    Server.onStart();
-	log('Silk running with ' + Config.numChildren + ' children on port ' + Config.port);
-	logfile.write('Silk running with ' + Config.numChildren + ' children on port ' + Config.port);
-	while (true) {
-		var o = process.wait();
+
+    log('Silk running with ' + Config.numChildren + ' children on port ' + Config.port);
+    logfile.write('Silk running with ' + Config.numChildren + ' children on port ' + Config.port);
+    while (true) {
+        var o = process.wait();
         pid = process.fork();
         if (pid == 0) {
             HttpChild.run(serverSocket, process.getpid());

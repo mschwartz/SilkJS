@@ -4,14 +4,14 @@
 	
 	function locateFile(fn) {
 		if (fs.isFile(fn)) {
-			return fn;
-			if (fs.isFile(fn + '.js')) {
-				return fn + '.js';
-			}
-			else if (fs.isFile(fn + '.coffee')) {
-				return fn + '.coffee';
-			}
-		}
+            return fn;
+        }
+        if (fs.isFile(fn + '.js')) {
+            return fn + '.js';
+        }
+        else if (fs.isFile(fn + '.coffee')) {
+            return fn + '.coffee';
+        }
 		if (fn.substr(0,1) == '/' || fn.substr(0,2) == './' || fn.substr(0,3) == '../') {
 			throw 'Could not locate include file ' + fn;
 		}
@@ -32,7 +32,7 @@
 				return fn + '.coffee';
 			}
 		}
-		throw 'Could not locate include file ' + fn;
+		throw Error('Could not locate include file ' + fn);
 	}
 	var suffix = '.coffee',
 		suffixLen = suffix.length;
@@ -45,7 +45,7 @@
 //			var lines = contents.split('\n');
 //			var lineNum = 0;
 //			var source = '';
-//			forEach(lines, function(line) {
+//			lines.each(function(line) {
 //				source += (++lineNum) + ': ' + line + '\n';
 //			});
 //

@@ -153,7 +153,7 @@ HttpChild = (function() {
 				res.redirect(req.uri + '/');
 			}
 			var found = '';
-			forEach(Config.directoryIndex, function(index) {
+			Config.directoryIndex.each(function(index) {
 				var f = fn;
 				f += '/';
 				f += index;
@@ -213,7 +213,6 @@ HttpChild = (function() {
                 lock(lockfd);
 				var sock = net.accept(serverSocket);
                 unlock(lockfd);
-                silk.checkIncludes();
 				var keepAlive = true;
 				while (keepAlive) {
 					if (++requestsHandled > REQUESTS_PER_CHILD) {

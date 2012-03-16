@@ -2,8 +2,6 @@
  * Program to test XMLHttpRequest implementation
  */
 
-include('lib/require.js');
-
 include('lib/print_r.js');
 include('lib/xhr.js');
 

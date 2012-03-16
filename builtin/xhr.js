@@ -73,7 +73,7 @@
 		},
 		getAllResponseHeaders: function() {
 			var headers = [];
-			forEach(responseHeaders, function(value, key) {
+			responseHeaders.each(function(value, key) {
 				headers.push(key + ': ' + value);
 			});
 			return headers.join('\r\n');

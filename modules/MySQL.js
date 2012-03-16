@@ -7,7 +7,8 @@
 
 	var mysql = require('builtin/mysql');
 	
-	MySQL = function() {
+	exports.MySQL = MySQL = function() {
+        log('MySQL Constructor')
 		this.queryCount = 0;
 		this.connected = false;
 	};
@@ -74,7 +75,7 @@
 	MySQL.prototype.quote = function(s) {
 		if (Util.isArray(s)) {
 			var ret = [];
-			forEach(s, function(e) {
+			s.each(function(e) {
 				ret.push(SQL.quote(e));
 			});
 			return ret;
@@ -101,5 +102,5 @@
 	MySQL.prototype.close = function() {
 		mysql.close();
 	};
-	
 }());
+
