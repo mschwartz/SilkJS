@@ -1,6 +1,6 @@
 ARCH := $(shell getconf LONG_BIT)
 
-CORE=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o v8.o http.o md5.o 
+CORE=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o v8.o http.o md5.o bdb.o
 
 OBJ=	mysql.o gd.o ncurses.o sem.o logfile.o sqlite3.o curl.o ssh2.o mongodb.o
 
@@ -25,11 +25,8 @@ CFLAGS = -O6 -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-sectio
 %.o: %.cpp SilkJS.h 
 	g++ $(CFLAGS) -c $(INCDIRS) -o $*.o $*.cpp
 
-silkjs:	mongodb $(V8) $(CORE) $(OBJ) SilkJS.h Makefile
-	g++ $(CFLAGS) -o silkjs $(CORE) $(OBJ) $(LIBDIRS) -lv8_base -lv8_snapshot -lmongoclient -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lboost_system
-
-mongodb:
-	cd mongo-c-driver && scons --c99
+silkjs:	$(V8) $(CORE) $(OBJ) SilkJS.h Makefile
+	g++ -o silkjs $(CORE) $(OBJ) $(LIBDIRS) -lv8_base -lv8_snapshot -lmongoclient -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lboost_system
 	
 debug:	    CFLAGS += -g
 debug:	    silkjs
