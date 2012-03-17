@@ -18,6 +18,13 @@ SilkJS HTTPD is a full featured CoffeeScript server.  For more details, see:
 
 https://github.com/mschwartz/SilkJS/wiki/CoffeeScript
 
+## Graphical Debugger
+
+SilkJS supports the V8 debugger.  You can use node-inspector to debug your programs.
+
+For more details, see:
+https://github.com/mschwartz/SilkJS/wiki/Debugging
+
 ## Features
 
 Perhaps the greatest feature of SilkJS is that you write synchronous code; there are no callback function implementations required on your part.  The theory of

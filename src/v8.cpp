@@ -57,7 +57,8 @@ static void debugger() {
 static JSVAL enableDebugger(JSARGS args) {
 	HandleScope scope;
 	Debug::SetDebugMessageDispatchHandler(debugger, true);
-	Debug::EnableAgent("silkjs", 5858);
+	Debug::EnableAgent("silkjs", 5858, true);
+	Debug::DebugBreak();
 	return Undefined();
 }
 

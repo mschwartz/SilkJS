@@ -38,12 +38,19 @@ app = {
 function main() {
     var debugMode = false;
     // load any user provided JavaScripts
+	arguments.each(function(arg) {
+		if (arg === '-d') {
+            debugMode = true;
+			return false;
+        }		
+	});
+	if (debugMode) {
+		v8.enableDebugger();
+		log('Running in debug mode');
+	}
     arguments.each(function(arg) {
         if (arg.endsWith('.js') || arg.endsWith('.coffee')) {
             include(arg);
-        }
-        else if (arg === '-d') {
-            debugMode = true;
         }
     });
     var pid;
@@ -54,10 +61,9 @@ function main() {
     logfile.init();
     
     if (debugMode) {
-        log('Running in debug mode');
-		v8.enableDebugger();
-        HttpChild.run(serverSocket, process.getpid());
-        exit(0);
+		while (1) {
+	        HttpChild.run(serverSocket, process.getpid());
+		}
     }
     
     pid = process.fork();
