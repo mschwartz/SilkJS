@@ -95,7 +95,7 @@ function processFile(fn) {
         item.content = markdown(content);
         items.push(item);
     }
-    console.dir(items);
+	return items;
 }
 
 if (require.main == module) {
@@ -108,7 +108,8 @@ else {
                 console.log('dir ' + filename);
             }
             else {
-                processFile(filename);
+                var items = processFile(filename);
+			    console.dir(items);
             }
         });
     }
