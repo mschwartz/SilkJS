@@ -59,10 +59,12 @@ HttpChild = (function() {
 			}
 			
 			var source = fs.readFile(fn);
-			var compiled = CoffeeScript.compile(source);
-			var script = v8.compileScript(compiled);
+			var compiled = CoffeeScript.compile(source, fn);
+			var script = v8.compileScript(compiled, fn);
 			coffee = {
 				mtime: mtime,
+				source: source,
+				compiled: compiled,
 				script: script
 			};
 			coffee_cache[fn] = coffee;
@@ -131,7 +133,21 @@ HttpChild = (function() {
 		xml:	{ contentType: 'text/xml',        handler: sendFile }
 	};
 
+	function directoryIndex(fn) {
+		var found = '';
+		Config.directoryIndex.each(function(index) {
+			var f = fn;
+			f += '/';
+			f += index;
+			if (fs.exists(f)) {
+				found = f;
+				return false;
+			}
+		});
+		return found;
+	}
 	function handleRequest() {
+		delete req.path_info;
 		var parts = req.uri.substr(1).split('/');
         if (parts[0].length == 0) {
             parts[0] = 'main';
@@ -145,22 +161,35 @@ HttpChild = (function() {
 		var fnPath = Config.documentRoot + req.uri;
 		var fn = fs.realpath(fnPath);
 		if (!fn) {
-			notFound();
+			fnPath = fs.realpath(Config.documentRoot + '/' + parts.shift());
+			if (!fs.realpath(fnPath)) {
+				notFound();
+			}
+			while (parts.length && fs.isDir(fnPath)) {
+				var newPath = fnPath,
+					part = parts.shift();
+				newPath += '/';
+				newPath += part;
+				newPath = fs.realpath(newPath);
+				if (!newPath) {
+					parts.unshift(part);
+					break;
+				}
+				fnPath = newPath;
+			}
+			fnPath = directoryIndex(fnPath);
+			if (!fnPath) {
+				notFound();
+			}
+			fn = fnPath;
+			req.path_info = parts.join('/');
 		}
 		if (fs.isDir(fn)) {
 			if (!req.uri.endsWith('/')) {
 				log('redirect ' + req.uri + ' ' + fn + ' ' + fn.substr(fn.length-1, 1));
 				res.redirect(req.uri + '/');
 			}
-			var found = '';
-			Config.directoryIndex.each(function(index) {
-				var f = fn;
-				f += '/';
-				f += index;
-				if (fs.exists(f)) {
-					found = f;
-				}
-			})
+			var found = directoryIndex(fn);
 			if (found) {
 				fn = found;
 			}
@@ -169,7 +198,7 @@ HttpChild = (function() {
 			}
 		}
 		if (!fs.isFile(fn)) {
-			// could do a directory listing here
+			// extra path info
 			notFound();
 		}
 
@@ -201,6 +230,9 @@ HttpChild = (function() {
 	return {
 		requestHandler: null,
 		onStart: null,
+		getCoffeeScript: function(fn) {
+			return coffee_cache[fn];
+		},
 		run: function(serverSocket, pid) {
 			HttpChild.onStart && HttpChild.onStart();
 			// onStart is a better way for apps to initialize SQL
@@ -235,7 +267,6 @@ HttpChild = (function() {
 					catch (e) {
 						if (e !== 'RES.STOP') {
 							Error.exceptionHandler(e);
-							break;
 						}
 					}
 					res.flush();

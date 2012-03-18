@@ -44,6 +44,13 @@ function main() {
 			return false;
         }		
 	});
+    var pid;
+    var fd = fs.open(Config.lockFile, fs.O_WRONLY|fs.O_CREAT|fs.O_TRUNC, 0644);
+    fs.close(fd);
+    var serverSocket = net.listen(Config.port);
+
+    logfile.init();
+    
 	if (debugMode) {
 		v8.enableDebugger();
 		log('Running in debug mode');
@@ -53,13 +60,6 @@ function main() {
             include(arg);
         }
     });
-    var pid;
-    var fd = fs.open(Config.lockFile, fs.O_WRONLY|fs.O_CREAT|fs.O_TRUNC, 0644);
-    fs.close(fd);
-    var serverSocket = net.listen(Config.port);
-
-    logfile.init();
-    
     if (debugMode) {
 		while (1) {
 	        HttpChild.run(serverSocket, process.getpid());

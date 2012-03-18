@@ -1,4 +1,18 @@
-// see http://www.boutell.com/gd/manual2.0.33.html
+/**
+ * @module builtin/gd
+ * 
+ * ### Synopsis
+ * SilkJS builtin gd object.
+ * 
+ * ### Description
+ * 
+ * ### Usage
+ * var gd = require('builtin/gd');
+ * 
+ * ### See Also:
+ * http://www.boutell.com/gd/manual2.0.33.html
+ */
+
 
 #include "SilkJS.h"
 #include <gd.h>

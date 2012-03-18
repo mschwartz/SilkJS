@@ -1,3 +1,18 @@
+/**
+ * @module builtin/net
+ * 
+ * ### Synopsis
+ * SilkJS builtin net object.
+ * 
+ * ### Description
+ * The builtin/net object provides low-level access to the OS networking functions.
+ * 
+ * ### Usage
+ * var net = require('builtin/net');
+ * 
+ * ### See Also:
+ * Operating system man pages
+ */
 #include "SilkJS.h"
 
 #define USE_CORK
@@ -14,6 +29,18 @@
 
 static char remote_addr[16];
 
+/**
+ * @function net.connect
+ * 
+ * ### Synopsis
+ * var sock = net.connect(host, port);
+ * 
+ * This function creates a socket and connects to the specified host and port.
+ * 
+ * @param {string} host - name of host to connect to
+ * @param {int} port - port number to connect to
+ * @return {int} sock - file descriptor or false if error occurred.
+ */
 static JSVAL net_connect(JSARGS args) {
 	HandleScope scope;
 	String::Utf8Value host(args[0]);
@@ -49,11 +76,32 @@ static JSVAL net_connect(JSARGS args) {
         /* connect returns -1 on error */
         perror("connect(...) error");
         close(fd);
-        return True();
+        return False();
     }
 	return scope.Close(Integer::New(fd));
 }
 
+/**
+ * @function net.listen
+ * 
+ * ### Synopsis
+ * 
+ * var sock = net.listen(port);
+ * var sock = net.listen(port, backlog);
+ * 
+ * This function creates a TCP SOCK_STREAM socket, binds it to the specified port, and does a listen(2) on the socket.
+ * 
+ * Connections to the socket from the outside world can be accepted via net.accept().
+ * 
+ * The backlog argument specifies the maximum length for the queue of pending connections.  If the queue fills and another connection attempt is made, the client will likely receive a "connection refused" error.
+ * 
+ * @param {int} port - port number to listen on
+ * @param {int} backlog - length of pending connection queue
+ * @return {int} sock - file descriptor of socket in listen mode
+ * 
+ * ### Exceptions
+ * This function throws an exception of the socket(), bind(), or listen() OS calls fail.
+ */
 static JSVAL net_listen(JSARGS args) {
     HandleScope scope;
 	int port = args[0]->IntegerValue();
@@ -83,6 +131,27 @@ static JSVAL net_listen(JSARGS args) {
 	return scope.Close(Integer::New(sock));
 }
 
+/**
+ * @function net.accept
+ * 
+ * ### Synopsis
+ * 
+ * var sock = net.accept(listen_socket);
+ * 
+ * This function waits until there is an incoming connection to the listen_socket and returns a new socket directly connected to the client.
+ * 
+ * The IP address of the connecting client is stored by this function.  It may be retrieved by calling net.remote_addr().
+ * 
+ * @param {int} listen_socket - socket already in listen mode
+ * @return {int} client_socket - socket connected to a client
+ * 
+ * ### Notes
+ * There is an old and well-known issue known as the "thundering herd problem" involving the OS accept() call.  The problem may occur if there are a large number of processes calling accept() on the same listen_socket. 
+ * 
+ * The solution is to use some sort of semaphore such as fs.flock() or fs.lockf() around net.accept().
+ * 
+ * See http://en.wikipedia.org/wiki/Thundering_herd_problem for a brief description of the problem.
+ */
 static JSVAL net_accept(JSARGS args) {
     HandleScope scope;
 	struct sockaddr_in their_addr;
@@ -132,11 +201,46 @@ static JSVAL net_accept(JSARGS args) {
 	return scope.Close(Integer::New(sock));
 }
 
+/**
+ * @function net.remote_addr
+ * 
+ * ### Synopsis
+ * 
+ * var remote_ip = net.remote_addr();
+ * 
+ * This function returns the IP address of the last client to connect via net.accept().
+ * 
+ * @return {string} remote_ip - ip address of client
+ */
 static JSVAL net_remote_addr(JSARGS args) {
 	HandleScope scope;
 	return scope.Close(String::New(remote_addr));
 }
 
+/**
+ * @function net.cork
+ * 
+ * ### Synopsis
+ * 
+ * net.cork(sock, flag);
+ * 
+ * This function sets or clears the Linux TCP_CORK flag on the specified socket, based upon the value of flag.
+ * 
+ * ### Description
+ * 
+ * There are two issues to consider when writing to a TCP socket.
+ * 
+ * TCP implements the Nagle Algorithm which is on by default for sockets.  The idea is that for connections like telnet, sending a packet per keystroke is wasteful.  The Nagle Algorithm causes a 250ms delay before sending a packet after write, in case additional writes (keystrokes) might occur.  A 250ms delay from net.write() to actual data going out to the network is a performance killer for high transaction applications (e.g. HTTP).
+ * 
+ * Turning off Nagle eliminates the 250ms delay, but in an HTTP type application, the headers will get sent in the first (and maybe additional) packets, then the data in succeeding packets.  It is ideal to pack all the headers and data into full packets before teh data is written.
+ * 
+ * Linux implements TCP_CORK to solve this issue.  If set, don't send out partial frames. All queued partial frames are sent when the option is cleared again. This is useful for prepending headers before calling sendfile(2), or for throughput optimization. As currently implemented, there is a 200 millisecond ceiling on the time for which output is corked by TCP_CORK. If this ceiling is reached, then queued data is automatically transmitted. This option can be combined with TCP_NODELAY only since Linux 2.5.71. This option should not be used in code intended to be portable.
+ * 
+ * OSX does not implement TCP_CORK, so we do our best with TCP_NODELAY (disable Nagle).
+ * 
+ * @param {int} sock - socket to perform TCP_CORK on
+ * @param {boolean} flag - true to turn on TCP_CORK, false to turn it off
+ */
 static JSVAL net_cork(JSARGS args) {
     HandleScope scope;
 	int fd = args[0]->IntegerValue();
@@ -144,6 +248,17 @@ static JSVAL net_cork(JSARGS args) {
 	setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof(flag));
 	return Undefined();
 }
+
+/**
+ * @function net.close
+ * 
+ * ### Synopsis
+ * 
+ * net.close(sock);
+ * 
+ * This function closes a network socket and frees any memory it uses.  You should call this when done with your sockets, or you may suffer a memory leak.
+ * @param {int} socket to close
+ */
 static JSVAL net_close(JSARGS args) {
     HandleScope scope;
 	int fd = args[0]->IntegerValue();
@@ -151,6 +266,24 @@ static JSVAL net_close(JSARGS args) {
 	return Undefined();
 }
 
+/**
+ * @function net.read
+ * 
+ * ### Synopsis
+ * 
+ * var s = net.read(sock, length);
+ * 
+ * This function reads a string of the specified maximum length from the specified socket.  The actual length of the string returned may be less than length characters.
+ * 
+ * If no data can be read for 5 seconds, the function returns null.
+ * 
+ * @param {int} sock - socket file descriptor to read from.
+ * @param {int} length - maximum length of string to read.
+ * @return {string} s - string that was read from the socket, or null if the string could not be read.
+ * 
+ * ### Exceptions
+ * This function throws an exception if there is a read error with the error message.
+ */
 static JSVAL net_read(JSARGS args) {
     HandleScope scope;
 	int fd = args[0]->IntegerValue();
@@ -183,6 +316,23 @@ static JSVAL net_read(JSARGS args) {
 	return scope.Close(s);
 }
 
+/**
+ * @function net.write
+ * 
+ * ### Synopsis
+ * 
+ * var written = net.write(sock, s, size);
+ * 
+ * This function writes size characters from string s to the specified socket.
+ * 
+ * @param {int} sock - file descriptor of socket to write to.
+ * @param {string} s - the string to write.
+ * @param {int} length - number of bytes to write.
+ * @return {int} written - number of bytes actually written.
+ * 
+ * ### Exceptions
+ * This function throws an exception with a string describing any write errors.
+ */
 static JSVAL net_write(JSARGS args) {
     HandleScope scope;
 	int fd = args[0]->IntegerValue();
@@ -202,6 +352,35 @@ static JSVAL net_write(JSARGS args) {
 	return scope.Close(Integer::New(written));
 }
 
+/**
+ * @function net.writeBuffer
+ * 
+ * ### Synopsis
+ * 
+ * var written = net.writeBuffer(sock, buffer);
+ * 
+ * This function attempts to write the given buffer to the specified socket.
+ * 
+ * A buffer is an object to JavaScript that provides growable string functionality.  While it's true that JavaScript strings are growable in their own right, sometimes buffering data in C++ space is more optimal if you can avoid an extra string copy.
+ * 
+ * Buffers also have the flexibility to write a base64 encoded string to its memory as binary data.
+ * 
+ * @param {int} sock - file descriptor of socket to write to.
+ * @param {object} buffer - buffer object to write to the socket.
+ * @return {int} written - number of bytes written.
+ * 
+ * ### Exceptions
+ * 
+ * This function throws an exception if there is a write error.
+ * 
+ * ### Notes
+ * 
+ * After the buffer is written, TCP_CORK is toggled off then on to force the data to be written to the network.
+ * 
+ * ### See also
+ * builtin/buffer
+ * 
+ */
 static JSVAL net_writebuffer(JSARGS args) {
 	HandleScope scope;
 	int fd = args[0]->IntegerValue();
@@ -227,12 +406,23 @@ static JSVAL net_writebuffer(JSARGS args) {
 	return scope.Close(Integer::New(written));
 }
 /**
+ * @function net.sendfile
  * 
- * @param sock
- * @param filename
- * @param offset
- * @param size
- * @return 
+ * ### Synopsis
+ * 
+ * net.sendFile(sock, path);
+ * net.sendFile(sock, path, offset);
+ * net.sendFile(sock, path, offset, size);
+ * 
+ * This function calls the OS sendfile() function to send a complete or partial file to the network entirely within kernel space.  It is a HUGE speed win for HTTP and FTP type servers.
+ * 
+ * @param {int} sock - file descriptor of socket to send the file to.
+ * @param {string} path - file system path to file to send.
+ * @param {int} offset - offset from beginning of file to send (for partial).  If omitted, the entire file is sent.
+ * @param {int} size - number of bytes of the file to send.  If omitted, the remainder of the file is sent (or all of it).
+ * 
+ * ### Exceptions
+ * An exception is thrown if the file cannot be opened or if there is a sendfile(2) OS call error.
  */
 static JSVAL net_sendfile(JSARGS args) {
     HandleScope handle_scope;

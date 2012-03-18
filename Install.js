@@ -28,9 +28,11 @@ function main() {
 	exec('cp silkjs /usr/local/bin');
 	exec('chmod 755 /usr/local/bin/silkjs');
 
-	println('-- copying examples to /usr/share/silkjs/');
+	println('-- copying src to /usr/share/silkjs/');
 	exec('rm -rf /usr/share/silkjs');
-	exec('mkdir /usr/share/silkjs');
+	exec('mkdir -p /usr/share/silkjs/src');
+	exec('cp - src/*.cpp src/*.h /usr/share/silkjs/src');
+	println('-- copying examples to /usr/share/silkjs/');
 	exec('cp -r examples /usr/share/silkjs');
 	println('-- copying httpd to /usr/share/silkjs/');
 	exec('cp -r httpd /usr/share/silkjs');

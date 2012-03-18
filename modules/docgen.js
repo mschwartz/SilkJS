@@ -83,6 +83,10 @@ function processFile(fn) {
                         content += '### Returns\n';
                         content += '+ ' + parts.join(' ') + '\n';
                         break;
+					case 'constant':
+                        item.tag = tag;
+						content += parts.join(' ') + '\n';
+						break;
                     default:
                         content += line + '\n';
                         break;
@@ -98,7 +102,7 @@ function processFile(fn) {
 	return items;
 }
 
-if (require.main == module) {
+if (require.main !== module) {
     exports = processFile;
 }
 else {
