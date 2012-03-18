@@ -31,7 +31,7 @@ function main() {
 	println('-- copying src to /usr/share/silkjs/');
 	exec('rm -rf /usr/share/silkjs');
 	exec('mkdir -p /usr/share/silkjs/src');
-	exec('cp - src/*.cpp src/*.h /usr/share/silkjs/src');
+	exec('cp src/*.cpp src/*.h /usr/share/silkjs/src');
 	println('-- copying examples to /usr/share/silkjs/');
 	exec('cp -r examples /usr/share/silkjs');
 	println('-- copying httpd to /usr/share/silkjs/');
