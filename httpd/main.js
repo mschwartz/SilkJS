@@ -3,7 +3,8 @@
 
 print_r = require('builtin/print_r');
 console = require('console');
-fs = require('builtin/fs');
+fs = require('fs');
+
 logfile = require('builtin/logfile');
 net = require('builtin/net');
 process = require('builtin/process');

@@ -41,7 +41,7 @@ bootstrap:  $(V8) $(CORE) SilkJS.h Makefile
 	
 $(V8DIR):
 	echo "svn checkout"
-	svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8-read-only
+	svn checkout http://v8.googlecode.com/svn/trunk/ v8-read-only
 
 $(V8):
 	cd $(V8DIR) && svn update && make dependencies && GYP_GENERATORS=make make -j 4 $(V8VERSION)

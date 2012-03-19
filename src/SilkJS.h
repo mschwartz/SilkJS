@@ -65,6 +65,10 @@ static inline char JSCHAR(Handle<Value>v) {
 	String::Utf8Value str(v->ToString());
 	return (*str)[0];
 }
+static inline void *JSEXTERN(Handle<Value>v) {
+    Handle<External>wrap = Handle<External>::Cast(v);
+    return (void *)wrap->Value();
+}
 #define BUFFER_STRING
 
 #ifdef BUFFER_STRING

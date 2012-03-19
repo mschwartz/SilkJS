@@ -123,7 +123,7 @@ req = (function() {
 			return true;
 		},
 		getHeader: function(key) {
-			return headers[key.toLowerCase()];
+			return req.headers[key.toLowerCase()];
 		},
 		close: function() {
 			if (stream) {

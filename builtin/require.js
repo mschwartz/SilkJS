@@ -91,6 +91,10 @@
 		return require.cache[modulePath];
 	};
 
+    require.isRequiredFile = function(fn) {
+        return require.cache[fn] ? true : false;
+    },
+    
 	require.main = this;
 	require.dirStack = [];
 	require.fsPath = '';

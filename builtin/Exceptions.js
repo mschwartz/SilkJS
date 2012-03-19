@@ -50,13 +50,19 @@ function error(s) {
 }
 
 Error.exceptionHandler = function(e) {
+    e.dump();
+    var spaces = '        ';
+    function formatLineNumber(n) {
+        n = ''+n;
+        return spaces.substr(0, 8 - n.length) + n;
+    }
 	var ex = e;
 	var res = global.res || false;
 	if (res) {
 		res.reset();
 		res.status = 500;
 	}
-	if (!e.message) {
+	if (!e.message || !e.stack) {
 		try {
 			throw new SilkException(e);
 		}
@@ -94,26 +100,28 @@ Error.exceptionHandler = function(e) {
 	if (res) {
 		res.write('<b>'+ex.message+'</b>\n');
 	}
-	log(ex.message);
+//	log(ex.message);
+//    log(ex.stack);
 	if (e.query) {
 		if (res) {
 			res.write('<pre>'+ex.query+'</pre>\n');
 		}
-		log(ex.query);
+//		log(ex.query);
 	}
 	var filename = null,
 		lineNumber = 0;
 	if (ex.stack) {
-//		ex.stack.pop();
 		var stack = '',
 			conStack = '';
 		ex.stack.each(function(item) {
-			if (res) {
-				stack += '<li>';
-			}
-			conStack += '* ';
 			filename = filename || item.fileName;
 			lineNumber = lineNumber || item.lineNumber;
+            if (stack == '' && require.isRequiredFile(filename)) {
+                lineNumber -= 6;
+                item.lineNumber -= 6;
+            }
+            stack += '<li>';
+			conStack += '* ';
 			stack += item.fileName + ':' + item.lineNumber;
 			conStack += item.fileName + ':' + item.lineNumber;
 			if (item.methodName) {
@@ -150,28 +158,37 @@ Error.exceptionHandler = function(e) {
 			}
 		}
 		else {
-			lines = fs.readFile(filename).split(/\n/);
+			lines = fs.readFile(filename);
+            if (lines) {
+                lines = lines.split(/\n/);
+            }
+            else {
+                log('could not read ' + filename);
+                lines = false;
+            }
 		}
-		var startLine = lineNumber-10;
-		if (startLine < 0) {
-			startLine = 0;
-		}
-		var endLine = startLine + 21;
-		if (endLine >= lines.length) {
-			endLine = lines.length-1;
-		}
-		res.writeln('<pre style="border: 1px solid black; background: #efefef; padding: 5px;">');
-		for (var lineNum=startLine; lineNum<endLine; lineNum++) {
-			if (lineNum == lineNumber) {
-				res.write('<div style="background: red; color: white;">');
-			}
-			res.write('<span style="background: black; color: white;">' + sprintf("%8d", lineNum) + '</span>');
-			res.writeln(lines[lineNum-1].replace(/</igm, '&lt;'));
-			if (lineNum == lineNumber) {
-				res.write('</div>');
-			}
-		}
-		res.writeln('</pre>');
+        if (lines) {
+            var startLine = lineNumber-10;
+            if (startLine < 0) {
+                startLine = 0;
+            }
+            var endLine = startLine + 21;
+            if (endLine >= lines.length) {
+                endLine = lines.length-1;
+            }
+            res.writeln('<pre style="border: 1px solid black; background: #efefef; padding: 5px;">');
+            for (var lineNum=startLine; lineNum<endLine; lineNum++) {
+                if (lineNum == lineNumber) {
+                    res.write('<div style="background: red; color: white;">');
+                }
+                res.write('<span style="background: black; color: white;">' + formatLineNumber(lineNum) + '</span>');
+                res.writeln(lines[lineNum-1].replace(/</igm, '&lt;'));
+                if (lineNum == lineNumber) {
+                    res.write('</div>');
+                }
+            }
+            res.writeln('</pre>');
+        }
 	}
 	
 	if (res) {
