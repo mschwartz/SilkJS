@@ -1,3 +1,4 @@
+/** @ignore */
 #include "SilkJS.h"
 #include <semaphore.h>
 

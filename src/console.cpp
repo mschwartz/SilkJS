@@ -1,7 +1,32 @@
-// see http://invisible-island.net/ncurses/man/ncurses.3x.html
-
+/**
+ * @module builtin/console
+ * 
+ * ### Synopsis
+ * SilkJS builtin console object.
+ * 
+ * ### Description
+ * The builtin/console object provides a minimal implementation of the client-side console object.
+ * 
+ * ### Usage
+ * var console = require('builtin/console');
+ * 
+ * ### See Also
+ * The JavaScriptimplementation of a more robust console object:
+ * modules/console.js
+ */
 #include "SilkJS.h"
 
+/**
+ * @function console.log
+ * 
+ * ### Synopsis
+ * 
+ * console.log(s);
+ * 
+ * Write a string to stdout.
+ * 
+ * @param {string} s - the string to write to stdout
+ */
 static JSVAL log(JSARGS args) {
 	HandleScope scope;
 	String::AsciiValue s(args[0]);
@@ -9,6 +34,17 @@ static JSVAL log(JSARGS args) {
 	return Undefined();
 }
 
+/**
+ * @function console.e
+ * 
+ * ### Synopsis
+ * 
+ * console.error(s);
+ * 
+ * Write a string to stderr.
+ * 
+ * @param {string} s - the string to write to stderr
+ */
 static JSVAL error(JSARGS args) {
 	HandleScope scope;
 	String::AsciiValue s(args[0]);

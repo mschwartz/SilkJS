@@ -96,6 +96,7 @@
 	require.fsPath = '';
 	require.cache = {};
 	require.path = [
+		'./',
 		'modules',
 		'/usr/share/silkjs/modules'
 	];

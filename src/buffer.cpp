@@ -1,5 +1,33 @@
+/**
+ * @module builtin/buffer
+ * 
+ * ### Synopsis
+ * SilkJS builtin buffer object.
+ * 
+ * ### Description
+ * The builtin/buffer object provides a growable byte buffer for strings and binary data.
+ * 
+ * Buffers should be treated as opaque handles in JavaScript code.  The builtin/buffer functions take this opaque handle as the first argument.  The exception, of course, is the buffer.create() method, which creates a new buffer.
+ * 
+ * ### Usage
+ * var buffer = require('builtin/buffer');
+ * 
+ * ### See Also
+ * builtin/net.writeBuffer()
+ */
 #include "SilkJS.h"
 
+/**
+ * @function buffer.create
+ * 
+ * ### Synopsis
+ * 
+ * var buf = buffer.create();
+ * 
+ * Creates a new buffer.  Buffers created with buffer.create() should be released by calling buffer.destroy() when you are finished with the buffer.
+ * 
+ * @return {object} buf - opaque handel to newly created buffer.
+ */
 static JSVAL buffer_create(JSARGS args) {
 	HandleScope scope;
 	Buffer *buf = new Buffer;
@@ -12,6 +40,17 @@ static JSVAL buffer_create(JSARGS args) {
 	return scope.Close(External::New(buf));
 }
 
+/**
+ * @function buffer.reset
+ * 
+ * ### Synopsis
+ * 
+ * buffer.reset(buf);
+ * 
+ * Reset a buffer to "empty" state.
+ * 
+ * @param {object} buf - buffer to reset
+ */
 static JSVAL buffer_reset(JSARGS args) {
 	HandleScope scope;
 	Local<External>wrap = Local<External>::Cast(args[0]);
@@ -25,6 +64,17 @@ static JSVAL buffer_reset(JSARGS args) {
 	return Undefined();
 }
 
+/**
+ * @function buffer.destroy
+ * 
+ * ### Synopsis
+ * 
+ * buffer.destroy(buf);
+ * 
+ * Free a previously created buffer.  Buffers allocate system resources that will not be freed until this function is called.
+ * 
+ * @param {object} buf - buffer to free.
+ */
 static JSVAL buffer_destroy(JSARGS args) {
 	HandleScope scope;
 	Local<External>wrap = Local<External>::Cast(args[0]);
@@ -36,6 +86,17 @@ static JSVAL buffer_destroy(JSARGS args) {
 	return Undefined();
 }
 
+/**
+ * @function buffer.write
+ * 
+ * ### Synopsis
+ * buffer.write(buf, str);
+ * 
+ * Write a string into the specified buffer.
+ * 
+ * @param {object} buf - buffer to write string to.
+ * @param {string{ str - string to add to buffer.
+ */
 static JSVAL buffer_write(JSARGS args) {
 	HandleScope scope;
 	Local<External>wrap = Local<External>::Cast(args[0]);
@@ -58,6 +119,18 @@ static JSVAL buffer_write(JSARGS args) {
 	return Undefined();
 }
 
+/**
+ * @function buffer.write64
+ * 
+ * ### Synopsis
+ * 
+ * buffer.write64(buf, base64String)
+ * 
+ * Write a base64 encoded string to buffer, decoding the base64 to binary.  This function writes binary data to the buffer.
+ * 
+ * @param {object} buf - buffer to write to.
+ * @param {string} base64Str - base64 encoded binary data to add to buffer as binary.
+ */
 static JSVAL buffer_write64(JSARGS args) {
 	HandleScope scope;
 	Local<External>wrap = Local<External>::Cast(args[0]);
@@ -67,6 +140,16 @@ static JSVAL buffer_write64(JSARGS args) {
 	return Undefined();
 }
 
+/**
+ * @function buffer.read
+ * 
+ * var contents = buffer.read(buf);
+ * 
+ * Return contents of buffer as a JavaScript string.
+ * 
+ * @param {object} buf - buffer to get contents of.
+ * @return {string s - buffer contents as JavaScript string.
+ */
 static JSVAL buffer_read(JSARGS args) {
 	HandleScope scope;
 	Local<External>wrap = Local<External>::Cast(args[0]);
@@ -78,6 +161,18 @@ static JSVAL buffer_read(JSARGS args) {
 #endif
 }
 
+/**
+ * @function buffer.size
+ * 
+ * ### Synopsis
+ * 
+ * var size = buffer.size(buf);
+ * 
+ * Get count of bytes in a buffer.
+ * 
+ * @param {object} buf - buffer to get size of.
+ * @return {int} size - size of buffer in bytes.
+ */
 static JSVAL buffer_size(JSARGS args) {
 	HandleScope scope;
 	Local<External>wrap = Local<External>::Cast(args[0]);

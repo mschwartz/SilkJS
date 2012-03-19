@@ -1,3 +1,17 @@
+/** 
+ * @namespace global
+ * 
+ * ### Synopsis
+ * 
+ * Methods initially available in the global object/namespace.
+ * 
+ * ### Description
+ * 
+ * The core SilkJS executable provides these methods in the global scope.  Typically, they will be overloaded by other modules or JavaScript files being included or reuqired.
+ * 
+ * The global object also contains a global.builtin namespace, which consists of the other C++/native builtin bindings.
+ * 
+ */
 #include "SilkJS.h"
 
 using namespace v8;
@@ -7,6 +21,19 @@ Persistent<ObjectTemplate> builtinObject;
 extern Persistent<Context> context;
 extern char *readFile(const char *s);
 
+/**
+ * @function global.log
+ * 
+ * ### Synopsis
+ * 
+ * log(s);
+ * 
+ * Write a string to stdout.
+ * 
+ * The string is prefixed with the current process's pid.
+ * 
+ * @param {string} s - the string to write to stdout.
+ */
 static Handle<Value> Log(const Arguments& args) {
     HandleScope handle_scope;
     String::AsciiValue str(args[0]);
@@ -14,6 +41,19 @@ static Handle<Value> Log(const Arguments& args) {
     return Undefined();
 }
 
+/**
+ * @function global.print
+ * 
+ * ### Synopsis
+ * 
+ * print(s);
+ * 
+ * Write a string to stdout.
+ * 
+ * The string is NOT prefixed with the current process's pid, as is done by the log() function.
+ * 
+ * @param {string} s - the string to write to stdout.
+ */
 static Handle<Value> Print(const Arguments& args) {
     HandleScope handle_scope;
     String::AsciiValue str(args[0]);
@@ -21,6 +61,19 @@ static Handle<Value> Print(const Arguments& args) {
     return Undefined();
 }
 
+/**
+ * @function global.println
+ * 
+ * ### Synopsis
+ * 
+ * println(s);
+ * 
+ * Write a string to stdout, adding a newline to the end.
+ * 
+ * The string is NOT prefixed with the current process's pid, as is done by the log() function.
+ * 
+ * @param {string} s - the string to write to stdout.
+ */
 static Handle<Value> Println(const Arguments& args) {
     HandleScope handle_scope;
     String::AsciiValue str(args[0]);
@@ -37,6 +90,17 @@ struct SCRIPTNODE {
 
 SCRIPTNODE *scriptCache = NULL;
 
+/**
+ * @function global.include
+ * 
+ * ### Synopsis
+ * 
+ * include(path [,path...]);
+ * 
+ * Load, compile, and run the specified JavaScript files in the SilkJS context of the current process.
+ * 
+ * @param {string} path - the path in the file system to a file to include.
+ */
 static Handle<Value> Include(const Arguments& args) {
     HandleScope scope;
     for (int i = 0; i < args.Length(); i++) {

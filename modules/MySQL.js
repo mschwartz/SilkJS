@@ -7,7 +7,7 @@
 
 	var mysql = require('builtin/mysql');
 	
-	exports.MySQL = MySQL = function() {
+	var MySQL = exports.MySQL = function() {
 		this.queryCount = 0;
 		this.connected = false;
 	};

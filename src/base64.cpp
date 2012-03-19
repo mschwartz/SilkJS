@@ -1,3 +1,4 @@
+/** @ignore */
 #include "SilkJS.h"
 
 static const std::string base64_chars =

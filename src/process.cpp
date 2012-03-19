@@ -1,7 +1,21 @@
+/**
+ * @module builtin/process
+ * 
+ * ### Synopsis
+ * SilkJS builtin process object.
+ * 
+ * ### Description
+ * The builtin/process object provides constants and methods to directly access the underlying operating system's process-oriented functions.  
+ * 
+ * ### Usage
+ * var process = require('builtin/process');
+ * 
+ * ### See Also
+ * Operating system man pages
+ * 
+ */
 #include "SilkJS.h"
 #include "v8-read-only/src/v8.h"
-#include "v8-read-only/src/objects.h"
-#include "v8-read-only/src/isolate.h"
 // TODO:
 // getcwd()
 // chdir()
@@ -9,52 +23,159 @@
 // atexit, on_exit
 // popen/exec/etc.
 
+/**
+ * @function process.error
+ * 
+ * ### Synopsis
+ * Returns string version of last OS error.
+ * 
+ * ### Usage:
+ * var message = process.error();
+ * 
+ * @return {string} message - error message.
+ */
 static JSVAL process_error(JSARGS args) {
 	HandleScope scope;
 	return scope.Close(String::New(strerror(errno)));
 }
 
+/**
+ * @function process.kill
+ * 
+ * ### Synopsis
+ * 
+ * var success = process.kill(pid);
+ * 
+ * Send the SIGKILL signal to the specified process (by pid).
+ * 
+ * @param {int} pid - process ID (pid) of process to kill.
+ * @return {int} success - 0 on success, 1 if an error occurred.
+ */
 static JSVAL process_kill(JSARGS args) {
 	HandleScope scope;
 	pid_t pid = args[0]->IntegerValue();
 	return scope.Close(Integer::New(kill(pid, SIGKILL)));
 }
 
+/**
+ * @function process.getpid
+ * 
+ * ### Synopsis
+ * 
+ * var my_pid = process.getpid();
+ * 
+ * Returns the pid of the current process.
+ * 
+ * @return {int} my_pid - process ID (pid) of the current process.
+ */
 static JSVAL process_getpid(JSARGS args) {
 	HandleScope scope;
 	return scope.Close(Integer::New(getpid()));
 }
 
+/**
+ * @function process.fork
+ * 
+ * ### Synopsis
+ * 
+ * var pid = process.fork();
+ * 
+ * Create a new process.
+ * 
+ * ### Description
+ * 
+ * Fork() causes creation of a new process.  The new process (child process) is an exact copy of the calling process (parent process) except for the following:
+ * 
+ * 1. The child process has a unique process ID.
+ * 
+ * 2. The child process has a different parent process ID (i.e., the process ID of the parent process).
+ * 
+ * 3. The child process has its own copy of the parent's descriptors. These descriptors reference the same underlying objects, so that, for instance, file pointers in file objects are shared between the child and the parent, so that an lseek(2) on a descriptor in the child process can affect a subsequent read or write by the parent.  This descriptor copying is also used by the shell to establish standard input and output for newly created processes as well as to set up pipes.
+ * 
+ * 4. The child processes resource utilizations are set to 0; see the man page for setrlimit(2).
+ * 
+ * @return 0 to the child, the pid of the created process to the parent.  If an error occurred, -1 is returned.
+ */
 static JSVAL process_fork(JSARGS args) {
 	extern Persistent<Context> context;
-//	Isolate *isolate = Isolate::GetCurrent();
 	context->Exit();
-//	isolate->Exit();
 	pid_t pid = fork();
-//	isolate->Enter();
 	context->Enter();
 	HandleScope scope;
 	return scope.Close(Integer::New(pid));
 }
 
+/**
+ * @function process.exit
+ * 
+ * ### Synopsis
+ * 
+ * process.exit(status);
+ * 
+ * Terminate the current process or program, returning status to the parent or shell.
+ * 
+ * @param {int} status - status code to return to parent or shell.
+ * @return NEVER
+ */
 static JSVAL process_exit(JSARGS args) {
 	HandleScope scope;
 	exit(args[0]->IntegerValue());
 	return Undefined();
 }
 
+/**
+ * @function process.sleep
+ * 
+ * ### Synopsis
+ * process.sleep(seconds);
+ * 
+ * Suspend execution of the current process for specified number of seconds.
+ * 
+ * @param {int} seconds - number of seconds to suspend.
+ */
 static JSVAL process_sleep(JSARGS args) {
 	HandleScope scope;
 	sleep(args[0]->IntegerValue());
 	return Undefined();
 }
 
+/**
+ * @function process.usleep
+ * 
+ * ### Synopsis
+ * process.usleep(microseconds);
+ * 
+ * Suspend execution of the current process for specified number of microseconds.
+ * 
+ * @param {int} microseconds - number of microseconds to suspend.
+ */
 static JSVAL process_usleep(JSARGS args) {
 	HandleScope scope;
 	usleep(args[0]->IntegerValue());
 	return Undefined();
 }
 
+/**
+ * @function process.wait
+ * 
+ * ### Synopsis
+ * 
+ * var o = process.wait();
+ * 
+ * Wait for process termination.
+ * 
+ * ### Description
+ * 
+ * This function suspends executio of its calling process until one of its child processes terminates.  The function returns an object of the form:
+ * 
+ * + pid: the pid of the child process that terminated
+ * + status: the status returned by the child process
+ * 
+ * @return {object} o - information about the process that terminated.
+ * 
+ * ### See Also
+ * process.exit()
+ */
 static JSVAL process_wait(JSARGS args) {
 	HandleScope scope;
 	int status;
@@ -68,6 +189,22 @@ static JSVAL process_wait(JSARGS args) {
 	return scope.Close(o);
 }
 
+/**
+ * @function process.exec
+ * 
+ * ### Synopsis
+ * 
+ * var output = process.exec(command_line);
+ * 
+ * Execute a Unix command, returning the output of the command (it's stdout) as a JavaScript string.
+ * 
+ * ### Description
+ * 
+ * This function calls popen() with the specified command line and reads its output until end of file.  Under the hood, a fork() and exec() is performed which is not particularly fast.  Still it can be useful to execute shell commands.
+ * 
+ * @param {string} command_line - a Unix command to execute
+ * @return {string} output - the output of the command executed.
+ */
 static JSVAL process_exec(JSARGS args) {
 	HandleScope scope;
 	String::AsciiValue cmd(args[0]);
@@ -82,12 +219,38 @@ static JSVAL process_exec(JSARGS args) {
 	return scope.Close(String::New(s.c_str(), s.size()));
 }
 
+/**
+ * @function process.getuid
+ * 
+ * ### Synopsis
+ * 
+ * var uid = process.getuid();
+ * 
+ * Get the real user ID of the calling process.
+ * 
+ * @return {int} uid - the user ID of the calling process.
+ */
 static JSVAL process_getuid(JSARGS args) {
 	HandleScope scope;
 	return scope.Close(Integer::New(getuid()));
 }
 
-// 20111227 markc@renta.net MIT license
+/**
+ * @function process.env
+ * 
+ * ### Synopsis
+ * 
+ * var env = process.env();
+ * 
+ * Get a hash of key/value pairs representing the environment of the calling process.
+ * 
+ * Typical kinds of environment variables you'll see returned by this function are:
+ * HOME - user's home directory.
+ * PATH - the sequence of directories, separated by colons, searched for command execution.
+ * ...
+ * 
+ * @return {object} env - hash of key/value environment variables.
+ */
 static JSVAL process_env(JSARGS args) {
 	extern char **environ;
 	HandleScope scope;

@@ -51,6 +51,11 @@ function processFile(fn) {
         content,
         params;
     while ((line = readLine(lines)) !== false) {
+		if (line === '/** @ignore */') {
+			return [{
+				tag: 'ignore'
+			}];
+		}
 //console.log('line: ' + line);
         if (line.search(/\s*\/\*\*/) == -1) {
             continue;
@@ -67,6 +72,7 @@ function processFile(fn) {
                     case 'function':
                     case 'class':
                     case 'singleton':
+                    case 'namespace':
                     case 'module':
                         item.tag = tag;
                         item.name = parts.join(' ');
@@ -86,6 +92,9 @@ function processFile(fn) {
 					case 'constant':
                         item.tag = tag;
 						content += parts.join(' ') + '\n';
+						break;
+					case '@ignore':
+						item.tag = tag;
 						break;
                     default:
                         content += line + '\n';

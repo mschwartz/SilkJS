@@ -1,3 +1,21 @@
+/**
+ * @module builtin/xhrhelper
+ * 
+ * ### Synopsis
+ * SilkJS builtin xhrhelper object.
+ * 
+ * ### Description
+ * The builtin/xhrhelper object provides a minimal interface to the curl library - enough for implementation of XMLHttpRequest object for SilkJS.
+ * 
+ * It is not expected that application code will use these methods directly.
+ * 
+ * ### Usage
+ * var xhrhelper = require('builtin/xhrhelper');
+ * 
+ * ### See Also
+ * The JavaScriptimplementation of a more robust console object:
+ * modules/console.js
+ */
 #include "SilkJS.h"
 #include <curl/curl.h>
 
@@ -19,6 +37,34 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
 	return realsize;
 }
 
+/**
+ * @function xhrhelper.request
+ * 
+ * ### Synopsis
+ * 
+ * var o = xhrhelper.request(config);
+ * 
+ * Perform a curl request.
+ * 
+ * ### Description
+ * 
+ * The config object looks like this:
+ * + method: "POST" (or "GET")
+ * + url: "http://example.com/example_url"
+ * + data: javascript_object
+ * 
+ * The data member is only handled if the method is "POST" - the data object is a key/value pair of items to post to the remote host.
+ * 
+ * The returned object is the original object with three additional members added:
+ * + status: http status of reponse (an int, such as 200 for OK)
+ * +_contentType: the content-type/mime-type as a string
+ * + reponseTExt: the body of the response
+ * 
+ * On error, a string containing the error information is returned instead of an object.
+ * 
+ * @param {object} config - confiuration object, see above.
+ * @return {object} o - status/response, see above.
+ */
 static JSVAL request(JSARGS args) {
 	HandleScope scope;
 	Handle<Object>o = args[0]->ToObject();

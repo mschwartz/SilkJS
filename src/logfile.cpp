@@ -1,3 +1,34 @@
+/**
+ * @module builtin/logfile
+ * 
+ * ### Synopsis
+ * SilkJS builtin logfile object.
+ * 
+ * ### Description
+ * 
+ * This is an implementation of a process-safe logfile.  
+ * 
+ * One or more processes may log messages to the log file, without one process's write being interrupted by the OS scheduler switching to another process mid-write.
+ * 
+ * The logfile implementation uses a block of shared memory.  When a process calls logfile.write(), the message it passes is appended to the block of shared memory.  This is done within a semaphore, so only one write can happen at a time, blocking others attempting to do so.
+ * 
+ * If an attempt is made to append a string to the shared memory block but there is not enough room in the block for the string, the block is flushed to disk and reset to empty state.
+ * 
+ * A logfile.flush() method is implemented so a background process can force the shared memory block to be flushed to disk periodically.
+ * 
+ * An alternative to this implementation is to flock() and append directly to the log file by each process.  There is a serious performance hit for doing so.
+ * 
+ * ### Usage
+ * var logfile = require('builtin/logfile');
+ * 
+ * ### Notes
+ * 
+ * The log file is written to /tmp/silkjs.log.  This really should be configurable.  
+ * 
+ * ### See Also
+ * The JavaScriptimplementation of the http server.
+ */
+
 #include "SilkJS.h"
 
 #define LOGFILE_CHUNK_SIZE	(16384*2)
@@ -47,6 +78,16 @@ static void flush_logfile() {
 	}
 }
 
+/**
+ * @function logfile.init
+ * 
+ * ### Synopsis
+ * 
+ * logfile.init();
+ * 
+ * Initialize the log file.
+ * 
+ */
 static JSVAL logfile_init(JSARGS args) {
 	HandleScope scope;
 	if (!mm) {
@@ -63,6 +104,20 @@ static JSVAL logfile_init(JSARGS args) {
 	return Undefined();
 }
 
+/**
+ * @function logfile.write
+ * 
+ * ### Synopsis
+ * 
+ * logfile.write(s);
+ * 
+ * Write a string to the log file.  
+ * 
+ * The string is appended to the shared memory block.  The memory block is first flushed to disk if there is not enough room for the string.
+ * 
+ * @param {string} s - string to write to the log file.
+ * 
+ */
 static JSVAL logfile_write(JSARGS args) {
 	HandleScope scope;
 	String::AsciiValue buf(args[0]);
@@ -83,6 +138,15 @@ static JSVAL logfile_write(JSARGS args) {
 	return Undefined();
 }
 
+/**
+ * @function logfile.flush
+ * 
+ * ### Synopsis
+ * 
+ * logfile.flush();
+ * 
+ * Flush contents of shared memory block to the log file, reset memory block to "empty" state.
+ */
 static JSVAL logfile_flush(JSARGS args) {
 	HandleScope scope;
 	lock_logfile();

@@ -147,6 +147,7 @@ HttpChild = (function() {
 		return found;
 	}
 	function handleRequest() {
+		req.script_path = req.uri;
 		delete req.path_info;
 		var parts = req.uri.substr(1).split('/');
         if (parts[0].length == 0) {
@@ -202,6 +203,7 @@ HttpChild = (function() {
 			notFound();
 		}
 
+		req.script_path = fn.replace(/\index\..*$/, '').replace(fs.realpath(Config.documentRoot), '');
 		res.status = 200;
         req.path = fn;
 		parts = fn.split('.');

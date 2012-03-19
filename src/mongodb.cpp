@@ -1,3 +1,4 @@
+/** @ignore */
 #include "SilkJS.h"
 
 ////////////////  IN PROGRESS - NOT READY FOR USE /////////////////////////

@@ -1,3 +1,4 @@
+/** @ignore */
 /*
  * Berkley Database (BDB) Interface
  */

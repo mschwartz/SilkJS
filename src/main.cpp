@@ -1,3 +1,4 @@
+/** @ignore */
 /* 
  * File:   main.cpp
  * Author: mschwartz
@@ -131,7 +132,7 @@ int main(int argc, char** argv) {
 			}
 			Handle<String> process_name = String::New("main");
 			Handle<Value> process_val = context->Global()->Get(process_name);
-			if (!process_val.IsEmpty()) {
+			if (!process_val.IsEmpty() && process_val->IsFunction()) {
 				Handle<Function> process_fun = Handle<Function>::Cast(process_val);
 				mainFunc = Persistent<Function>::New(process_fun);
 				const int ac = argc - 2;
