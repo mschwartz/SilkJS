@@ -17,6 +17,21 @@
  */
 #include "SilkJS.h"
 
+static inline void bufferWrite(Buffer *buf, const char *data, long len) {
+#ifdef BUFFER_STRING
+	buf->s += data;
+#else
+    if (buf->pos + len >= buf->size) {
+		while (buf->pos + len >= buf->size) {
+			buf->size *= 2;
+		}
+		buf->mem = (unsigned char *)realloc(buf->mem, buf->size);
+    }
+    memcpy(&buf->mem[buf->pos], data, len);
+    buf->pos += len;
+    buf->mem[buf->pos] = '\0';
+#endif
+}
 /**
  * @function buffer.create
  * 
@@ -102,20 +117,21 @@ static JSVAL buffer_write(JSARGS args) {
 	Local<External>wrap = Local<External>::Cast(args[0]);
 	Buffer *buf = (Buffer *)wrap->Value();
     String::Utf8Value data(args[1]);
-#ifdef BUFFER_STRING
-	buf->s += *data;
-#else
-	long len = args[2]->IntegerValue();
-    if (buf->pos + len >= buf->size) {
-		while (buf->pos + len >= buf->size) {
-			buf->size *= 2;
-		}
-		buf->mem = (unsigned char *)realloc(buf->mem, buf->size);
-    }
-    memcpy(&buf->mem[buf->pos], *data, len);
-    buf->pos += len;
-    buf->mem[buf->pos] = '\0';
-#endif
+    bufferWrite(buf, *data, data.length());
+//#ifdef BUFFER_STRING
+//	buf->s += *data;
+//#else
+//	long len = args[2]->IntegerValue();
+//    if (buf->pos + len >= buf->size) {
+//		while (buf->pos + len >= buf->size) {
+//			buf->size *= 2;
+//		}
+//		buf->mem = (unsigned char *)realloc(buf->mem, buf->size);
+//    }
+//    memcpy(&buf->mem[buf->pos], *data, len);
+//    buf->pos += len;
+//    buf->mem[buf->pos] = '\0';
+//#endif
 	return Undefined();
 }
 
@@ -136,7 +152,13 @@ static JSVAL buffer_write64(JSARGS args) {
 	Local<External>wrap = Local<External>::Cast(args[0]);
 	Buffer *buf = (Buffer *)wrap->Value();
     String::Utf8Value data(args[1]);
+#ifdef BUFFER_STRING
 	buf->s += Base64Decode(*data);
+#else
+    char decodeBuf[data.length()];
+    long decodeLen = decode_base64((unsigned char *)decodeBuf, *data);
+    bufferWrite(buf, decodeBuf, decodeLen);
+#endif
 	return Undefined();
 }
 

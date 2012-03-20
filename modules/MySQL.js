@@ -72,6 +72,22 @@ MySQL.prototype.extend({
         return mysql.getScalar(this.handle, 'SELECT LAST_INSERT_ID()');
     },
 
+    startTransaction: function() {
+        return mysql.update(this.handle, 'START TRANSACTION');
+    },
+    
+    endTransaction: function() {
+        return mysql.update(this.handle, 'END TRANSACTION');
+    },
+    
+    commit: function() {
+        return mysql.update(this.handle, 'COMMIT');
+    },
+    
+    rollback: function() {
+        return mysql.update(this.handle, 'ROLLBACK');
+    },
+    
     quote: function(s) {
         if (isArray(s)) {
             var ret = [];

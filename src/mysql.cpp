@@ -716,7 +716,7 @@ JSVAL getDataRow(JSARGS args) {
 	MYSQL_FIELD *fields = mysql_fetch_fields(result);
 	MYSQL_ROW row = mysql_fetch_row(result);
 	if (!row) {
-		return scope.Close(o);
+		return scope.Close(False());
 	}
 	unsigned long *lengths = mysql_fetch_lengths(result);
 	for (unsigned int i=0; i<num_fields; i++) {

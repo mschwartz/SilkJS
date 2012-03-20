@@ -883,13 +883,24 @@ static JSVAL fs_writefile64(JSARGS args) {
     if (args.Length() > 2) {
         mode = args[2]->IntegerValue();
     }
-    string out = Base64Decode(*data);
+    
+    unsigned char buf[data.length()];
+    int decoded = decode_base64(buf, *data);
+    
+//    string out = Base64Decode(*data);
+//    printf("base64 size = %ld\n", out.size());
+//    printf("base64 size2 = %ld\n", out.length());
+//    printf("base64 size3 = %ld\n", out.capacity());
     int fd = open(*path, O_WRONLY | O_CREAT | O_TRUNC, mode);
     if (fd == -1) {
         return scope.Close(False());
     }
-    ssize_t size = out.size();
-    if (write(fd, out.c_str(), size) != size) {
+//    ssize_t size = out.size();
+//    if (write(fd, out.data(), size) != size) {
+//        close(fd);
+//        return scope.Close(False());
+//    }
+    if (write(fd, buf, decoded) != decoded) {
         close(fd);
         return scope.Close(False());
     }

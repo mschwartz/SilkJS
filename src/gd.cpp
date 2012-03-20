@@ -72,8 +72,11 @@ static JSVAL gd_ImageCreateFromJpeg(JSARGS args) {
 static JSVAL gd_imageCreateFromJpeg64(JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
-    string s = Base64Decode(*data);
-    gdImagePtr im = gdImageCreateFromJpegPtr(s.size(), (void *) s.c_str());
+    unsigned char buf[data.length()];
+    int decoded = decode_base64(buf, *data);
+    gdImagePtr im = gdImageCreateFromJpegPtr(decoded, (void *) buf);
+//    string s = Base64Decode(*data);
+//    gdImagePtr im = gdImageCreateFromJpegPtr(s.size(), (void *) s.c_str());
     if (!im) {
         return Null();
     }
@@ -104,8 +107,12 @@ static JSVAL gd_imageCreateFromPng(JSARGS args) {
 static JSVAL gd_imageCreateFromPng64(JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
-    string s = Base64Decode(*data);
-    gdImagePtr im = gdImageCreateFromPngPtr(s.size(), (void *) s.c_str());
+    unsigned char buf[data.length()];
+    int decoded = decode_base64(buf, *data);
+    gdImagePtr im = gdImageCreateFromPngPtr(decoded, (void *) buf);
+
+//    string s = Base64Decode(*data);
+//    gdImagePtr im = gdImageCreateFromPngPtr(s.size(), (void *) s.c_str());
     if (!im) {
         return Null();
     }
@@ -136,8 +143,13 @@ static JSVAL gd_imageCreateFromGif(JSARGS args) {
 static JSVAL gd_imageCreateFromGif64(JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
-    string s = Base64Decode(*data);
-    gdImagePtr im = gdImageCreateFromGifPtr(s.size(), (void *) s.c_str());
+    
+    unsigned char buf[data.length()];
+    int decoded = decode_base64(buf, *data);
+    gdImagePtr im = gdImageCreateFromGifPtr(decoded, (void *) buf);
+
+//    string s = Base64Decode(*data);
+//    gdImagePtr im = gdImageCreateFromGifPtr(s.size(), (void *) s.c_str());
     if (!im) {
         return Null();
     }
@@ -168,8 +180,11 @@ static JSVAL gd_imageCreateFromGd(JSARGS args) {
 static JSVAL gd_imageCreateFromGd64(JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
-    string s = Base64Decode(*data);
-    gdImagePtr im = gdImageCreateFromGdPtr(s.size(), (void *) s.c_str());
+    unsigned char buf[data.length()];
+    int decoded = decode_base64(buf, *data);
+    gdImagePtr im = gdImageCreateFromGdPtr(decoded, (void *) buf);
+//    string s = Base64Decode(*data);
+//    gdImagePtr im = gdImageCreateFromGdPtr(s.size(), (void *) s.c_str());
     if (!im) {
         return Null();
     }
@@ -200,8 +215,11 @@ static JSVAL gd_imageCreateFromWBMP(JSARGS args) {
 static JSVAL gd_imageCreateFromWBMP64(JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
-    string s = Base64Decode(*data);
-    gdImagePtr im = gdImageCreateFromWBMPPtr(s.size(), (void *) s.c_str());
+    unsigned char buf[data.length()];
+    int decoded = decode_base64(buf, *data);
+    gdImagePtr im = gdImageCreateFromWBMPPtr(decoded, (void *) buf);
+//    string s = Base64Decode(*data);
+//    gdImagePtr im = gdImageCreateFromWBMPPtr(s.size(), (void *) s.c_str());
     if (!im) {
         return Null();
     }
@@ -238,6 +256,24 @@ static JSVAL gd_imageDestroy(JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageJpeg
+ * 
+ * ### Synopsis
+ * 
+ * var success = gd.imageJpeg(handle, filename, quality);
+ * 
+ * Outputs the specified image to the specified file in JPEG format.
+ * 
+ * If quality is negative, the default IJG JPEG quality value (which should yield a good general quality / size tradeoff for most situations) is used. Otherwise, for practical purposes, quality should be a value in the range 0-95, higher quality values usually implying both higher quality and larger image sizes.
+ *
+ * If you have set image interlacing using gd.imageInterlace(), this function will interpret that to mean you wish to output a progressive JPEG. Some programs (e.g., Web browsers) can display progressive JPEGs incrementally; this can be useful when browsing over a relatively slow communications link, for example. Progressive JPEGs can also be slightly smaller than sequential (non-progressive) JPEGs.
+ * 
+ * @param {object} handle - handle to image to write
+ * @param {string} filename - file to write
+ * @param {int} quality - see note above
+ * @return {boolean} success - true if the file was written, false if there was an error.
+ */
 static JSVAL gd_imageJpeg(JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -266,6 +302,21 @@ static JSVAL gd_imageJpeg64(JSARGS args) {
     return String::New(out.c_str(), out.size());
 }
 
+/**
+ * @function gd.imageGif
+ * 
+ * ### Synopsis
+ * 
+ * var success = gd.imageGif(handle, filename);
+ * 
+ * Outputs the specified image to the specified file in GIF format. 
+ * 
+ * GIF does not support true color; GIF images can contain a maximum of 256 colors. If the image to be written is a truecolor image, such as those created with gd.imageCreateTrueColor() or loaded from a JPEG or a truecolor PNG image file, a palette-based temporary image will automatically be created internally using the gd.imageCreatePaletteFromTrueColor() function. The original image pixels are not modified. This conversion produces high quality palettes but does require some CPU time. If you are regularly converting truecolor to palette in this way, you should consider creating your image as a palette-based image in the first place.
+ * 
+ * @param {object} handle - handle to image to write.
+ * @param {string} filename - file to write.
+ * @return {boolean} success - true if the file was written, false if there was an error..
+ */
 static JSVAL gd_imageGif(JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -294,6 +345,19 @@ static JSVAL gd_imageGif64(JSARGS args) {
 
 // animated gif methods not implemented
 
+/**
+ * @function gd.imagePng
+ * 
+ * ### Synopsis
+ * 
+ * var success = gd.imagePng(handle, filename);
+ * 
+ * Outputs the specified image to the specified file in PNG format.
+ * 
+ * @param {object} handle - handle to image to write.
+ * @param {string} filename - file to write.
+ * @return {boolean} success - true if the file was written, false if there was an error..
+ */
 static JSVAL gd_imagePng(JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -320,6 +384,22 @@ static JSVAL gd_imagePng64(JSARGS args) {
     return String::New(out.c_str(), out.size());
 }
 
+/**
+ * @function gd.imagePngEx
+ * 
+ * ### Synopsis
+ * 
+ * var success = gd.imagePngEx(handle, filename, level);
+ * 
+ * Outputs the specified image to the specified file in PNG format.
+ * 
+ * This function allows the level of compression to be specified. A compression level of 0 means "no compression." A compression level of 1 means "compressed, but as quickly as possible." A compression level of 9 means "compressed as much as possible to produce the smallest possible file." A compression level of -1 will use the default compression level at the time zlib was compiled on your system.
+ * 
+ * @param {object} handle - handle to image to write.
+ * @param {string} filename - file to write.
+ * @param {int} level - compression level, see notes above.
+ * @return {boolean} success - true if the file was written, false if there was an error.
+ */
 static JSVAL gd_imagePngEx(JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1080,6 +1160,25 @@ static JSVAL gd_TrueColorAlpha(JSARGS args) {
 
 // copying and resizing functions
 
+/**
+ * @function gd.imageCopy
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageCopy(dstImage, srcImage, dstX, dstY, srcX, srcY, w, h);
+ * 
+ * Copy a rectangular portion of one image to another image.
+ * 
+ * @param {object} dstImage - destination for resized image
+ * @param {object} srcImage - source for resized image
+ * @param {int} dstX - X coordinate of the upper left corner of the destination region
+ * @param {int} dstY - Y coordinate of the upper left corner of the destination region
+ * @param {int} srcX - X coordinate of the upper left corner of the source region
+ * @param {int} srcY - Y coordinate of the upper left corner of the source region
+ * @param {int} w - width of the region
+ * @param {int} h - height of the region
+ * @return 
+ */
 static JSVAL gd_imageCopy(JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1096,6 +1195,27 @@ static JSVAL gd_imageCopy(JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageCopyResized
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageCopyResized(dstImage, srcImage, dstX, dstY, srcX, srcY, dstW, dstH, srcW, srcH);
+ * 
+ * Copy a rectangular portion of one image to another image. The X and Y dimensions of the original region and the destination region can vary, resulting in stretching or shrinking of the region as appropriate
+ * 
+ * @param {object} dstImage - destination for resized image
+ * @param {object} srcImage - source for resized image
+ * @param {int} dstX - X coordinate of the upper left corner of the destination region
+ * @param {int} dstY - Y coordinate of the upper left corner of the destination region
+ * @param {int} srcX - X coordinate of the upper left corner of the source region
+ * @param {int} srcY - Y coordinate of the upper left corner of the source region
+ * @param {int} dstW - width of the destination region
+ * @param {int} dstH - height of the destination region
+ * @param {int} srcW - width of the source region
+ * @param {int} srcH - height of the source region
+ * @return 
+ */
 static JSVAL gd_imageCopyResized(JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1114,6 +1234,27 @@ static JSVAL gd_imageCopyResized(JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageCopyResampled
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageCopyResampled(dstImage, srcImage, dstX, dstY, srcX, srcY, dstW, dstH, srcW, srcH);
+ * 
+ * Copy a rectangular portion of one image to another image, smoothly interpolating pixel values so that, in particular, reducing the size of an image still retains a great deal of clarity. The X and Y dimensions of the original region and the destination region can vary, resulting in stretching or shrinking of the region as appropriate.
+ * 
+ * @param {object} dstImage - destination for resized image
+ * @param {object} srcImage - source for resized image
+ * @param {int} dstX - X coordinate of the upper left corner of the destination region
+ * @param {int} dstY - Y coordinate of the upper left corner of the destination region
+ * @param {int} srcX - X coordinate of the upper left corner of the source region
+ * @param {int} srcY - Y coordinate of the upper left corner of the source region
+ * @param {int} dstW - width of the destination region
+ * @param {int} dstH - height of the destination region
+ * @param {int} srcW - width of the source region
+ * @param {int} srcH - height of the source region
+ * @return 
+ */
 static JSVAL gd_imageCopyResampled(JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);

@@ -50,6 +50,7 @@ using namespace std;
 
 extern string Base64Encode(unsigned char const* bytes_to_encode, unsigned long in_len);
 extern string Base64Decode(const char *encodedString);
+extern int decode_base64(unsigned char *dest, const char *src);
 
 extern Persistent<ObjectTemplate> globalObject;
 extern Persistent<ObjectTemplate> builtinObject;
@@ -70,6 +71,7 @@ static inline void *JSEXTERN(Handle<Value>v) {
     return (void *)wrap->Value();
 }
 #define BUFFER_STRING
+#undef BUFFER_STRING
 
 #ifdef BUFFER_STRING
 typedef struct {

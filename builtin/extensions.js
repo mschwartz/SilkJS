@@ -22,6 +22,14 @@ String.prototype.trim = function() {
     return this.replace(/^\s+|\s+$/, ''); 
 };
 
+String.prototype.capitalize = function(limit) {
+    if (limit == null)
+        limit = 1;
+    var head = this.substring(0, limit);
+    var tail = this.substring(limit, this.length);
+    return head.toUpperCase() + tail.toLowerCase();
+};
+
 String.prototype.endsWith = function endsWith(c){
 	if(this.charAt(this.length - 1) == c){
 		return true;

@@ -1,11 +1,12 @@
 Error.stackTraceLimit = 50;
 
 Error.prepareStackTrace = function(error, structuredStackTrace) {
+    console.log('prepareStackTrace');
 	var stack = [];
 	structuredStackTrace.each(function(item) {
 		stack.push({
 			scriptName: item.getScriptNameOrSourceURL(),
-			typeName: item.getTypeName(),
+//			typeName: item.getTypeName(),
 			functionName: item.getFunctionName(),
 			methodName: item.getMethodName(),
 			fileName: item.getFileName(),
@@ -50,19 +51,13 @@ function error(s) {
 }
 
 Error.exceptionHandler = function(e) {
-    e.dump();
-    var spaces = '        ';
-    function formatLineNumber(n) {
-        n = ''+n;
-        return spaces.substr(0, 8 - n.length) + n;
-    }
 	var ex = e;
 	var res = global.res || false;
 	if (res) {
 		res.reset();
 		res.status = 500;
 	}
-	if (!e.message || !e.stack) {
+	if (!e.message) {
 		try {
 			throw new SilkException(e);
 		}
@@ -100,17 +95,17 @@ Error.exceptionHandler = function(e) {
 	if (res) {
 		res.write('<b>'+ex.message+'</b>\n');
 	}
-//	log(ex.message);
-//    log(ex.stack);
+	log(ex.message);
 	if (e.query) {
 		if (res) {
 			res.write('<pre>'+ex.query+'</pre>\n');
 		}
-//		log(ex.query);
+		log(ex.query);
 	}
 	var filename = null,
 		lineNumber = 0;
 	if (ex.stack) {
+//		ex.stack.pop();
 		var stack = '',
 			conStack = '';
 		ex.stack.each(function(item) {
@@ -120,7 +115,9 @@ Error.exceptionHandler = function(e) {
                 lineNumber -= 6;
                 item.lineNumber -= 6;
             }
-            stack += '<li>';
+			if (res) {
+				stack += '<li>';
+			}
 			conStack += '* ';
 			stack += item.fileName + ':' + item.lineNumber;
 			conStack += item.fileName + ':' + item.lineNumber;
@@ -148,17 +145,29 @@ Error.exceptionHandler = function(e) {
 		res.write('<h2>' + filename + '</h2>');
 		var fs = require('builtin/fs');
 		var lines;
+
+
 		if (global.HttpChild && filename.endsWith('.coffee')) {
 			lines = HttpChild.getCoffeeScript(filename);
 			if (lines) {
 				lines = lines.compiled.split(/\n/);
 			}
 			else {
-				lines = fs.readFile(filename).split(/\n/);
+                try {
+    				lines = fs.readFile(filename).split(/\n/);
+                }
+                catch (e) {
+                    lines = null;
+                }
 			}
 		}
 		else {
-			lines = fs.readFile(filename);
+            try {
+    			lines = fs.readFile(filename);
+            }
+            catch (e) {
+                lines = false;
+            }
             if (lines) {
                 lines = lines.split(/\n/);
             }
@@ -167,28 +176,27 @@ Error.exceptionHandler = function(e) {
                 lines = false;
             }
 		}
-        if (lines) {
-            var startLine = lineNumber-10;
-            if (startLine < 0) {
-                startLine = 0;
-            }
-            var endLine = startLine + 21;
-            if (endLine >= lines.length) {
-                endLine = lines.length-1;
-            }
-            res.writeln('<pre style="border: 1px solid black; background: #efefef; padding: 5px;">');
-            for (var lineNum=startLine; lineNum<endLine; lineNum++) {
-                if (lineNum == lineNumber) {
-                    res.write('<div style="background: red; color: white;">');
-                }
-                res.write('<span style="background: black; color: white;">' + formatLineNumber(lineNum) + '</span>');
-                res.writeln(lines[lineNum-1].replace(/</igm, '&lt;'));
-                if (lineNum == lineNumber) {
-                    res.write('</div>');
-                }
-            }
-            res.writeln('</pre>');
-        }
+
+		var startLine = lineNumber-10;
+		if (startLine < 0) {
+			startLine = 0;
+		}
+		var endLine = startLine + 21;
+		if (endLine >= lines.length) {
+			endLine = lines.length-1;
+		}
+		res.writeln('<pre style="border: 1px solid black; background: #efefef; padding: 5px;">');
+		for (var lineNum=startLine; lineNum<endLine; lineNum++) {
+			if (lineNum == lineNumber) {
+				res.write('<div style="background: red; color: white;">');
+			}
+			res.write('<span style="background: black; color: white;">' + sprintf("%8d", lineNum) + '</span>');
+			res.writeln(lines[lineNum-1].replace(/</igm, '&lt;'));
+			if (lineNum == lineNumber) {
+				res.write('</div>');
+			}
+		}
+		res.writeln('</pre>');
 	}
 	
 	if (res) {
