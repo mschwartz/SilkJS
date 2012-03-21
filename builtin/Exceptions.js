@@ -1,7 +1,6 @@
 Error.stackTraceLimit = 50;
 
 Error.prepareStackTrace = function(error, structuredStackTrace) {
-    console.log('prepareStackTrace');
 	var stack = [];
 	structuredStackTrace.each(function(item) {
 		stack.push({

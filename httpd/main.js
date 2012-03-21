@@ -29,10 +29,6 @@ include('httpd/request.js');
 include('httpd/response.js');
 include('httpd/child.js');
 
-app = {
-    serverDir: fs.getcwd()
-};
-
 function main() {
     var debugMode = false;
     // load any user provided JavaScripts

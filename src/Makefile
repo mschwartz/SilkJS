@@ -2,7 +2,7 @@ ARCH := $(shell getconf LONG_BIT)
 
 CORE=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o v8.o http.o md5.o 
 
-OBJ=	mysql.o gd.o ncurses.o sem.o logfile.o sqlite3.o curl.o ssh2.o 
+OBJ=	mysql.o gd.o ncurses.o sem.o logfile.o sqlite3.o xhrhelper.o curl.o ssh2.o 
 
 V8DIR=	./v8-read-only
 

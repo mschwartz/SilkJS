@@ -58,10 +58,11 @@ req = (function() {
 			req.port = port;
 			var uriParts = first[1].split('?');
 			var data = {};
+            req.queryParams = {};
 			if (uriParts[1]) {
 				uriParts[1].split('&').each(function(part) {
 					part = part.split('=');
-					data[part[0]] = decodeURIComponent(part[1].replace(/\+/g, ' '));
+					req.queryParams[part[0]] = data[part[0]] = decodeURIComponent(part[1].replace(/\+/g, ' '));
 				});
 			}
 			req.method = first[0];
@@ -70,10 +71,11 @@ req = (function() {
 			req.remote_addr = net.remote_addr();
 			
 			// process cookies
+            req.cookies = {};
 			if (headers['cookie']) {
 				headers['cookie'].split(/;\s*/).each(function(cookie) {
 					var cookieParts = cookie.split('=');
-					data[cookieParts[0]] = decodeURIComponent(cookieParts[1].replace(/\+/g, ' '));
+					req.cookies[cookieParts[0]] = data[cookieParts[0]] = decodeURIComponent(cookieParts[1].replace(/\+/g, ' '));
 				});
 			}
 

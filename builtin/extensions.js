@@ -63,6 +63,7 @@ Object.prototype.extend = function() {
             me[key] = o[key];
         }
     });
+    return this;
 };
 
 Array.prototype.format = Object.prototype.format = function() {

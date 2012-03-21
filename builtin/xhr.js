@@ -4,15 +4,19 @@
 
 (function() {
 	var xhrHelper = require('builtin/xhrHelper');
-    include('lib/Util.js');
 
 	var UNSENT = 0,
 		OPENED = 1,
 		HEADERS_RECEIVED = 2,
 		LOADING = 3,
 		DONE = 4;
+        
+    function isString(o) {
+        return typeof v === 'string';
+    }
+    
 	XMLHttpRequest = function() {
-		Util.apply(this, {
+		this.extend({
 			// private
 			readyState: UNSENT,
 			headers: {},
@@ -30,9 +34,9 @@
 		});
 		return this;
 	};
-	Util.apply(XMLHttpRequest.prototype, {
+	XMLHttpRequest.prototype.extend({
 		open: function(method, url, async, username, password) {
-			Util.apply(this, {
+			this.extend({
 				method: method,
 				url: url,
 				username: username,
@@ -53,7 +57,7 @@
 				url: this.url,
 				data: data
 			});
-			if (Util.isString(o)) {
+			if (isString(o)) {
 				throw o;
 			}
 			this.responseText = o.responseText;
