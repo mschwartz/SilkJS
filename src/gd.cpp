@@ -55,6 +55,21 @@ static JSVAL gd_ImageCreateFromJpeg(JSARGS args) {
     if (!in) {
         return Null();
     }
+    // test binary header of file to assure it's JPEG
+    {
+        unsigned char buf[12];
+        if (fread((char *)buf, 12, 1, in) != 12) {
+            fclose(in);
+            return Null();
+        }
+        if (buf[0] != 0xff || buf[1] != 0xd8 || buf[2] != 0xff || buf[3] != 0xe0 || strcmp((char *)&buf[6], "JFIF")) {
+            fclose(in);
+            return Null();
+        }
+        printf("%s Is a JPEG\n", *data);
+        fseek(in, 0, SEEK_SET);
+    }
+    
     gdImagePtr im = gdImageCreateFromJpeg(in);
     fclose(in);
     if (!im) {
@@ -1412,7 +1427,7 @@ void init_gd_object() {
     gd->Set(String::New("imageCreateFromWBMP"), FunctionTemplate::New(gd_imageCreateFromWBMP));
     gd->Set(String::New("imageCreateFromWBMP64"), FunctionTemplate::New(gd_imageCreateFromWBMP64));
     gd->Set(String::New("imageCreateFromXpm"), FunctionTemplate::New(gd_imageCreateFromXpm));
-    gd->Set(String::New("imageCreateFromXbm"), FunctionTemplate::New(gd_imageCreateFromXbm));
+    gd->Set(String::New("imageCreateFromXpm"), FunctionTemplate::New(gd_imageCreateFromXpm));
     gd->Set(String::New("imageDestroy"), FunctionTemplate::New(gd_imageDestroy));
     gd->Set(String::New("imageJpeg"), FunctionTemplate::New(gd_imageJpeg));
     gd->Set(String::New("imageJpeg64"), FunctionTemplate::New(gd_imageJpeg64));

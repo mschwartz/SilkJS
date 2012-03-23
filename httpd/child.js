@@ -116,21 +116,22 @@ HttpChild = (function() {
 	}
 
 	var contentTypes = {
-		less:	{ contentType: 'text/css',		  handler: runLess },
-		coffee:	{ contentType: 'text/html',		  handler: runCoffee },
-		jst:	{ contentType: 'text/html',       handler: runJst },
-		md:		{ contentType: 'text/html',       handler: runMarkdown },
-		ogg:	{ contentType: 'audio/ogg',       handler: sendFile },
-		mp3:	{ contentType: 'audio/mpeg3',     handler: sendFile },
-		png:	{ contentType: 'image/png',       handler: sendFile },
-		ico:	{ contentType: 'image/ico',       handler: sendFile },
-		gif:	{ contentType: 'image/gif',       handler: sendFile },
-		jpg:	{ contentType: 'image/jpeg',      handler: sendFile },
-		jpeg:	{ contentType: 'image/jpeg',      handler: sendFile },
-		html:	{ contentType: 'text/html',       handler: sendFile },
-		js:		{ contentType: 'text/javascript', handler: sendFile },
-		css:	{ contentType: 'text/css',        handler: sendFile },
-		xml:	{ contentType: 'text/xml',        handler: sendFile }
+		less:	{ contentType: 'text/css',		                    handler: runLess },
+		coffee:	{ contentType: 'text/html',		                    handler: runCoffee },
+		jst:	{ contentType: 'text/html',                         handler: runJst },
+		md:		{ contentType: 'text/html',                         handler: runMarkdown },
+		ogg:	{ contentType: 'audio/ogg',                         handler: sendFile },
+		mp3:	{ contentType: 'audio/mpeg3',                       handler: sendFile },
+		png:	{ contentType: 'image/png',                         handler: sendFile },
+		ico:	{ contentType: 'image/ico',                         handler: sendFile },
+		gif:	{ contentType: 'image/gif',                         handler: sendFile },
+		jpg:	{ contentType: 'image/jpeg'                  ,      handler: sendFile },
+		jpeg:	{ contentType: 'image/jpeg',                        handler: sendFile },
+		html:	{ contentType: 'text/html',                         handler: sendFile },
+		js:		{ contentType: 'text/javascript',                   handler: sendFile },
+		css:	{ contentType: 'text/css',                          handler: sendFile },
+		xml:	{ contentType: 'text/xml',                          handler: sendFile },
+        swf:    { contentType: 'application/ x-shockwave-flash',    handler: sendFile }
 	};
 
 	function directoryIndex(fn) {
@@ -271,6 +272,8 @@ HttpChild = (function() {
 							Error.exceptionHandler(e);
 						}
 					}
+                    req.data = {};
+                    res.data = {};
 					res.flush();
 					// this logfile.write() reduces # requests/sec by 5000!
 					logfile.write(req.remote_addr + ' ' + req.method + ' ' + req.uri + ' completed in ' + (new Date().getTime() - req.start) + '\n');

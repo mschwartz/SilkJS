@@ -65,7 +65,8 @@ function main() {
     pid = process.fork();
     if (pid == 0) {
         while (1) {
-            process.sleep(5);
+//            process.sleep(5);
+            process.usleep(250);
             logfile.flush();
         }
     }

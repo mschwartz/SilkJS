@@ -20,14 +20,17 @@ exports.extend({
         if (pattern) {
             fs.readDir(dir).each(function(file) {
                if (pattern.test(file)) {
-                   files.push(dir + '/' + file);
+                   files.push(file);
                } 
             });
         }
         else {
-            fs.readDir.each(function(file) {
-                files.push(dir + '/' + file);
-            });
+            var entries = fs.readDir(dir);
+            if (entries) {
+                entries.each(function(file) {
+                    files.push(file);
+                });
+            }
         }
         return files;
     },
@@ -55,6 +58,30 @@ exports.extend({
         };
         recurse(dir);
         return files;
+    },
+    
+    removeDirectory: function(dir) {
+        function recurse(path) {
+            console.log(path);
+            var files = fs.readDir(path);
+            if (files) {
+                files.each(function(file) {
+                    if (fs.isDir(path+'/'+file)) {
+                        recurse(dir + '/' + path);
+                        fs.rmdir(path);
+                    }
+                    else {
+                        fs.unlink(path + '/' + file);
+                        return;
+                    }
+                });
+            }
+        }
+        if (!fs.isDir(dir)) {
+            return;
+        }
+        recurse(dir);
+        fs.rmdir(dir);
     }
 });
 

@@ -28,7 +28,7 @@ MySQL.prototype.extend({
         sql = isArray(sql) ? sql.join('\n') : sql;
         try {
             return mysql.getDataRows(this.handle, sql);
-    //		return eval(mysql.getDataRowsJson(sql).replace(/\n/igm, '\\n'));
+//        	return eval(mysql.getDataRowsJson(sql).replace(/\n/igm, '\\n'));
         }
         catch (e) {
             log('Exception ' + e);
