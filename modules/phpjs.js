@@ -1,3 +1,5 @@
+/** @ignore */
+
 function empty (mixed_var) {
     // !No description available for empty. @php.js developers: Please update the function summary text file.
     //
@@ -220,3 +222,8 @@ function sprintf () {
 
     return format.replace(regex, doFormat);
 }
+
+exports.extend({
+	empty: empty,
+	sprintf: sprintf
+});

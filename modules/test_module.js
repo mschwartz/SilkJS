@@ -1,3 +1,5 @@
+/** @ignore */
+
 /* 
  * Example module for testing
  */

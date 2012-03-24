@@ -1,8 +1,4 @@
-/**
- * @module Image
- * 
- * 
- */
+/** @ignore */
 
 "use strict";
 

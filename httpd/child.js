@@ -89,7 +89,7 @@ HttpChild = (function() {
 	var less_cache = {};
 	function getCachedLess(fn) {
 		var cached = less_cache[fn];
-		var mtime = fs.stat(fn).mtime;
+		var mtime = fs.fileModified(fn);
 		if (!cached || mtime > cached.mtime) {
 			var less = require('less-silkjs-1.2.2');
 			var content = fs.readFile(fn);
@@ -115,7 +115,51 @@ HttpChild = (function() {
 		res.stop();
 	}
 
+	var sjs_cache = {};
+	function getCachedSJS(fn) {
+		var cached = sjs_cache[fn];
+		var mtime = fs.fileModified(fn);
+		if (!cached || mtime > cached.mtime) {
+			if (cached) {
+				v8.freeScript(cached.script);
+			}
+			var content = fs.readFile(fn);
+			content = [
+				'(function() {',
+//				'    var print = res.write;',
+//				'	 var println = res.writeln;',
+				content,
+				'}());'
+			].join('\n');
+			var script;
+			try {
+				script = v8.compileScript(content, fn);
+			}
+			catch (e) {
+				println(e + '<br/>');
+				println(fn + '<br/>\n<pre>\n' + content.replace(/</igm, '&lt;'));
+				console.dir(e);
+				console.dir(e.prototype);
+				console.dir(e.stack);
+				res.stop();
+			}
+			cached = {
+				mtime: mtime,
+				script: script
+			};
+			sjs_cache[fn] = cached;
+		}
+		return cached.script;
+	}
+	
+	function runSJS(fn) {
+		var sjs = getCachedSJS(fn);
+		v8.runScript(sjs);
+		res.stop();
+	}
+	
 	var contentTypes = {
+		sjs:	{ contentType: 'text/html',							handler: runSJS },
 		less:	{ contentType: 'text/css',		                    handler: runLess },
 		coffee:	{ contentType: 'text/html',		                    handler: runCoffee },
 		jst:	{ contentType: 'text/html',                         handler: runJst },

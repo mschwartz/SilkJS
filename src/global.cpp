@@ -11,6 +11,8 @@
  * 
  * The global object also contains a global.builtin namespace, which consists of the other C++/native builtin bindings.
  * 
+ * #### Note
+ * The global object is roughly equivalent to the window object on the browser side.  You will note the method names below do no start with "global." - it's not required.
  */
 #include "SilkJS.h"
 

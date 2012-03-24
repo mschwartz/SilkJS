@@ -35,7 +35,7 @@ static JSVAL log(JSARGS args) {
 }
 
 /**
- * @function console.e
+ * @function console.error
  * 
  * ### Synopsis
  * 

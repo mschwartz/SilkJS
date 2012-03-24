@@ -86,6 +86,7 @@ function processFile(fn) {
                         content += '+ ' + parts.join(' ') + '\n';
                         break;
                     case 'return':
+                    case 'returns':
                         content += '### Returns\n';
                         content += '+ ' + parts.join(' ') + '\n';
                         break;

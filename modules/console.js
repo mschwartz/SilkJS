@@ -1,3 +1,4 @@
+/** @ignore */
 (function() {
 	var console = builtin.console;
 	print_r = require('builtin/print_r');

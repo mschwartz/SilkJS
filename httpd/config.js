@@ -6,6 +6,7 @@ Config = {
 	requestsPerChild: 100000,
 	documentRoot: fs.exists('httpd/docroot') ? 'httpd/docroot' : '/usr/share/silkjs/httpd/docroot',
 	directoryIndex: [
+		'index.sjs',
 		'index.jst',
 		'index.coffee',
 		'index.md',

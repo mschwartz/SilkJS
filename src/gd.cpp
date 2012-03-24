@@ -1,4 +1,4 @@
-/* *
+/**
  * @module builtin/gd
  * 
  * ### Synopsis

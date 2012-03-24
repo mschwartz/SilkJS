@@ -1,3 +1,5 @@
+/** @ignore */
+
 /**
  * Created by JetBrains WebStorm.
  * User: mschwartz

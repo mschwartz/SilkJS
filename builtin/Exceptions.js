@@ -50,6 +50,12 @@ function error(s) {
 }
 
 Error.exceptionHandler = function(e) {
+    var spaces = '        ';
+    function formatLineNumber(n) {
+        n = ''+n;
+        return spaces.substr(0, 8 - n.length) + n;
+    }
+ 	
 	var ex = e;
 	var res = global.res || false;
 	if (res) {
@@ -189,7 +195,7 @@ Error.exceptionHandler = function(e) {
 			if (lineNum == lineNumber) {
 				res.write('<div style="background: red; color: white;">');
 			}
-			res.write('<span style="background: black; color: white;">' + sprintf("%8d", lineNum) + '</span>');
+			res.write('<span style="background: black; color: white;">' + formatLineNumber(lineNum) + '</span>');
 			res.writeln(lines[lineNum-1].replace(/</igm, '&lt;'));
 			if (lineNum == lineNumber) {
 				res.write('</div>');

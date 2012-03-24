@@ -778,6 +778,9 @@ JSVAL getScalar(JSARGS args) {
 	unsigned long *lengths = mysql_fetch_lengths(result);
 	MYSQL_FIELD *fields = mysql_fetch_fields(result);
 	MYSQL_ROW row = mysql_fetch_row(result);
+	if (!row) {
+		return scope.Close(False());
+	}
 
 	if (row[0] == NULL) {
 		return Null();
