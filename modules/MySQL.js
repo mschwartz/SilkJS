@@ -33,7 +33,7 @@ function addslashes(str) {
 }
 
 /**
- * @function MySQL
+ * @constructor MySQL
  * 
  * ### Synopsis
  * 

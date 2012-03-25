@@ -70,6 +70,7 @@ function processFile(fn) {
                 tag = parts.shift().toLowerCase();
                 switch (tag) {
                     case 'function':
+					case 'constructor':
                     case 'class':
                     case 'singleton':
                     case 'namespace':
