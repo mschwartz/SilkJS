@@ -1,6 +1,6 @@
 Error.stackTraceLimit = 50;
 
-Error.prepareStackTrace = function(error, structuredStackTrace) {
+Error.MyPrepareStackTrace = function(error, structuredStackTrace) {
 	var stack = [];
 	structuredStackTrace.each(function(item) {
 		stack.push({
@@ -22,7 +22,10 @@ Error.prepareStackTrace = function(error, structuredStackTrace) {
 }
 
 var SQLException = function(msg, query) {
+    var save = Error.prepareStackTrace;
+    Error.prepareStackTrace = Error.MyPrepareStackTrace;
 	Error.captureStackTrace(this, SQLException);
+    Error.prepareStackTrace = save;
 	this.name = 'SQL Error';
 	this.message = msg;
 	this.query = query;
@@ -32,7 +35,10 @@ SQLException.prototype.toString = function() {
 }
 
 var SilkException = function(msg) {
+    var save = Error.prepareStackTrace;
+    Error.prepareStackTrace = Error.MyPrepareStackTrace;
 	Error.captureStackTrace(this, SilkException);
+    Error.prepareStackTrace = save;
 	this.message = msg;
 };
 SilkException.prototype.toString = function() {
@@ -54,6 +60,9 @@ Error.exceptionHandler = function(e) {
     function formatLineNumber(n) {
         n = ''+n;
         return spaces.substr(0, 8 - n.length) + n;
+    }
+    function isArray(v) {
+        return toString.apply(v) === '[object Array]';
     }
  	
 	var ex = e;
@@ -113,28 +122,33 @@ Error.exceptionHandler = function(e) {
 //		ex.stack.pop();
 		var stack = '',
 			conStack = '';
-		ex.stack.each(function(item) {
-			filename = filename || item.fileName;
-			lineNumber = lineNumber || item.lineNumber;
-            if (stack == '' && require.isRequiredFile(filename)) {
-                lineNumber -= 6;
-                item.lineNumber -= 6;
-            }
-			if (res) {
-				stack += '<li>';
-			}
-			conStack += '* ';
-			stack += item.fileName + ':' + item.lineNumber;
-			conStack += item.fileName + ':' + item.lineNumber;
-			if (item.methodName) {
-				stack += ' ('+item.functionName + ')';
-				conStack += ' (' + item.functionName + ')';
-			}
-			if (res) {
-				stack += '</li>';
-			}
-			conStack += '\n';
-		});
+        if (isArray(ex.stack)) {
+            ex.stack.each(function(item) {
+                filename = filename || item.fileName;
+                lineNumber = lineNumber || item.lineNumber;
+                if (stack == '' && require.isRequiredFile(filename)) {
+                    lineNumber -= 6;
+                    item.lineNumber -= 6;
+                }
+                if (res) {
+                    stack += '<li>';
+                }
+                conStack += '* ';
+                stack += item.fileName + ':' + item.lineNumber;
+                conStack += item.fileName + ':' + item.lineNumber;
+                if (item.methodName) {
+                    stack += ' ('+item.functionName + ')';
+                    conStack += ' (' + item.functionName + ')';
+                }
+                if (res) {
+                    stack += '</li>';
+                }
+                conStack += '\n';
+            });
+        }
+        else {
+            stack = conStack = ex.stack;
+        }
 		if (res) {
 			res.write([
 				'<h2>Stack Trace</h2>',

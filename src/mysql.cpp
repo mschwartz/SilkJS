@@ -542,7 +542,7 @@ static JSVAL real_connect(JSARGS args) {
 	
 //	mysql_options(handle, MYSQL_READ_DEFAULT_GROUP, "libmysqld_client");
 //	mysql_options(handle, MYSQL_OPT_USE_EMBEDDED_CONNECTION, NULL);
-	return scope.Close(Integer::New((unsigned long)mysql_real_connect(handle, *host, *user, *password, *db, 0,NULL,CLIENT_IGNORE_SIGPIPE)));
+	return scope.Close(Integer::New((unsigned long)mysql_real_connect(handle, *host, *user, *password, *db, 0,NULL,CLIENT_IGNORE_SIGPIPE | CLIENT_FOUND_ROWS)));
 //	return scope.Close(Integer::New((unsigned long)mysql_real_connect(handle, NULL, NULL, NULL, *db, 0,NULL,0)));
 }
 
@@ -836,7 +836,7 @@ JSVAL connect(JSARGS args) {
     MYSQL *handle = mysql_init(NULL);
 		
 //		handle = mysql_real_connect(handle, "localhost", "mschwartz", "", "sim", 3306, NULL, 0);
-    handle = mysql_real_connect(handle, *host, *user, *passwd, *db, port, NULL, CLIENT_IGNORE_SIGPIPE);
+    handle = mysql_real_connect(handle, *host, *user, *passwd, *db, port, NULL, CLIENT_IGNORE_SIGPIPE | CLIENT_FOUND_ROWS);
     if (!handle) {
         return ThrowException(Exception::Error(String::New("MySQL connection failed")));
     }

@@ -111,7 +111,7 @@ int main(int argc, char** argv) {
         HandleScope scope;
 
         init_global_object();
-        V8::SetCaptureStackTraceForUncaughtExceptions(true, 50, StackTrace::kDetailed);
+        V8::SetCaptureStackTraceForUncaughtExceptions(true, 50); // , StackTrace::kDetailed);
         context = Context::New(NULL, globalObject);
         Context::Scope context_scope(context);
 		{

@@ -15,7 +15,8 @@
 
 "use strict";
 
-var fs = require('builtin/fs');
+var fs = require('builtin/fs'),
+    process = require('builtin/process');
 
 exports.extend({
 	/**
@@ -134,6 +135,20 @@ exports.extend({
         }
         recurse(dir);
         fs.rmdir(dir);
+    },
+    
+    /**
+     * @function fs.copy
+     * 
+     * ### Synopsis
+     * 
+     * fs.copy(dst, src);
+     * 
+     * @param {string} dst - destination path where file is copied.
+     * @param {string} src - path to file to be copied.
+     */
+    copy: function(dst, src) {
+        process.exec('cp ' + src + ' ' + dst);
     }
 });
 
