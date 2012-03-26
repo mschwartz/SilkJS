@@ -24,10 +24,6 @@ function main() {
 		print('Must be run as root or via sudo\n');
 		process.exit(0);
 	}
-	println('-- copying SilkJS /usr/local/bin');
-	exec('cp silkjs /usr/local/bin');
-	exec('chmod 755 /usr/local/bin/silkjs');
-
 	println('-- copying src to /usr/share/silkjs/');
 	exec('rm -rf /usr/share/silkjs');
 	exec('mkdir -p /usr/share/silkjs/src');
@@ -52,4 +48,8 @@ function main() {
 	println('-- copying httpd/main.js to /usr/local/bin/httpd-silk.js');
 	exec('cp httpd/main.js /usr/local/bin/httpd-silk.js');
 	exec('chmod 755 /usr/local/bin/httpd-silk.js');
+
+    println('-- copying SilkJS /usr/local/bin');
+	exec('cp silkjs /usr/local/bin');
+	exec('chmod 755 /usr/local/bin/silkjs');
 }

@@ -32,49 +32,85 @@
 #include "SilkJS.h"
 
 #define LOGFILE_CHUNK_SIZE	(16384*2)
-#ifdef __APPLE__
-#define LOGFILE_MM_FILENAME "/tmp/logfile_mm"
-#define LOGFILE_FN "/tmp/silkjs.log"
-#else
-#define LOGFILE_MM_FILENAME "/dev/shm/logfile_mm"
-#define LOGFILE_FN "/tmp/silkjs.log"
-#endif
 
-static MM *mm = NULL;
-static char *logBuffer;
-static long *length;
-static int logFd = 0;
+struct STATE {
+    bool alive;
+    char *filename;
+    char *mm_file;
+    MM *mm;
+    char *logBuffer;
+    long *length;
+    int logFd;
+    STATE(char *filename) {
+        this->alive = false;
+        this->filename = strdup(filename);
+        this->mm_file = new char[strlen(this->filename) + 4];
+        strcpy(this->mm_file, filename);
+        strcat(this->mm_file, "_mm");
+        this->mm = mm_create(LOGFILE_CHUNK_SIZE*2, this->mm_file);
+		this->length = (long *)mm_malloc(mm, sizeof(long));
+		*this->length = 0;
+		this->logBuffer = (char *)mm_malloc(mm, LOGFILE_CHUNK_SIZE);
+		*this->logBuffer = '\0';
+        this->logFd = 0;
+        this->alive = true;
+        int fd = open(this->filename, O_WRONLY|O_CREAT|O_TRUNC, 0644);
+        close(fd);
+    }
+    ~STATE() {
+        if (this->logFd) {
+            close(this->logFd);
+        }
+        this->logFd = 0;
+        delete [] this->mm_file;
+        delete [] this->filename;
+        mm_destroy(this->mm);
+    }
+};
 
-static void open_logfile() {
-	if (!logFd) {
-		logFd = open(LOGFILE_FN, O_RDWR);
-		if (logFd < 0) {
+static inline STATE* HANDLE(Handle<Value>v) {
+    if (v->IsNull()) {
+        ThrowException(String::New("Handle is NULL"));
+        return NULL;
+    }
+    STATE *state = (STATE *)JSEXTERN(v);
+    return state;
+}
+
+/*
+ * PRIVATE
+ */
+
+static void open_logfile(STATE *state) {
+	if (!state->logFd) {
+		state->logFd = open(state->filename, O_RDWR);
+		if (state->logFd < 0) {
 			perror("logfile_write/open");
 			exit(1);
 		}
 	}
 }
 
-static void lock_logfile() {
-	open_logfile();
-	flock(logFd, LOCK_EX);
+static void lock_logfile(STATE *state) {
+	open_logfile(state);
+	flock(state->logFd, LOCK_EX);
 }
 
-static void unlock_logfile() {
-	flock(logFd, LOCK_UN);
+static void unlock_logfile(STATE *state) {
+	flock(state->logFd, LOCK_UN);
 }
 
-static void flush_logfile() {
-	if (*length) {
-		lseek(logFd, 0, 2);
-		long toWrite = *length;
+static void flush_logfile(STATE *state) {
+	if (*state->length) {
+		lseek(state->logFd, 0, 2);
+		long toWrite = *state->length;
 		long offset = 0;
 		while (toWrite > 0) {
-			long written = write(logFd, &logBuffer[offset], toWrite);
+			long written = write(state->logFd, &state->logBuffer[offset], toWrite);
 			offset += written;
 			toWrite -= written;
 		}
-		*length = 0;
+		*state->length = 0;
 	}
 }
 
@@ -83,25 +119,21 @@ static void flush_logfile() {
  * 
  * ### Synopsis
  * 
- * logfile.init();
+ * var handle = logfile.init(filename);
  * 
  * Initialize the log file.
  * 
+ * @param {string} filename - path to logfile
+ * @returns {object} handle - handle to logfile
  */
 static JSVAL logfile_init(JSARGS args) {
 	HandleScope scope;
-	if (!mm) {
-		mm = mm_create(LOGFILE_CHUNK_SIZE*2, LOGFILE_MM_FILENAME);
-		if (!mm) {
-			printf("init_log_object error %s\n", mm_error());
-			exit(1);
-		}
-		length = (long *)mm_malloc(mm, sizeof(long));
-		*length = 0;
-		logBuffer = (char *)mm_malloc(mm, LOGFILE_CHUNK_SIZE);
-		*logBuffer = '\0';
-	}
-	return Undefined();
+	String::AsciiValue filename(args[0]);
+    STATE *state = new STATE(*filename);
+    if (!state->alive) {
+        ThrowException(String::New("Could not initialize log file"));
+    }
+    return scope.Close(External::New(state));
 }
 
 /**
@@ -109,32 +141,36 @@ static JSVAL logfile_init(JSARGS args) {
  * 
  * ### Synopsis
  * 
- * logfile.write(s);
+ * logfile.write(handle, s);
+ * logfile.write(handle, s, len);
  * 
  * Write a string to the log file.  
  * 
  * The string is appended to the shared memory block.  The memory block is first flushed to disk if there is not enough room for the string.
  * 
+ * @param {object} handle - handle of the log file.
  * @param {string} s - string to write to the log file.
+ * @param {int} len - optional length of string to write; defaults to strlen(s).
  * 
  */
 static JSVAL logfile_write(JSARGS args) {
 	HandleScope scope;
-	String::AsciiValue buf(args[0]);
+    STATE *state = HANDLE(args[0]);
+	String::AsciiValue buf(args[1]);
 	int len;
-	if (args.Length() > 1) {
-		len = args[1]->IntegerValue();
+	if (args.Length() > 2) {
+		len = args[2]->IntegerValue();
 	}
 	else {
 		len = strlen(*buf);
 	}
-	lock_logfile();
-	if (*length + len >= LOGFILE_CHUNK_SIZE) {
-		flush_logfile();
+	lock_logfile(state);
+	if (*state->length + len >= LOGFILE_CHUNK_SIZE) {
+		flush_logfile(state);
 	}
-	memcpy(&logBuffer[*length], *buf, len);
-	*length += len;
-	unlock_logfile();
+	memcpy(&state->logBuffer[*state->length], *buf, len);
+	*state->length += len;
+	unlock_logfile(state);
 	return Undefined();
 }
 
@@ -143,25 +179,48 @@ static JSVAL logfile_write(JSARGS args) {
  * 
  * ### Synopsis
  * 
- * logfile.flush();
+ * logfile.flush(handle);
  * 
  * Flush contents of shared memory block to the log file, reset memory block to "empty" state.
+ * 
+ * @param {object} handle - handle of logfile to flush.
  */
 static JSVAL logfile_flush(JSARGS args) {
 	HandleScope scope;
-	lock_logfile();
-	flush_logfile();
-	unlock_logfile();
+    STATE *state = HANDLE(args[0]);
+    
+	lock_logfile(state);
+	flush_logfile(state);
+	unlock_logfile(state);
 	return Undefined();
+}
+
+/**
+ * @function logfile.destroy
+ * 
+ * ### Synopsis
+ * 
+ * logfile.destroy(handle);
+ * 
+ * Destroy reference to a logfile, free all its resources.
+ * 
+ * @param {object} handle - handle to logfile to destroy.
+ */
+static JSVAL logfile_destroy(JSARGS args) {
+	HandleScope scope;
+    STATE *state = HANDLE(args[0]);
+    delete state;
+    return Undefined();
 }
 
 void init_logfile_object() {
 	HandleScope scope;
-	int fd = open(LOGFILE_FN, O_WRONLY|O_CREAT|O_TRUNC, 0664);
-	close(fd);
 	Handle<ObjectTemplate>logfile = ObjectTemplate::New();
+    
 	logfile->Set(String::New("init"), FunctionTemplate::New(logfile_init));
 	logfile->Set(String::New("write"), FunctionTemplate::New(logfile_write));
 	logfile->Set(String::New("flush"), FunctionTemplate::New(logfile_flush));
-	builtinObject->Set(String::New("logfile"), logfile);
+	logfile->Set(String::New("destroy"), FunctionTemplate::New(logfile_destroy));
+	
+    builtinObject->Set(String::New("logfile"), logfile);
 }

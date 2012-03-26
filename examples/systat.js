@@ -4,7 +4,7 @@
  * and open the template in the editor.
  */
 
-include('lib/phpjs.js');
+sprintf = require('phpjs').sprintf;
 
 var imports = [ 
 	'move', 

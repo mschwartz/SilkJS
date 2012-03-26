@@ -281,6 +281,7 @@ HttpChild = (function() {
 			return coffee_cache[fn];
 		},
 		run: function(serverSocket, pid) {
+            var logfile = global.logfile;
 			HttpChild.onStart && HttpChild.onStart();
 			// onStart is a better way for apps to initialize SQL
 			if (Config.mysql) {

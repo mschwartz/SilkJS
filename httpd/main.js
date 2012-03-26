@@ -5,7 +5,7 @@ print_r = require('builtin/print_r');
 console = require('console');
 fs = require('fs');
 
-logfile = require('builtin/logfile');
+LogFile = require('LogFile');
 net = require('builtin/net');
 process = require('builtin/process');
 v8 = require('builtin/v8');
@@ -54,7 +54,7 @@ function main() {
     fs.close(fd);
     var serverSocket = net.listen(Config.port);
 
-    logfile.init();
+    global.logfile = new LogFile(Config.logFile || '/tmp/httpd-silkjs.log');
     
     if (debugMode) {
 		while (1) {
@@ -62,14 +62,18 @@ function main() {
 		}
     }
     
-    pid = process.fork();
-    if (pid == 0) {
-        while (1) {
-//            process.sleep(5);
-            process.usleep(250);
-            logfile.flush();
-        }
-    }
+    
+    
+//    pid = process.fork();
+//    if (pid == 0) {
+//        while (1) {
+////            process.sleep(5);
+//            process.usleep(250);
+//            logfile.flush();
+//        }
+//    }
+
+    var children = {};
     for (var i=0; i<Config.numChildren; i++) {
         pid = process.fork();
         if (pid == 0) {
@@ -79,12 +83,19 @@ function main() {
         else if (pid == -1) {
             console.error(process.error());
         }
+        else {
+            children[pid] = true;
+        }
     }
 
     log('Silk running with ' + Config.numChildren + ' children on port ' + Config.port);
     logfile.write('Silk running with ' + Config.numChildren + ' children on port ' + Config.port);
     while (true) {
         var o = process.wait();
+        if (!children[o.pid]) {
+            continue;
+        }
+        delete children[pid];
         pid = process.fork();
         if (pid == 0) {
             HttpChild.run(serverSocket, process.getpid());
@@ -92,6 +103,9 @@ function main() {
         }
         else if (pid == -1) {
             console.error(process.error());
+        }
+        else {
+            children[pid] = true;
         }
     }
 }
