@@ -5,3 +5,8 @@ SilkJS
 CMakeLists.txt.user
 build/
 /nbproject/private/
+nbproject
+silkjs
+src/silkjs
+src/v8-read-only/
+
