@@ -1,5 +1,5 @@
 /**
- * @module modules/MySQL
+ * @module MySQL
  * 
  * ### Synopsis
  * 
@@ -13,9 +13,28 @@
  * 
  * var MySQL = require('MySQL');
  * 
- * ### Note
+ * ### Notes
  * 
  * Throughout this documentation, an SQL variable that is an instantiated MySQL object is referred to.  This is the "vision" for how to use this class.
+ * 
+ * Most of these methods can throw an SQLException.  A malformed query (syntax error) will certainly generate one.  You likely will try/catch around calls to these methods, as shown in the example below.
+ * 
+ * ### Example
+ * 
+ * ```
+ * var SQL = new MySQL();
+ * SQL.connect();	// uses Config.mysql settings for connection
+ * SQL.startTransaction();
+ * try {
+ *    SQL.update('INSERT INTO table1 VALUES (' + SQL.quote(val1) + ',' + SQL.quote(val2) + ')');
+ *    SQL.update('INSERT INTO table2 VALUES (' + SQL.quote(val3) + ',' + SQL.quote(val4) + ')');
+ *    SQL.commit();
+ * }
+ * catch (e) {
+ *   console.log('SQL Error: ' + e.query + '\n' + e.message);
+ *   SQL.rollback();
+ * }
+ * ```
  * 
  * ### See Also
  * 
@@ -68,8 +87,12 @@ MySQL.prototype.extend({
 	 * ### Synopsis
 	 * 
 	 * SQL.connect(host, user, passwd, db);
+	 * or
+	 * SQL.connect();
 	 * 
 	 * Connect an SQL instance to a server and database.
+	 * 
+	 * The second form for SQL.connect, with no arguments, means a global Config.mysql object is expected with host, user, passwd, and db members that specify the connection parameeters.
 	 * 
 	 * @param {string} host - host name of MySQL server.
 	 * @param {string} user - MySQL username.
@@ -275,6 +298,19 @@ MySQL.prototype.extend({
 			
     },
 
+	/**
+	 * @function SQL.startTransaction
+	 * 
+	 * ### Synopsis
+	 * 
+	 * SQL.startTransaction();
+	 * 
+	 * Start a MySQL transaction.  
+	 *
+	 * ### See Also
+	 * 
+	 * The example at the top of this page.
+	 */
     startTransaction: function() {
         try {
 	        return mysql.update(this.handle, 'START TRANSACTION');
@@ -284,15 +320,19 @@ MySQL.prototype.extend({
         }
     },
     
-    endTransaction: function() {
-        try {
-	        return mysql.update(this.handle, 'END TRANSACTION');
-        }
-        catch (e) {
-            throw new SQLException(e, sql);
-        }
-    },
-    
+	/**
+	 * @function SQL.commit
+	 * 
+	 * ### Synopsis
+	 * 
+	 * SQL.commit();
+	 * 
+	 * Commit a MySQL transaction.  
+	 *
+	 * ### See Also
+	 * 
+	 * The example at the top of this page.
+	 */
     commit: function() {
          try {
 	       return mysql.update(this.handle, 'COMMIT');
@@ -302,6 +342,19 @@ MySQL.prototype.extend({
         }
     },
     
+	/**
+	 * @function SQL.rollback
+	 * 
+	 * ### Synopsis
+	 * 
+	 * SQL.rollback();
+	 * 
+	 * Roll back (undo) a MySQL transaction.  
+	 *
+	 * ### See Also
+	 * 
+	 * The example at the top of this page.
+	 */
     rollback: function() {
         try {
 	        return mysql.update(this.handle, 'ROLLBACK');
@@ -311,6 +364,28 @@ MySQL.prototype.extend({
         }
     },
     
+	/**
+	 * @function SQL.quote
+	 * 
+	 * ### Synopsis
+	 * 
+	 * var s = SQL.quote(value);
+	 * var arr = SQL.quote(value);	// value is an array
+	 * 
+	 * Quote and escape a value or array of values, suitable for usig in a MySQL query string.
+	 * 
+	 * If a single value is passed, a single quoted value is returned.
+	 * 
+	 * If an array is passed, an array of quoted values is returned.
+	 * 
+	 * The values true, 'yes', false, and 'no' are turned into '1' and '0', respectively.
+	 * 
+	 * ### Note
+	 * Quoting all values to be included in a query statement should prevent SQL injection.
+	 * 
+	 * @param {string|array} value - the value that is to be quoted.
+	 * @returns {string|array} quoted - the quoted value or array of values.
+	 */
     quote: function(s) {
         if (isArray(s)) {
             var ret = [];
@@ -330,11 +405,7 @@ MySQL.prototype.extend({
         }
         else {
             s = s == undefined ? '' : s;
-            return [
-                "'",
-                addslashes(s),
-                "'"
-            ].join('');
+            return "'" + addslashes(s) + "'";
         }
     },
 

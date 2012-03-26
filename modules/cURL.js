@@ -5,7 +5,11 @@
  * 
  * ### Synopsis:
  * 
- * var curl = require('cURL');
+ * var cURL = require('cURL');
+ * 
+ * ### Note
+ * 
+ * The name of the function exported by this module is simply cURL.  You do not need to call cURL.cURL()...
  * 
  */
 
@@ -21,6 +25,35 @@ function isString(v) {
     return typeof v === 'string';
 }
 
+/**
+ * @function cURL
+ * 
+ * ### Synopsis
+ * 
+ * var result = cURL(config);
+ * 
+ * Perform a cURL request.
+ * 
+ * The config parameter is an object of the form:
+ * 
+ * + url: (required) the URL to POST or GET from the remote server.
+ * + method: (optional) either "GET" or "POST"
+ * + followRedirects (optional) true (default) to follow redirect responses from the server
+ * + cookies: (optional) Object, Array, or String representation of cookie header to send
+ * + params: (valid for POST only): POST variables to send to server
+ * 
+ * The result returned is an object of the form:
+ * 
+ * + status: HTTP status from server (e.g. 200 for OK, 404 for not found, etc.)
+ * + contentType: the MIME type or content-type of the response.
+ * + responseText: the response from the server as a string.
+ * 
+ * @param {object} config - a config object as described above.
+ * @returns {object} result - a result object as described above.
+ * 
+ * ### Note
+ * This function throws an error if the arguments are invalid.
+ */
 function cURL(config) {
     if (!config.url) {
         error('url required');
