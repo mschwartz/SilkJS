@@ -22,7 +22,7 @@ include('lib/Json.js');
 include('lib/Jst.js');
 include('lib/Showdown.js');
 MySQL = require('MySQL.js').MySQL;
-include('lib/ssh.js');
+var SSH = require('ssh');
 ////
 include('httpd/config.js');
 include('httpd/request.js');
@@ -54,25 +54,14 @@ function main() {
     fs.close(fd);
     var serverSocket = net.listen(Config.port);
 
-    global.logfile = new LogFile(Config.logFile || '/tmp/httpd-silkjs.log');
-    
     if (debugMode) {
 		while (1) {
 	        HttpChild.run(serverSocket, process.getpid());
 		}
     }
     
+    global.logfile = new LogFile(Config.logFile || '/tmp/httpd-silkjs.log');
     
-    
-//    pid = process.fork();
-//    if (pid == 0) {
-//        while (1) {
-////            process.sleep(5);
-//            process.usleep(250);
-//            logfile.flush();
-//        }
-//    }
-
     var children = {};
     for (var i=0; i<Config.numChildren; i++) {
         pid = process.fork();
