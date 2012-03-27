@@ -1002,37 +1002,35 @@ static JSVAL fs_copyFile(JSARGS args) {
     close(fdin);
     close(fdout);
 
-#if false    
-    
-    int infd = open(*src, O_RDONLY);
-    if (infd < 1) {
-        return scope.Close(False());
-    }
-    
-    int outfd = open(*dst, O_WRONLY | O_CREAT | O_TRUNC, mode);
-    if (outfd == -1) {
-        close(infd);
-        return scope.Close(False());
-    }
-    const ssize_t SIZE = 128 * 1024;
-    unsigned char buf[SIZE];
-    ssize_t count, actual;
-    while ((count = read(infd, buf, SIZE))) {
-        if (count < 0) {
-            close(infd);
-            close(outfd);
-            return scope.Close(False());
-        }
-        actual = write(outfd, buf, count);
-        if (actual < 0) {
-            close(infd);
-            close(outfd);
-            return scope.Close(False());
-        }
-    }
-    close(infd);
-    close(outfd);
-#endif
+//    int infd = open(*src, O_RDONLY);
+//    if (infd < 1) {
+//        return scope.Close(False());
+//    }
+//    
+//    int outfd = open(*dst, O_WRONLY | O_CREAT | O_TRUNC, mode);
+//    if (outfd == -1) {
+//        close(infd);
+//        return scope.Close(False());
+//    }
+//    const ssize_t SIZE = 128 * 1024;
+//    unsigned char buf[SIZE];
+//    ssize_t count, actual;
+//    while ((count = read(infd, buf, SIZE))) {
+//        if (count < 0) {
+//            close(infd);
+//            close(outfd);
+//            return scope.Close(False());
+//        }
+//        actual = write(outfd, buf, count);
+//        if (actual < 0) {
+//            close(infd);
+//            close(outfd);
+//            return scope.Close(False());
+//        }
+//    }
+//    close(infd);
+//    close(outfd);
+
     return scope.Close(True());
 }
 

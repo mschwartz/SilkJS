@@ -40,9 +40,24 @@
 		 * @param {array|object|string|number|function} o - the thing to dump.
 		 */
 		dir: function(o) {
-            Error.captureStackTrace(this, this.dir);
-            var callee = this.stack[0];
-			console.log(callee.fileName + ' line ' + callee.lineNumber + ' (' + callee.functionName + ')\n ' + print_r(o));
+            var save = Error.prepareStackTrace;
+            Error.prepareStackTrace = function(error, structuredStackTrace) {
+//log('prepareStackTrace');
+                var stack = [];
+                structuredStackTrace.each(function(item) {
+                    stack.push({
+                        fileName: item.getFileName(),
+                        lineNumber: item.getLineNumber(),
+                        functionName: item.getFunctionName()
+                    });
+                });
+                return stack;
+            }
+            var e = new Error();
+            var callee = e.stack[1];
+            Error.prepareStackTrace = save;
+            callee.functionName = callee.functionName ? (' (' + callee.functionName + ')') : '';
+			console.log(callee.fileName + ' line ' + callee.lineNumber + callee.functionName + ':\n ' + print_r(o));
 		}
 	};
 }());

@@ -48,7 +48,6 @@
     };
 
     error = function(s) {
-log('Exceptions.js error: ' + s);
         try {
             throw new SilkException(s);
         }
