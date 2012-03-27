@@ -18,7 +18,7 @@
 var fs = require('builtin/fs'),
     process = require('builtin/process');
 
-exports.extend({
+var newfs = {
 	/**
 	 * @function fs.list
 	 * 
@@ -78,6 +78,7 @@ exports.extend({
         var recurse = pattern ? function(dir) {
             fs.readDir(dir).each(function(file) {
                 if (fs.isDir(dir + '/' + file)) {
+                    files.push(dir + '/' + file);
                     recurse(dir + '/' + file);
                 }
                 else if (pattern.test(file)) {
@@ -85,8 +86,10 @@ exports.extend({
                 }
             });
         } : function(dir) {
-            fs.readDir(dir).each(function(file) {
+            var dirEntries = fs.readDir(dir);
+            dirEntries && dirEntries.each(function(file) {
                 if (fs.isDir(dir + '/' + file)) {
+                    files.push(dir + '/' + file);
                     recurse(dir + '/' + file);
                 }
                 else {
@@ -115,12 +118,12 @@ exports.extend({
 	 */
     removeDirectory: function(dir) {
         function recurse(path) {
-            console.log(path);
+//            console.log('recurse ' + path);
             var files = fs.readDir(path);
             if (files) {
                 files.each(function(file) {
                     if (fs.isDir(path+'/'+file)) {
-                        recurse(dir + '/' + path);
+                        recurse(path + '/' + file);
                         fs.rmdir(path);
                     }
                     else {
@@ -149,7 +152,45 @@ exports.extend({
      */
     copy: function(dst, src) {
         process.exec('cp ' + src + ' ' + dst);
+    },
+    
+    /**
+     * @function fs.mkdir
+     * 
+     * ### Synopsis
+     * 
+     * var status = fs.mkdir(path);
+     * var status = fs.mkdir(path, parents);
+     * 
+     * Create a directory.
+     * 
+     * @param {string} path - path of directory to create.
+     * @param {boolean} parents - make parent directories as needed.
+     * 
+     * ### Note
+     * 
+     * If parents is not true, then fs.mkdir() will fail if any part of the path does not exist, except the last part (the directory name).
+     */
+    mkdir: function(path, parents) {
+        if (!parents) {
+            return fs.mkdir(path);
+        }
+        else {
+            var toCreate = '/',
+                ret;
+            path.split('/').each(function(part) {
+                if (part.length) {
+                    toCreate += part;
+                    if (!fs.exists(toCreate)) {
+                        ret = fs.mkdir(toCreate);
+                    }
+                    toCreate += '/';
+                }
+            });
+            return ret;
+        }
     }
-});
+}
 
 exports.extend(fs);
+exports.extend(newfs);

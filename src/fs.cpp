@@ -15,7 +15,7 @@
  * 
  */
 #include "SilkJS.h"
-
+#include <sys/mman.h>
 
 // TODO:
 
@@ -667,7 +667,7 @@ static JSVAL fs_rmdir(JSARGS args) {
 static JSVAL fs_mkdir(JSARGS args) {
     HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
-    mode_t mode = 0700;
+    mode_t mode = 0755;
     if (args.Length() > 1) {
         mode = args[1]->IntegerValue();
     }
@@ -909,6 +909,134 @@ static JSVAL fs_writefile64(JSARGS args) {
 }
 
 /**
+ * @function fs.copyFile
+ * 
+ * ### Synsopsis
+ * 
+ * var success = fs.copyFile(destination, source);
+ * var success = fs.copyFile(destination, source, mode);
+ * 
+ * Copy file from source to destination.  If mode is omitted, destination file perms will be 0644.
+ * 
+ * @param {string) destination - destination path (file to be written).
+ * @param (string} source - source path (file to be copied).
+ * @param {int} mode - file permissions for destination after copy.
+ * @return {boolean} success - true if file was copied successfully, false if an error occurred.
+ */
+static JSVAL fs_copyFile(JSARGS args) {
+    HandleScope scope;
+    
+    String::Utf8Value destination(args[0]->ToString());
+    String::Utf8Value source(args[1]->ToString());
+    mode_t mode = 0644;
+    if (args.Length() > 2) {
+        mode = args[2]->IntegerValue();
+    }
+
+    int fdin, fdout;
+    char *src, *dst;
+    struct stat statbuf;
+    int esave;
+
+    /* open the input file */
+    if ((fdin = open (*source, O_RDONLY)) < 0) {
+        return scope.Close(False());
+    }
+
+    /* open/create the output file */
+    if ((fdout = open (*destination, O_RDWR | O_CREAT | O_TRUNC, mode)) < 0) {
+        close(fdin);
+        return scope.Close(False());
+    }
+
+    /* find size of input file */
+    if (fstat (fdin,&statbuf) < 0) {
+        esave = errno;
+        close(fdin);
+        close(fdout);
+        errno = esave;
+        return scope.Close(False());
+    }
+
+    /* go to the location corresponding to the last byte */
+    if (lseek (fdout, statbuf.st_size - 1, SEEK_SET) == -1) {
+        esave = errno;
+        close(fdin);
+        close(fdout);
+        errno = esave;
+        return scope.Close(False());
+    }
+
+    /* write a dummy byte at the last location */
+    if (write (fdout, "", 1) != 1) {
+        esave = errno;
+        close(fdin);
+        close(fdout);
+        errno = esave;
+        return scope.Close(False());
+    }
+
+    /* mmap the input file */
+    if ((src = (char *)mmap (0, statbuf.st_size, PROT_READ, MAP_SHARED, fdin, 0)) == (caddr_t) -1) {
+        esave = errno;
+        close(fdin);
+        close(fdout);
+        errno = esave;
+        return scope.Close(False());
+    }
+
+    /* mmap the output file */
+    if ((dst = (char *)mmap (0, statbuf.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, fdout, 0)) == (caddr_t) -1) {
+        esave = errno;
+        munmap(src, statbuf.st_size);
+        close(fdin);
+        close(fdout);
+        errno = esave;
+        return scope.Close(False());
+    }
+
+    /* this copies the input file to the output file */
+    memcpy (dst, src, statbuf.st_size);
+    munmap(src, statbuf.st_size);
+    munmap(dst, statbuf.st_size);
+    close(fdin);
+    close(fdout);
+
+#if false    
+    
+    int infd = open(*src, O_RDONLY);
+    if (infd < 1) {
+        return scope.Close(False());
+    }
+    
+    int outfd = open(*dst, O_WRONLY | O_CREAT | O_TRUNC, mode);
+    if (outfd == -1) {
+        close(infd);
+        return scope.Close(False());
+    }
+    const ssize_t SIZE = 128 * 1024;
+    unsigned char buf[SIZE];
+    ssize_t count, actual;
+    while ((count = read(infd, buf, SIZE))) {
+        if (count < 0) {
+            close(infd);
+            close(outfd);
+            return scope.Close(False());
+        }
+        actual = write(outfd, buf, count);
+        if (actual < 0) {
+            close(infd);
+            close(outfd);
+            return scope.Close(False());
+        }
+    }
+    close(infd);
+    close(outfd);
+#endif
+    return scope.Close(True());
+}
+
+/**
  * @function fs.md5
  * 
  * ### Synopsis
@@ -1114,6 +1242,7 @@ void init_fs_object() {
     fs->Set(String::New("readFile64"), FunctionTemplate::New(fs_readfile64));
     fs->Set(String::New("writeFile"), FunctionTemplate::New(fs_writefile));
     fs->Set(String::New("writeFile64"), FunctionTemplate::New(fs_writefile64));
+    fs->Set(String::New("copyFile"), FunctionTemplate::New(fs_copyFile));
     fs->Set(String::New("exists"), FunctionTemplate::New(fs_exists));
     fs->Set(String::New("isFile"), FunctionTemplate::New(fs_isfile));
     fs->Set(String::New("isDir"), FunctionTemplate::New(fs_isdir));
