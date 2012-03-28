@@ -268,6 +268,77 @@ static JSVAL process_env(JSARGS args) {
 	return scope.Close(env);
 }
 
+/**
+ * @function process.rusage
+ * 
+ * ### Synopsis
+ * 
+ * var o = process.rusage();
+ * 
+ * Get resource usage information for current process.
+ * 
+ * The object returned is of the form:
+ * 
+ * + time: total user + system CPU time used.
+ * + utime: user CPU time used (float, in seconds).
+ * + stime: system CPU time used (float, in seconds).
+ * + maxrss: maximum resident set size.
+ * + ixrss: integral shared memory size.
+ * + idrss: integral unshared data size.
+ * + isrss: integral unshared stack size.
+ * + minflt: page reclaimes (soft page faults).
+ * + majflt: page faults (hard page faults).
+ * + nswap: swaps.
+ * + inblock: block input operations.
+ * + oublock: block output operations.
+ * + msgsnd: IPC messages sent.
+ * + msgrcv: IPC messages received.
+ * + nsignals: signals received.
+ * + nvcsw: voluntary context switches.
+ * + nivcsw: involuntary context switches.
+ */
+static double timeval2sec(const timeval& t) {
+  double f = (double) t.tv_sec + t.tv_usec / 1000000.0;
+  return f; 
+}
+static timeval addTime(timeval& t1, timeval& t2) {
+  timeval t;
+  t.tv_sec  = t1.tv_sec  + t2.tv_sec;
+  t.tv_usec = t1.tv_usec + t2.tv_usec;
+  
+  if(t.tv_usec >= 1000000) {
+    t.tv_sec += 1;
+    t.tv_usec -= 1000000;
+  }
+  
+  return t;
+}
+static JSVAL process_rusage(JSARGS args) {
+    HandleScope scope;
+    struct rusage r;
+    getrusage(RUSAGE_SELF, &r);
+    JSOBJ o = Object::New();
+    o->Set(String::New("time"), Number::New(timeval2sec(addTime(r.ru_utime, r.ru_stime))));
+    o->Set(String::New("utime"), Number::New(timeval2sec(r.ru_utime)));
+    o->Set(String::New("stime"), Number::New(timeval2sec(r.ru_stime)));
+    o->Set(String::New("maxrss"), Integer::New(r.ru_maxrss));
+    o->Set(String::New("ixrss"), Integer::New(r.ru_ixrss));
+    o->Set(String::New("idrss"), Integer::New(r.ru_idrss));
+    o->Set(String::New("isrss"), Integer::New(r.ru_isrss));
+    o->Set(String::New("minflt"), Integer::New(r.ru_minflt));
+    o->Set(String::New("majflt"), Integer::New(r.ru_majflt));
+    o->Set(String::New("nswap"), Integer::New(r.ru_nswap));
+    o->Set(String::New("inblock"), Integer::New(r.ru_inblock));
+    o->Set(String::New("oublock"), Integer::New(r.ru_oublock));
+    o->Set(String::New("msgend"), Integer::New(r.ru_msgsnd));
+    o->Set(String::New("msgrcv"), Integer::New(r.ru_msgrcv));
+    o->Set(String::New("nsignals"), Integer::New(r.ru_nsignals));
+    o->Set(String::New("nvcsw"), Integer::New(r.ru_nvcsw));
+    o->Set(String::New("nivcsw"), Integer::New(r.ru_nivcsw));
+    return scope.Close(o);
+}
+
+
 void init_process_object() {
 	HandleScope scope;
 
@@ -283,6 +354,7 @@ void init_process_object() {
 	process->Set(String::New("wait"), FunctionTemplate::New(process_wait));
 	process->Set(String::New("exec"), FunctionTemplate::New(process_exec));
 	process->Set(String::New("getuid"), FunctionTemplate::New(process_getuid));
+	process->Set(String::New("rusage"), FunctionTemplate::New(process_rusage));
 
 	builtinObject->Set(String::New("process"), process);
 }
