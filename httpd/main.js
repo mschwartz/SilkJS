@@ -82,9 +82,10 @@ function main() {
     while (true) {
         var o = process.wait();
         if (!children[o.pid]) {
+console.log('********************** CHILD EXITED THAT IS NOT HTTP CHILD');
             continue;
         }
-        delete children[pid];
+        delete children[o.pid];
         pid = process.fork();
         if (pid == 0) {
             HttpChild.run(serverSocket, process.getpid());

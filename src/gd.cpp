@@ -58,15 +58,18 @@ static JSVAL gd_ImageCreateFromJpeg(JSARGS args) {
     // test binary header of file to assure it's JPEG
     {
         unsigned char buf[12];
-        if (fread((char *)buf, 12, 1, in) != 12) {
+        ssize_t size;
+        if ((size = fread((char *)buf, 1, 12, in)) != 12) {
+            printf("gd_ImageCreateFromJpeg: could not read 12 bytes %d\n", size);
             fclose(in);
             return Null();
         }
-        if (buf[0] != 0xff || buf[1] != 0xd8 || buf[2] != 0xff || buf[3] != 0xe0 || strcmp((char *)&buf[6], "JFIF")) {
+        if (buf[0] != 0xff || buf[1] != 0xd8 || buf[2] != 0xff || (strcasecmp((char *)&buf[6], "JFIF") && strcasecmp((char *)&buf[6], "EXIF"))) {
+//            printf("gd_ImageCreateFromJpeg: %s signature match failed\n", *data);
             fclose(in);
             return Null();
         }
-        printf("%s Is a JPEG\n", *data);
+//        printf("%s Is a JPEG\n", *data);
         fseek(in, 0, SEEK_SET);
     }
     
