@@ -78,7 +78,9 @@ var newfs = {
         var recurse = pattern ? function(dir) {
             fs.readDir(dir).each(function(file) {
                 if (fs.isDir(dir + '/' + file)) {
-                    files.push(dir + '/' + file);
+                    if (pattern.test(file)) {
+                        files.push(dir + '/' + file);
+                    }
                     recurse(dir + '/' + file);
                 }
                 else if (pattern.test(file)) {

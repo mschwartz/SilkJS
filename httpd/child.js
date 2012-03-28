@@ -2,6 +2,8 @@
 
 HttpChild = (function() {
     var requestsHandled;
+    
+    var mimeTypes = require('MimeTypes');
 
 	function notFound() {
         global.notFound_action && global.notFound_action();
@@ -158,24 +160,25 @@ HttpChild = (function() {
 		res.stop();
 	}
 	
-	var contentTypes = {
+	var dynamicHandlers = {
 		sjs:	{ contentType: 'text/html',							handler: runSJS },
 		less:	{ contentType: 'text/css',		                    handler: runLess },
 		coffee:	{ contentType: 'text/html',		                    handler: runCoffee },
 		jst:	{ contentType: 'text/html',                         handler: runJst },
-		md:		{ contentType: 'text/html',                         handler: runMarkdown },
-		ogg:	{ contentType: 'audio/ogg',                         handler: sendFile },
-		mp3:	{ contentType: 'audio/mpeg3',                       handler: sendFile },
-		png:	{ contentType: 'image/png',                         handler: sendFile },
-		ico:	{ contentType: 'image/ico',                         handler: sendFile },
-		gif:	{ contentType: 'image/gif',                         handler: sendFile },
-		jpg:	{ contentType: 'image/jpeg'                  ,      handler: sendFile },
-		jpeg:	{ contentType: 'image/jpeg',                        handler: sendFile },
-		html:	{ contentType: 'text/html',                         handler: sendFile },
-		js:		{ contentType: 'text/javascript',                   handler: sendFile },
-		css:	{ contentType: 'text/css',                          handler: sendFile },
-		xml:	{ contentType: 'text/xml',                          handler: sendFile },
-        swf:    { contentType: 'application/ x-shockwave-flash',    handler: sendFile }
+		md:		{ contentType: 'text/html',                         handler: runMarkdown }
+//		ogg:	{ contentType: 'audio/ogg',                         handler: sendFile },
+//		mp3:	{ contentType: 'audio/mpeg3',                       handler: sendFile },
+//		png:	{ contentType: 'image/png',                         handler: sendFile },
+//		ico:	{ contentType: 'image/ico',                         handler: sendFile },
+//		gif:	{ contentType: 'image/gif',                         handler: sendFile },
+//		jpg:	{ contentType: 'image/jpeg'                  ,      handler: sendFile },
+//		jpeg:	{ contentType: 'image/jpeg',                        handler: sendFile },
+//		html:	{ contentType: 'text/html',                         handler: sendFile },
+//		htm:	{ contentType: 'text/html',                         handler: sendFile },
+//		js:		{ contentType: 'text/javascript',                   handler: sendFile },
+//		css:	{ contentType: 'text/css',                          handler: sendFile },
+//		xml:	{ contentType: 'text/xml',                          handler: sendFile },
+//        swf:    { contentType: 'application/ x-shockwave-flash',    handler: sendFile }
 	};
 
 	function directoryIndex(fn) {
@@ -232,7 +235,7 @@ HttpChild = (function() {
 		}
 		if (fs.isDir(fn)) {
 			if (!req.uri.endsWith('/')) {
-				log('redirect ' + req.uri + ' ' + fn + ' ' + fn.substr(fn.length-1, 1));
+//				log('redirect ' + req.uri + ' ' + fn + ' ' + fn.substr(fn.length-1, 1));
 				res.redirect(req.uri + '/');
 			}
 			var found = directoryIndex(fn);
@@ -252,21 +255,20 @@ HttpChild = (function() {
 		res.status = 200;
         req.path = fn;
 		parts = fn.split('.');
-		if (parts.length > 1) {
-			var extension = parts.pop();
-			var handler = contentTypes[extension.toLowerCase()];
-			if (handler) {
-				res.contentType = handler.contentType;
-				handler.handler(fn);
-			}
-		}
-		var stat = fs.stat(fn);
-		if (!stat) {
-			log('error: ' + fs.error());
-		}
-		res.contentType = 'text/plain';
-		res.sendHeaders();
-		net.sendFile(res.sock, fn, 0, stat.size);
+        var extension = parts.pop();
+        var handler = dynamicHandlers[extension.toLowerCase()];
+        if (handler) {
+            res.contentType = handler.contentType;
+            handler.handler(fn);
+        }
+        else {
+//            if (!fs.exists(fn)) {
+//                log('error: ' + fs.error());
+//            }
+            res.contentType = mimeTypes[extension] || 'text/plain';
+//            res.sendHeaders();
+            res.sendFile(fn);
+        }
 	}
 
     // semaphore for locking around accept()
