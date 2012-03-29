@@ -299,6 +299,8 @@ static JSVAL process_env(JSARGS args) {
  */
 static double timeval2sec(const timeval& t) {
   double f = (double) t.tv_sec + t.tv_usec / 1000000.0;
+  f = long(f*1000000.0+.5);
+  f /= 1000000;
   return f; 
 }
 static timeval addTime(timeval& t1, timeval& t2) {

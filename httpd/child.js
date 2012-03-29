@@ -298,12 +298,12 @@ HttpChild = (function() {
                 lock(lockfd);
 				var sock = net.accept(serverSocket);
                 unlock(lockfd);
-                var rstart = process.rusage();
 				var keepAlive = true;
 				while (keepAlive) {
 					if (++requestsHandled > REQUESTS_PER_CHILD) {
 						keepAlive = false;
 					}
+                    var rstart = process.rusage();
 					try {
 						if (!req.init(sock)) {
 							break;
@@ -324,8 +324,8 @@ HttpChild = (function() {
                     res.data = {};
 					res.flush();
 					// this logfile.write() reduces # requests/sec by 5000!
-                    var rend = process.rusage();
-					logfile.write(req.remote_addr + ' ' + req.method + ' ' + req.uri + ' completed in ' + (rend.time - rstart.time) + 's (' + (rend.utime - rstart.utime) + 's user / ' + (rend.stime -rstart.stime) + 's system' + ')\n');
+                    var elapsed = ('' + (process.rusage().time - rstart.time)).substr(0,8);
+					logfile.write(req.remote_addr + ' ' + req.method + ' ' + req.uri + ' completed in ' + elapsed + 's\n');
 				}
 				req.close();
 				net.close(sock);

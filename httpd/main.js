@@ -78,7 +78,7 @@ function main() {
     }
 
     console.log('Silk running with ' + Config.numChildren + ' children on port ' + Config.port);
-    logfile.write('Silk running with ' + Config.numChildren + ' children on port ' + Config.port);
+    logfile.write('Silk running with ' + Config.numChildren + ' children on port ' + Config.port + '\n');
     while (true) {
         var o = process.wait();
         if (!children[o.pid]) {
