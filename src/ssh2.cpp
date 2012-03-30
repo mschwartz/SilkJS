@@ -2,9 +2,10 @@
 #include <libssh2.h>
 
 class SSH2 {
+public:
+	LIBSSH2_SESSION *mSession;
 private:
 	int mSock;
-	LIBSSH2_SESSION *mSession;
 	bool mSessionOK;
 	char mErrorMessage[1024];
 	int mExitCode;
@@ -121,6 +122,10 @@ public:
 	
 };
 
+static SSH2 *HANDLE(Handle<Value> arg) {
+	return (SSH2 *)JSEXTERN(arg);
+}
+
 static JSVAL ssh2_connect(JSARGS args) {
     HandleScope scope;
 	String::Utf8Value host(args[0]);
@@ -189,6 +194,80 @@ static JSVAL ssh2_response(JSARGS args) {
 	return scope.Close(String::New(ssh2->GetResponse()));
 }
 
+/**
+ * @function ssh.writeFile
+ * 
+ * ### Synopsis
+ * 
+ * var status = ssh.writeFile(handle, srcPath, dstPath);
+ * var status = ssh.writeFile(handle, srcPath, dstPath, mode);
+ * 
+ * Write file to remote server via SCP.
+ * 
+ * @param {object} handle - opaque handle to already open SSH2 connection.
+ * @param {string} srcPath - path to file in local file system to send.
+ * @param {string} dstPath - path to file in remote file system to create.
+ * @param {int} mode - desired resulting file permissions of file on remote end.
+ * @return {boolean} success - true if the transfer succeeded, string error message if transfer failed.
+ * 
+ * ### Note
+ * If mode is not provided, the file mode of the file being sent will be used.
+ */
+static JSVAL ssh2_scp_send(JSARGS args) {
+	HandleScope scope;
+    SSH2 *ssh2 = HANDLE(args[0]);
+	String::Utf8Value srcPath(args[1]);
+	String::Utf8Value dstPath(args[2]);
+    int mode;
+    struct stat fileinfo;
+    if (stat(*srcPath, &fileinfo) != 0) {
+        return scope.Close(String::New(strerror(errno)));
+    }
+    if (args.Length() > 3) {
+        mode = args[3]->IntegerValue();
+    }
+    else {
+        mode = fileinfo.st_mode;
+    }
+    mode &= 0777;
+    int fd = open(*srcPath, O_RDONLY);
+    if (fd < 0) {
+        return scope.Close(String::New(strerror(errno)));
+    }
+    LIBSSH2_CHANNEL *channel = libssh2_scp_send64(ssh2->mSession, *dstPath, mode, fileinfo.st_size, 0, 0);
+    if (!channel) {
+        char *errmsg;
+        int errlen;
+        libssh2_session_last_error(ssh2->mSession, &errmsg, &errlen, 0);
+        return scope.Close(String::New(errmsg, errlen));
+    }
+    
+    char mem[1024];
+    ssize_t toWrite = fileinfo.st_size;
+    while (toWrite > 0) {
+        ssize_t nRead = read(fd, mem, 1024);
+        if (nRead < 0) {
+            int eNum = errno;
+            libssh2_channel_free(channel);
+            close(fd);
+            return scope.Close(String::New(strerror(eNum)));
+        }
+        int rc = libssh2_channel_write(channel, mem, nRead);
+        if (rc < 0) {
+            char *errmsg;
+            int errlen;
+            libssh2_session_last_error(ssh2->mSession, &errmsg, &errlen, 0);
+            libssh2_channel_free(channel);
+            close(fd);
+            return scope.Close(String::New(errmsg));
+        }
+        toWrite -= nRead;
+    }
+    close(fd);
+    libssh2_channel_free(channel);
+    return scope.Close(True());
+}
+
 void init_ssh_object() {
 	HandleScope scope;
 	
@@ -201,6 +280,7 @@ void init_ssh_object() {
 	ssh->Set(String::New("exec"), FunctionTemplate::New(ssh2_exec));
 	ssh->Set(String::New("exit_code"), FunctionTemplate::New(ssh2_exit_code));
 	ssh->Set(String::New("response"), FunctionTemplate::New(ssh2_response));
+    ssh->Set(String::New("writeFile"), FunctionTemplate::New(ssh2_scp_send));
 
 	builtinObject->Set(String::New("ssh2"), ssh);
 }

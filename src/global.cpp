@@ -146,6 +146,7 @@ extern void init_logfile_object();
 extern void init_curl_object();
 extern void init_xhrHelper_object();
 extern void init_ssh_object();
+extern void init_sftp_object();
 #endif
 
 void init_global_object() {
@@ -171,6 +172,7 @@ void init_global_object() {
     init_curl_object();
     init_xhrHelper_object();
     init_ssh_object();
+    init_sftp_object();
 #endif
     globalObject->Set(String::New("builtin"), builtinObject);
     globalObject->Set(String::New("log"), FunctionTemplate::New(Log));

@@ -149,7 +149,8 @@
                 });
             }
             else {
-                stack = conStack = ex.stack;
+                conStack = ex.stack;
+                stack = '<pre>' + ex.stack + '</pre>';
             }
             if (res) {
                 res.write([
