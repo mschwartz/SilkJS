@@ -54,13 +54,13 @@ function main() {
     fs.close(fd);
     var serverSocket = net.listen(Config.port);
 
+    global.logfile = new LogFile(Config.logFile || '/tmp/httpd-silkjs.log');
+    
     if (debugMode) {
 		while (1) {
 	        HttpChild.run(serverSocket, process.getpid());
 		}
     }
-    
-    global.logfile = new LogFile(Config.logFile || '/tmp/httpd-silkjs.log');
     
     var children = {};
     for (var i=0; i<Config.numChildren; i++) {
