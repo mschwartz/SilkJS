@@ -834,16 +834,17 @@ JSVAL connect(JSARGS args) {
         port = args[4]->IntegerValue();
     }
     MYSQL *handle = mysql_init(NULL);
+    my_bool reconnect = 1;
+    mysql_options(handle, MYSQL_OPT_RECONNECT, &reconnect);
 		
 //		handle = mysql_real_connect(handle, "localhost", "mschwartz", "", "sim", 3306, NULL, 0);
     handle = mysql_real_connect(handle, *host, *user, *passwd, *db, port, NULL, CLIENT_IGNORE_SIGPIPE | CLIENT_FOUND_ROWS);
     if (!handle) {
         return ThrowException(Exception::Error(String::New("MySQL connection failed")));
     }
+    mysql_options(handle, MYSQL_OPT_RECONNECT, &reconnect);
 	mysql_ping(handle);
     mstate *m = new mstate(handle, *db);
-//		my_bool reconnect = 1;
-//		mysql_options(handle, MYSQL_OPT_RECONNECT, &reconnect);
 	return scope.Close(External::New(m));
 }	
 

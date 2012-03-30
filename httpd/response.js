@@ -102,6 +102,12 @@ res = function() {
 			res.cookies[key] = cookie;
 		},
 		
+        unsetCookie: function(key) {
+            res.cookies[key] = {
+                expires: new Date(Util.yesterday()*1000).toGMTString()
+            };
+        },
+        
 		setHeader: function(key, value) {
 			res.headers[key] = value;
 		},
