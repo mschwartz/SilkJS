@@ -10,8 +10,18 @@
  * ### Constants
  * This module exposes the following constants:
  * 
- * DEFAULT_PORT: the default port for connecting to the memcached servers
- * VERSION: the libmemcached version string
+ * DEFAULT_PORT: the default port for connecting to the memcached servers.
+ * VERSION: the libmemcached version string.
+ * 
+ * ### Description
+ * 
+ * Some methods return an object or an object/hash of objects.  Typically these methods get values from the memcached store.
+ * 
+ * These objects are of the form:
+ * 
+ * + value: the string value returned from memcached
+ * + flags: the 32-bit integer value stored with the value returned from memcached
+ * + rc: memcached result code
  */
 #include "SilkJS.h"
 #include <libmemcached/memcached.h>
@@ -28,18 +38,45 @@ static inline M* HANDLE(Handle<Value>v) {
     return (M *)JSEXTERN(v);
 }
 
+/**
+ * @function memcached.connect
+ * 
+ * ### Synopsis
+ * 
+ * var handle = memcached.connect(servers);
+ * 
+ * Create a connection to the specified memcached servers.
+ * 
+ * The servers argument is a comma separated list of memcached servers.  The server names are of the form <code>hostname[:port]</code>.
+ * 
+ * @param {string} servers - comma separated list of servers
+ * @return {object} handle - opaque handle used for other memcached methods, or false if an error occurred.
+ */
 JSVAL _memcached_connect(JSARGS args) {
 	HandleScope scope;
 	String::Utf8Value options(args[0]);
 	M *handle = memcached_create(NULL);
 	S *servers = memcached_servers_parse(*options);
 	if (memcached_server_push(handle, servers)) {
+        memcached_server_list_free(servers);
 		memcached_free(handle);
 		return scope.Close(False());
 	}
+        memcached_server_list_free(servers);
 	return scope.Close(External::New(handle));
 }
 
+/**
+ * @function memcached.close
+ * 
+ * ### Synopsis
+ * 
+ * memcached.close(handle);
+ * 
+ * Close an opened memcached handle and free all resources used for it.
+ * 
+ * @param {object} handle - handle to memcached connection.
+ */
 JSVAL _memcached_close(JSARGS args) {
 	HandleScope scope;
 	M* handle = HANDLE(args[0]);
@@ -47,13 +84,38 @@ JSVAL _memcached_close(JSARGS args) {
 	return Undefined();
 }
 
+/**
+ * @function memcached.error
+ * 
+ * ### Synopsis
+ * var msg = memcached.error(handle, rc);
+ * 
+ * Get error message for last memcached error.
+ * 
+ * @param {object} handle - handle to memcached connection.
+ * @param {int} rc - return code from the memcached that failed.
+ * @return {string} msg - text of the error message.
+ */
 JSVAL _memcached_error(JSARGS args) {
 	HandleScope scope;
 	M* handle = HANDLE(args[0]);
-	R rc = (R)args[0]->IntegerValue();
+	R rc = (R)args[1]->IntegerValue();
 	return scope.Close(String::New(memcached_strerror(handle, rc)));
 }
 
+/**
+ * @function memcached.get
+ * 
+ * ### Synopsis
+ * 
+ * var o = memcached.get(handle, key);
+ * 
+ * Get a value from memcached by key.
+ * 
+ * @param {object} handle - handle to memcached connection.
+ * @param {string} key - key of data to get from memcached
+ * @return {object} o - see description at top of the page, or false if an error occurred.
+ */
 JSVAL _memcached_get(JSARGS args) {
 	HandleScope scope;
 	M* handle = HANDLE(args[0]);
@@ -73,6 +135,23 @@ JSVAL _memcached_get(JSARGS args) {
 	return scope.Close(o);
 }
 
+/**
+ * @function memcached.mget
+ * 
+ * ### Synopsis:
+ * 
+ * var o = memcache.get(handle, array_of_keys);
+ * 
+ * Get multiple values, identified by an array of keys, from memcached.
+ * 
+ * The returned object is a hash of returned values, indexed by the key.  
+ * 
+ * For each of these keys, the value is an object in the form described at the top of this page.
+ * 
+ * @param {object} handle - handle to memcached connection.
+ * @param {array} keys - array of keys of data to get from memcached
+ * @return {object} o - has of objects of the form described at top of the page, or false if an error occurred.
+ */
 JSVAL _memcached_mget(JSARGS args) {
 	HandleScope scope;
 	M* handle = HANDLE(args[0]);
@@ -106,6 +185,26 @@ JSVAL _memcached_mget(JSARGS args) {
 	return scope.Close(result);
 }
 
+/**
+ * @function memcached.set
+ * 
+ * ### Synopsis
+ * 
+ * var rc = memcached.set(handle, key, value);
+ * var rc = memcached.set(handle, key, value, expiration);
+ * var rc = memcached.set(handle, key, value, expiration, flags);
+ * 
+ * Store information in memcached indexed by key.  
+ * 
+ * If an object identified by key already exists on the server, it wil be replaced.
+ * 
+ * @param {object} handle - handle to memcached connection.
+ * @param {string} key - key of data to set in memcached.
+ * @param {string} value - value of data to set in memcached.
+ * @param {int} expiration - length of time value is valid (after this it will be removed from memcached automatically).
+ * @param {int} flags - user defined integer value stored along with the value.
+ * @return {int} rc - result code; 0 if no error, otherwise the error code.
+ */
 JSVAL _memcached_set(JSARGS args) {
 	HandleScope scope;
 	M *handle = HANDLE(args[0]);
@@ -122,6 +221,26 @@ JSVAL _memcached_set(JSARGS args) {
 	return scope.Close(Integer::New(memcached_set(handle, *key, strlen(*key), *value, strlen(*value), expiration, flags)));
 }
 
+/**
+ * @function memcached.add
+ * 
+ * ### Synopsis
+ * 
+ * var rc = memcached.add(handle, key, value);
+ * var rc = memcached.add(handle, key, value, expiration);
+ * var rc = memcached.add(handle, key, value, expiration, flags);
+ * 
+ * Store information in memcached indexed by key.  
+ * 
+ * If an object identified by key already exists on the server, an error occurs.
+ * 
+ * @param {object} handle - handle to memcached connection.
+ * @param {string} key - key of data to set in memcached.
+ * @param {string} value - value of data to set in memcached.
+ * @param {int} expiration - length of time value is valid (after this it will be removed from memcached automatically).
+ * @param {int} flags - user defined integer value stored along with the value.
+ * @return {int} rc - result code; 0 if no error, otherwise the error code.
+ */
 JSVAL _memcached_add(JSARGS args) {
 	HandleScope scope;
 	M *handle = HANDLE(args[0]);
@@ -135,9 +254,30 @@ JSVAL _memcached_add(JSARGS args) {
 	if (args.Length() > 4) {
 		flags = args[4]->IntegerValue();
 	}
+    
 	return scope.Close(Integer::New(memcached_add(handle, *key, strlen(*key), *value, strlen(*value), expiration, flags)));
 }
 
+/**
+ * @function memcached.replace
+ * 
+ * ### Synopsis
+ * 
+ * var rc = memcached.replace(handle, key, value);
+ * var rc = memcached.replace(handle, key, value, expiration);
+ * var rc = memcached.replace(handle, key, value, expiration, flags);
+ * 
+ * Store information in memcached indexed by key.  
+ * 
+ * If an object identified by key already exists on the server, it is replaced.  Otherwise an error occurs.
+ * 
+ * @param {object} handle - handle to memcached connection.
+ * @param {string} key - key of data to set in memcached.
+ * @param {string} value - value of data to set in memcached.
+ * @param {int} expiration - length of time value is valid (after this it will be removed from memcached automatically).
+ * @param {int} flags - user defined integer value stored along with the value.
+ * @return {int} rc - result code; 0 if no error, otherwise the error code.
+ */
 JSVAL _memcached_replace(JSARGS args) {
 	HandleScope scope;
 	M *handle = HANDLE(args[0]);
@@ -154,6 +294,26 @@ JSVAL _memcached_replace(JSARGS args) {
 	return scope.Close(Integer::New(memcached_replace(handle, *key, strlen(*key), *value, strlen(*value), expiration, flags)));
 }
 
+/**
+ * @function memcached.prepend
+ * 
+ * ### Synopsis
+ * 
+ * var rc = memcached.prepend(handle, key, value);
+ * var rc = memcached.prepend(handle, key, value, expiration);
+ * var rc = memcached.prepend(handle, key, value, expiration, flags);
+ * 
+ * Prepends the given value string to the value of an existing item.  
+ * 
+ * If an object identified by key does not exist, an error occurs.
+ * 
+ * @param {object} handle - handle to memcached connection.
+ * @param {string} key - key of data to set in memcached.
+ * @param {string} value - value of data to prepend in memcached.
+ * @param {int} expiration - length of time value is valid (after this it will be removed from memcached automatically).
+ * @param {int} flags - user defined integer value stored along with the value.
+ * @return {int} rc - result code; 0 if no error, otherwise the error code.
+ */
 JSVAL _memcached_prepend(JSARGS args) {
 	HandleScope scope;
 	M *handle = HANDLE(args[0]);
@@ -170,6 +330,26 @@ JSVAL _memcached_prepend(JSARGS args) {
 	return scope.Close(Integer::New(memcached_prepend(handle, *key, strlen(*key), *value, strlen(*value), expiration, flags)));
 }
 
+/**
+ * @function memcached.append
+ * 
+ * ### Synopsis
+ * 
+ * var rc = memcached.append(handle, key, value);
+ * var rc = memcached.append(handle, key, value, expiration);
+ * var rc = memcached.append(handle, key, value, expiration, flags);
+ * 
+ * Appends the given value string to the value of an existing item.  
+ * 
+ * If an object identified by key does not exist, an error occurs.
+ * 
+ * @param {object} handle - handle to memcached connection.
+ * @param {string} key - key of data to set in memcached.
+ * @param {string} value - value of data to append in memcached.
+ * @param {int} expiration - length of time value is valid (after this it will be removed from memcached automatically).
+ * @param {int} flags - user defined integer value stored along with the value.
+ * @return {int} rc - result code; 0 if no error, otherwise the error code.
+ */
 JSVAL _memcached_append(JSARGS args) {
 	HandleScope scope;
 	M *handle = HANDLE(args[0]);
@@ -186,7 +366,20 @@ JSVAL _memcached_append(JSARGS args) {
 	return scope.Close(Integer::New(memcached_append(handle, *key, strlen(*key), *value, strlen(*value), expiration, flags)));
 }
 
-JSVAL _memcached_delete(JSARGS args) {
+/**
+ * @function memcached.remove
+ * 
+ * ### Synopsis
+ * 
+ * var rc = memcached.remove(handle, key);
+ * 
+ * Remove an item from memcached by key.
+ * 
+ * @param {object} handle - handle to memcached connection.
+ * @param {string} key - key of data to set in memcached.
+ * @return {int} rc - result code; 0 if no error, otherwise the error code.
+ */
+JSVAL _memcached_remove(JSARGS args) {
 	HandleScope scope;
 	M *handle = HANDLE(args[0]);
 	String::Utf8Value key(args[1]);
@@ -218,7 +411,7 @@ void init_memcached_object() {
 	memcached->Set(String::New("replace"), FunctionTemplate::New(_memcached_replace));
 	memcached->Set(String::New("prepend"), FunctionTemplate::New(_memcached_prepend));
 	memcached->Set(String::New("append"), FunctionTemplate::New(_memcached_append));
-	memcached->Set(String::New("delete"), FunctionTemplate::New(_memcached_delete));
+	memcached->Set(String::New("remove"), FunctionTemplate::New(_memcached_remove));
 
 	builtinObject->Set(String::New("memcached"), memcached);
 }

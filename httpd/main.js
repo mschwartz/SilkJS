@@ -18,7 +18,7 @@ uglify = require('UglifyJS/uglify-js');
 include('lib/forEach.js');
 //include('lib/Exceptions.js');
 include('lib/Util.js');
-include('lib/Json.js');
+Json = require('Json');
 include('lib/Jst.js');
 include('lib/Showdown.js');
 MySQL = require('MySQL.js').MySQL;

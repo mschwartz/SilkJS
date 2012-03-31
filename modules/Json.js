@@ -3,7 +3,7 @@
  * and open the template in the editor.
  */
 
-Json = function() {
+var Json = function() {
 	return {
 		encode: function(o) {
 			return JSON.stringify(o);
@@ -34,3 +34,6 @@ Json = function() {
 	}
 }();
 
+if (exports) {
+	exports = Json;
+}
