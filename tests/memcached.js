@@ -13,7 +13,7 @@ function main() {
 		return 0;
 	}
 	console.log('connected');
-//	memcached.add(handle, 'foo', 'bar');
+	memcached.add(handle, 'foo', 'bar');
 	
 	console.dir(memcached.get(handle, 'foo'));
 }
