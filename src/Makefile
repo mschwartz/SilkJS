@@ -16,7 +16,7 @@ V8VERSION := $(V8VERSION_$(ARCH))
 
 V8=	$(V8LIB_DIR)/libv8_base.a $(V8LIB_DIR)/libv8_snapshot.a
 
-INCDIRS=    -I$(V8DIR)/include -I/usr/include/mysql -Imongo-c-driver/src
+INCDIRS=    -I$(V8DIR)/include -I/usr/include/mysql
 
 LIBDIRS=    -L$(V8LIB_DIR)/ 
 
@@ -25,11 +25,9 @@ CFLAGS = -g -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-section
 %.o: %.cpp SilkJS.h 
 	g++ $(CFLAGS) -c $(INCDIRS) -o $*.o $*.cpp
 
-silkjs:	mongodb $(V8DIR) $(V8) $(CORE) $(OBJ) SilkJS.h Makefile
+silkjs: $(V8DIR) $(V8) $(CORE) $(OBJ) SilkJS.h Makefile
 	g++ $(CFLAGS) -o silkjs $(CORE) $(OBJ) $(LIBDIRS) -lv8_base -lv8_snapshot -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 
 
-mongodb:
-	cd mongo-c-driver && scons --c99
 	
 debug:	    CFLAGS += -g
 debug:	    silkjs
