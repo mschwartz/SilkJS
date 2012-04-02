@@ -273,6 +273,23 @@ Memcached.prototype.extend({
 		return memcached.remove(this.handle, key);
 	},
 	
+    /**
+    * @function mc.flush
+    * 
+    * ### Synopsis
+    * 
+    * var rc = mc.flush();
+    * var rc = mc.flush(expiration);
+    * 
+    * Wipe clean the contents of memcached servers.  It will either do this immediately or expire the content based on the expiration time passed to the method (a value of zero causes an immediate flush). The operation is not atomic to multiple servers, just atomic to a single server. That is, it will flush the servers in the order that they were added.
+    * 
+    * @param {int} expiration - length of time value is valid (after this it will be removed from memcached automatically).
+    * @return {int} rc - result code; 0 if no error, otherwise the error code.
+    */
+    flush: function(expiration) {
+        return memcached.flush(this.handle, expiration)
+    },
+    
 	/**
 	 * @function mc.close
 	 * 

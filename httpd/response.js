@@ -103,8 +103,10 @@ res = function() {
 		},
 		
         unsetCookie: function(key) {
+            var now = new Date().getTime() / 1000;
+            var yesterday = now - 86400;
             res.cookies[key] = {
-                expires: new Date(Util.yesterday()*1000).toGMTString()
+                expires: new Date(yesterday*1000).toGMTString()
             };
         },
         

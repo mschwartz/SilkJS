@@ -390,6 +390,29 @@ JSVAL _memcached_remove(JSARGS args) {
 	return scope.Close(Integer::New(memcached_delete(handle, *key, strlen(*key), expiration)));
 }
 
+/**
+ * @function memcached.flush
+ * 
+ * ### Synopsis
+ * 
+ * var rc = memcached.flush(handle);
+ * var rc = memcached.flush(handle, expiration);
+ * 
+ * Wipe clean the contents of memcached servers.  It will either do this immediately or expire the content based on the expiration time passed to the method (a value of zero causes an immediate flush). The operation is not atomic to multiple servers, just atomic to a single server. That is, it will flush the servers in the order that they were added.
+ * 
+ * @param {object} handle - handle to memcached connection.
+ * @param {int} expiration - length of time value is valid (after this it will be removed from memcached automatically).
+ * @return {int} rc - result code; 0 if no error, otherwise the error code.
+ */
+JSVAL _memcached_flush(JSARGS args) {
+	HandleScope scope;
+	M *handle = HANDLE(args[0]);
+	time_t expiration = 0;
+	if (args.Length() > 1) {
+		expiration = args[1]->IntegerValue();
+	}
+	return scope.Close(Integer::New(memcached_flush(handle, expiration)));
+}
 
 void init_memcached_object() {
 	HandleScope scope;
@@ -412,6 +435,7 @@ void init_memcached_object() {
 	memcached->Set(String::New("prepend"), FunctionTemplate::New(_memcached_prepend));
 	memcached->Set(String::New("append"), FunctionTemplate::New(_memcached_append));
 	memcached->Set(String::New("remove"), FunctionTemplate::New(_memcached_remove));
+	memcached->Set(String::New("flush"), FunctionTemplate::New(_memcached_flush));
 
 	builtinObject->Set(String::New("memcached"), memcached);
 }

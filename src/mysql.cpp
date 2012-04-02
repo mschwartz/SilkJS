@@ -8,13 +8,26 @@
 struct mstate {
     MYSQL *handle;
     char *currentDb;
+    char *host;
+    char *user;
+    char *passwd;
     mstate(MYSQL *h, const char *d) {
         this->handle = h;
         this->currentDb = strdup(d);
+        this->host = this->user = this->passwd = NULL;
     }
     ~mstate() {
         if (this->currentDb) {
             delete[] this->currentDb;
+        }
+        if (this->passwd) {
+            delete [] this->passwd;
+        }
+        if (this->user) {
+            delete [] this->user;
+        }
+        if (this->host) {
+            delete [] this->host;
         }
     }
     void setCurrentDb(const char *d) {
@@ -40,7 +53,17 @@ static inline MYSQL* HANDLE(Handle<Value>v) {
         return NULL;
     }
     mstate *m = (mstate *)JSEXTERN(v);
-    mysql_ping(m->handle);
+    if (!mysql_ping(m->handle)) {
+        return m->handle;
+    }
+    // reconnect
+    mysql_close(m->handle);
+    m->handle = mysql_init(NULL);
+    m->handle = mysql_real_connect(m->handle, m->host, m->user, m->passwd, m->currentDb, 3306, NULL, CLIENT_IGNORE_SIGPIPE | CLIENT_FOUND_ROWS);
+    if (!m->handle) {
+        ThrowException(String::New("Could not reconnect to MySQL server"));
+        return NULL;
+    }
     return m->handle;
 }
 
@@ -845,6 +868,9 @@ JSVAL connect(JSARGS args) {
     mysql_options(handle, MYSQL_OPT_RECONNECT, &reconnect);
 	mysql_ping(handle);
     mstate *m = new mstate(handle, *db);
+    m->host = strdup(*host);
+    m->user = strdup(*user);
+    m->passwd = strdup(*passwd);
 	return scope.Close(External::New(m));
 }	
 
