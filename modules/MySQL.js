@@ -1,5 +1,5 @@
 /**
- * @module MySQL
+ * @class MySQL
  * 
  * ### Synopsis
  * 
@@ -416,6 +416,6 @@ MySQL.prototype.extend({
 });
 
 if (exports) {
-    exports.MySQL = MySQL;
+    exports = MySQL;
 }
 

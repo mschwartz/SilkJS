@@ -1,7 +1,11 @@
+/** @ignore */
+
 /**
  * @fileoverview
  * <p>Core class for managing Schemas</p>
  */
+
+"use strict";
 
 /**
  * @class
@@ -64,7 +68,8 @@
  * </pre>
  */
 Schema = function() {
-	"use strict";
+	var phpjs = require('phpjs'),
+		empty = phpjs.empty;
 
 	var schemas = {};
 	var onStartFuncs = [];
@@ -794,3 +799,7 @@ Schema = function() {
 
 	};
 }();
+
+if (exports) {
+	exports = Schema;
+}

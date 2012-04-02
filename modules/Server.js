@@ -1,3 +1,5 @@
+/** @ignore */
+
 /**
  * @fileoverview
  * <p>This class provides interfaces to Halma's built-in onStart, onStop, and onCodeUpdate functionality, as well
@@ -18,7 +20,7 @@
  * up, and storing all the user records back to the DB when Helma exits.</p>
  * 
  */
-Server = (function() {
+var Server = (function() {
 	var started = false;
 	var onStartFuncs = [];
 	var onStopFuncs = [];
@@ -128,3 +130,7 @@ Server = (function() {
 		}
 	}
 })();
+
+if (exports) {
+	exports = Server;
+}

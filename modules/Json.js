@@ -1,8 +1,11 @@
-/* 
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+/**
+ * @module Json
+ * 
+ * ### Synopsis
+ * 
+ * var Json = require('Json');
+ * 
  */
-
 var Json = function() {
 	return {
 		encode: function(o) {

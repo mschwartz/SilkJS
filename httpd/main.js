@@ -21,7 +21,7 @@ include('lib/Util.js');
 Json = require('Json');
 include('lib/Jst.js');
 include('lib/Showdown.js');
-MySQL = require('MySQL.js').MySQL;
+MySQL = require('MySQL');
 var SSH = require('ssh');
 ////
 include('httpd/config.js');
