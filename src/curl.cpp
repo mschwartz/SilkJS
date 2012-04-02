@@ -21,6 +21,7 @@ struct CHANDLE {
     CURL *curl;
 	char *memory;
 	size_t size;
+    curl_slist *slist;
 };
 
 static inline CHANDLE *HANDLE(Handle<Value>v) {
@@ -88,6 +89,7 @@ static JSVAL init(JSARGS args) {
     w->curl = curl;
     w->memory = (char *)malloc(1);
     w->size = 0;
+    w->slist = NULL;
 	curl_easy_setopt(curl, CURLOPT_URL, *url);
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
 	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)w);
@@ -166,6 +168,31 @@ static JSVAL setCookie(JSARGS args) {
 }
 
 /**
+ * @function curl.setHeader
+ * 
+ * ### Synopsis
+ * 
+ * var status = curl.setHeader(handle, header_string);
+ * 
+ * Sets the specified header for the CURL request.
+ * 
+ * The format of the string should be NAME=CONTENTS, where NAME is the header name and CONTENTS is the value of the header.
+ * 
+ * This option sets the header explicitly in the outgoing request(s). 
+ * 
+ * @param {object} handle - CURL handle.
+ * @param {string} header_string - see comments above for the format.
+ * @return {int} status - 0 for success, otherwise an error code.
+ */
+static JSVAL setHeader(JSARGS args) {
+    HandleScope scope;
+    CHANDLE *h = HANDLE(args[0]);
+	String::Utf8Value header_string(args[1]->ToString());
+    h->slist = curl_slist_append(h->slist, *header_string);
+    return Undefined();
+}
+
+/**
  * @function curl.setPostFields
  * 
  * ### Synopsis
@@ -187,7 +214,9 @@ static JSVAL setPostFields(JSARGS args) {
     HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
 	String::Utf8Value post_fields(args[1]->ToString());
-    return scope.Close(Integer::New(curl_easy_setopt(h->curl, CURLOPT_COOKIE, *post_fields)));
+//    printf("%d %s\n", strlen(*post_fields), *post_fields);
+    curl_easy_setopt(h->curl, CURLOPT_POSTFIELDSIZE, strlen(*post_fields));
+    return scope.Close(Integer::New(curl_easy_setopt(h->curl, CURLOPT_COPYPOSTFIELDS, *post_fields)));
 }
 
 /**
@@ -207,6 +236,10 @@ static JSVAL setPostFields(JSARGS args) {
 static JSVAL perform(JSARGS args) {
     HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
+    if (h->slist) {
+        curl_easy_setopt(h->curl, CURLOPT_HTTPHEADER, h->slist);
+    }
+//    curl_easy_setopt(h->curl, CURLOPT_VERBOSE, 1);
     return scope.Close(Integer::New(curl_easy_perform(h->curl)));
 }
 
@@ -280,6 +313,10 @@ static JSVAL getResponseText(JSARGS args) {
 static JSVAL destroy(JSARGS args) {
     HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
+    if (h->slist) {
+        curl_slist_free_all(h->slist);
+        h->slist = NULL;
+    }
 	curl_easy_cleanup(h->curl);
 	free(h->memory);
 	free(h);
@@ -297,6 +334,7 @@ void init_curl_object() {
 	curlObject->Set(String::New("setMethod"), FunctionTemplate::New(setMethod));
 	curlObject->Set(String::New("followRedirects"), FunctionTemplate::New(followRedirects));
 	curlObject->Set(String::New("setCookie"), FunctionTemplate::New(setCookie));
+	curlObject->Set(String::New("setHeader"), FunctionTemplate::New(setHeader));
 	curlObject->Set(String::New("setPostFields"), FunctionTemplate::New(setPostFields));
 	curlObject->Set(String::New("perform"), FunctionTemplate::New(perform));
 	curlObject->Set(String::New("getResponseCode"), FunctionTemplate::New(getResponseCode));

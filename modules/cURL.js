@@ -40,6 +40,7 @@ function isString(v) {
  * + method: (optional) either "GET" or "POST"
  * + followRedirects (optional) true (default) to follow redirect responses from the server
  * + cookies: (optional) Object, Array, or String representation of cookie header to send
+ * + headers: (optional) Object, Array, or String representation of HTTP headers to add to the request.
  * + params: (valid for POST only): POST variables to send to server
  * 
  * The result returned is an object of the form:
@@ -66,7 +67,7 @@ function cURL(config) {
             case 'post':
                 method = 'POST';
             case 'get':
-                c.setMethod(handle, config.method);
+//                c.setMethod(handle, config.method);
                 break;
             default:
                 error('GET/POST are only allowed methods.');
@@ -111,13 +112,34 @@ function cURL(config) {
         else {
             error('Invalid params config');
         }
-        
         switch (method) {
             case 'POST':
                 c.setPostFields(handle, paramString);
                 break;
             default:
                 error('The params config is only valid for POST');
+        }
+    }
+    
+    if (config.headers) {
+        if (isObject(config.headers)) {
+            config.headers.each(function(value, key) {
+                c.setHeader(handle, key + ': ' + value);
+            });
+        }
+        else if (isArray(config.headers)) {
+            config.headers.each(function(value) {
+                c.setHeader(handle, value);
+            });
+        }
+        else if (isString(config.headers)) {
+            var headers = config.headers.split('\n');
+            headers.each(function(header) {
+                c.setHeader(handle, header);
+            });
+        }
+        else {
+            error('Invalid headers config');
         }
     }
     
