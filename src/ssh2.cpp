@@ -234,7 +234,7 @@ static JSVAL ssh2_scp_send(JSARGS args) {
     if (fd < 0) {
         return scope.Close(String::New(strerror(errno)));
     }
-    LIBSSH2_CHANNEL *channel = libssh2_scp_send64(ssh2->mSession, *dstPath, mode, fileinfo.st_size, 0, 0);
+    LIBSSH2_CHANNEL *channel = libssh2_scp_send(ssh2->mSession, *dstPath, mode, fileinfo.st_size, 0, 0);
     if (!channel) {
         char *errmsg;
         int errlen;
