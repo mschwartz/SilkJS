@@ -340,6 +340,24 @@ static JSVAL process_rusage(JSARGS args) {
     return scope.Close(o);
 }
 
+/**
+ * @function process.getlogin
+ * 
+ * ### Synopsis
+ * 
+ * var username = process.getlogin();
+ * 
+ * Get a string containing the name of the user logged in on the controlling terminal of the process.
+ * @return {string} username - name of user or false if error.
+ */
+static JSVAL process_getlogin(JSARGS args) {
+    HandleScope scope;
+    char *s = getlogin();
+    if (!s) {
+        return scope.Close(False());
+    }
+    return scope.Close(String::New(s));
+}
 
 void init_process_object() {
 	HandleScope scope;
@@ -357,6 +375,7 @@ void init_process_object() {
 	process->Set(String::New("exec"), FunctionTemplate::New(process_exec));
 	process->Set(String::New("getuid"), FunctionTemplate::New(process_getuid));
 	process->Set(String::New("rusage"), FunctionTemplate::New(process_rusage));
+	process->Set(String::New("getlogin"), FunctionTemplate::New(process_getlogin));
 
 	builtinObject->Set(String::New("process"), process);
 }

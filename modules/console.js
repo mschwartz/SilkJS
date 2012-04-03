@@ -16,7 +16,8 @@
 	var console = builtin.console;
 	print_r = require('builtin/print_r');
 	exports = {
-		/**
+		
+        /**
 		 * @function console.log
 		 * 
 		 * ### Synopsis
@@ -28,6 +29,20 @@
 		 * @param {string} str - the string to write
 		 */
 		log: console.log,
+		
+        /**
+		 * @function console.error
+		 * 
+		 * ### Synopsis
+		 * 
+		 * console.error(str);
+		 * 
+		 * Write a string to the stderr.
+		 * 
+		 * @param {string} str - the string to write
+		 */
+		error: console.error,
+        
 		/**
 		 * @function console.dir
 		 * 
@@ -58,6 +73,23 @@
             Error.prepareStackTrace = save;
             callee.functionName = callee.functionName ? (' (' + callee.functionName + ')') : '';
 			console.log(callee.fileName + ' line ' + callee.lineNumber + callee.functionName + ':\n ' + print_r(o));
-		}
+		},
+
+        /**
+        * @function console.getPassword
+        * 
+        * var password = console.getPassword(prompt);
+        * 
+        * ### Synopsis
+        * 
+        * Display a prompt and readin a password without echoing the characters to the display.
+        * 
+        * @param {string} prompt - prompt on the line to get the password
+        * @returns {string} password - the password entered by the user
+        */
+       getPassword: function(prompt) {
+           return console.getPassword(prompt);
+       }
+        
 	};
 }());

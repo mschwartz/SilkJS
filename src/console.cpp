@@ -52,12 +52,31 @@ static JSVAL error(JSARGS args) {
 	return Undefined();
 }
 
+/**
+ * @function console.getPassword
+ * 
+ * var password = console.getPassword(prompt);
+ * 
+ * ### Synopsis
+ * 
+ * Display a prompt and readin a password without echoing the characters to the display.
+ * 
+ * @param {string} prompt - prompt on the line to get the password
+ * @returns {string} password - the password entered by the user
+ */
+static JSVAL getPassword(JSARGS args) {
+    HandleScope scope;
+   	String::Utf8Value prompt(args[0]);
+    return scope.Close(String::New(getpass(*prompt)));
+}
+
 void init_console_object() {
 	HandleScope scope;
 	
 	Handle<ObjectTemplate>console = ObjectTemplate::New();
 	console->Set(String::New("log"), FunctionTemplate::New(log));
 	console->Set(String::New("error"), FunctionTemplate::New(error));
+	console->Set(String::New("getPassword"), FunctionTemplate::New(getPassword));
 	
 	builtinObject->Set(String::New("console"), console);
 }

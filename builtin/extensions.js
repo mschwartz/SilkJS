@@ -66,11 +66,11 @@ Object.prototype.extend = function() {
     return this;
 };
 
-Array.prototype.format = Object.prototype.format = function() {
-    return builtin.print_r(this);
+Array.prototype.format = Object.prototype.format = function(depth) {
+    return builtin.print_r(this, depth);
 }
 
-Array.prototype.dump = Object.prototype.dump = function(out) {
+Array.prototype.dump = Object.prototype.dump = function(out, depth) {
     out = out || println;
-    out(this.format());
+    out(this.format(depth));
 };
