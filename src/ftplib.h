@@ -26,7 +26,7 @@
 
 #define _FTPLIB_NO_COMPAT
 
-#if defined(__unix__) || defined(VMS)
+#if defined(__unix__) || defined(VMS) || defined(__APPLE__)
 #define GLOBALDEF
 #define GLOBALREF extern
 #elif defined(_WIN32)

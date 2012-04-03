@@ -95,7 +95,7 @@ static const char *version =
 
 GLOBALDEF int ftplib_debug = 0;
 
-#if defined(__unix__) || defined(VMS)
+#if defined(__unix__) || defined(VMS) || defined(__APPLE__)
 #define net_read read
 #define net_write write
 #define net_close close
