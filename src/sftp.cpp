@@ -1,3 +1,13 @@
+/**
+ * @module builtin/SFTP
+ * 
+ * ### Synopsis
+ * 
+ * var FTP = require('builtin/SFTP');
+ * 
+ * SFTP interface
+ * 
+ */
 #include "SilkJS.h"
 #include <libssh2.h>
 #include <libssh2_sftp.h>

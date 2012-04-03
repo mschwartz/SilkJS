@@ -1,3 +1,13 @@
+/**
+ *  @module builtin.SSH2
+ * 
+ * ### Synopsis
+ * 
+ * var SSH2 = require('builtin/SSH2');
+ * 
+ * SSH and SCP interface.
+ * 
+ */
 #include "SilkJS.h"
 #include <libssh2.h>
 
