@@ -9,7 +9,7 @@
  */
 
 #include "SilkJS.h"
-#include <ftplib.h>
+#include "ftplib.h"
 
 static inline netbuf *HANDLE(Handle<Value>v) {
     if (v->IsNull()) {

@@ -2,7 +2,7 @@ ARCH := $(shell getconf LONG_BIT)
 
 CORE=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o v8.o http.o md5.o 
 
-OBJ=	mysql.o memcached.o gd.o ncurses.o sem.o logfile.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o ftp.o editline.o
+OBJ=	mysql.o memcached.o gd.o ncurses.o sem.o logfile.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o ftp.o ftplib.o editline.o
 
 V8DIR=	./v8-read-only
 
@@ -26,7 +26,7 @@ CFLAGS = -g -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-section
 	g++ $(CFLAGS) -c $(INCDIRS) -o $*.o $*.cpp
 
 silkjs: $(V8DIR) $(V8) $(CORE) $(OBJ) SilkJS.h Makefile
-	g++ $(CFLAGS) -o silkjs $(CORE) $(OBJ) $(LIBDIRS) -lv8_base -lv8_snapshot -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lmemcached -lftp -ledit
+	g++ $(CFLAGS) -o silkjs $(CORE) $(OBJ) $(LIBDIRS) -lv8_base -lv8_snapshot -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lmemcached -ledit
 
 	
 debug:	    CFLAGS += -g
