@@ -27,7 +27,11 @@
 #include <libmemcached/memcached.h>
 
 #define M memcached_st
+#ifdef memcached_return_t
 #define R memcached_return_t
+#else
+#define R memcached_return
+#endif
 #define S memcached_server_st
 
 static inline M* HANDLE(Handle<Value>v) {
