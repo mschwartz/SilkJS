@@ -110,6 +110,25 @@ SSH.prototype.extend({
      */
     close: function() {
         ssh2.close(this.connection);
+    },
+    
+    /**
+     * @function SSH.putFile
+     * 
+     * ### Synopsis
+     * 
+     * var success = ssh.putFile(localPath, remotePath);
+     * var success = ssh.putFile(localPath, remotePath, mode);
+     * 
+     * Use scp protocol to copy a file from local file system to remote host.
+     * 
+     * @param {string} localPath - path to file on local file system to be copied.
+     * @param {string} remotePath - path to file to create on remote file system.
+     * @param {int} mode - permissions for resulting file on remote host (defaults to 644).
+     * @return {boolean} success - true if the file was copied.
+     */
+    putFile: function(localPath, remotePath, mode) {
+        return ssh2.writeFile(this.connection, localPath, remotePath, mode || 0644);
     }
 });
 
