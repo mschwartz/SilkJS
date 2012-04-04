@@ -22,7 +22,7 @@ Json = require('Json');
 include('lib/Jst.js');
 include('lib/Showdown.js');
 MySQL = require('MySQL');
-var SSH = require('ssh');
+var SSH = require('SSH');
 ////
 include('httpd/config.js');
 include('httpd/request.js');
