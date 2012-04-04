@@ -3,9 +3,17 @@
  * 
  * ### Synopsis
  * 
- * var SSH2 = require('builtin/SSH2');
+ * var ssh = require('builtin/ssh2');
  * 
  * SSH and SCP interface.
+ * 
+ * ### Example
+ * 
+ * ```
+ * var ssh = require('builtin/ssh2');
+ * var conn = ssh.connect('somehost', 'someuser', 'somepassword');
+ * ssh.exec(conn, 'ls -l');
+ * ```
  * 
  */
 #include "SilkJS.h"
@@ -136,6 +144,22 @@ static SSH2 *HANDLE(Handle<Value> arg) {
 	return (SSH2 *)JSEXTERN(arg);
 }
 
+/**
+ * @function ssh.connect
+ * 
+ * ### Synopsis
+ * 
+ * var conn = ssh.connect(host, username, password);
+ * var conn = ssh.connect(host, username, password, port);
+ * 
+ * Connect to a remote host via SSH.
+ * 
+ * @param {string} host - name of remote host.
+ * @param {string} username - username for password authentication at remote host.
+ * @param {string} password - password for authentication at remote host.
+ * @param {int} port - SSH port at remote host (defaults to 21)..
+ * @return {object} conn - connection ready to use for other methods.
+ */
 static JSVAL ssh2_connect(JSARGS args) {
     HandleScope scope;
 	String::Utf8Value host(args[0]);
@@ -149,6 +173,18 @@ static JSVAL ssh2_connect(JSARGS args) {
 	return scope.Close(External::New(ssh2));
 }
 
+/**
+ * @function ssh.alive
+ * 
+ * ### Synopsis
+ * 
+ * var is_alive = ssh.alive(conn);
+ * 
+ * Determine if SSH connection is alive.
+ * 
+ * @param {object} conn - connection returned from ssh.connect()
+ * @return {boolean} is_alive - true if connection is alive.
+ */
 static JSVAL ssh2_alive(JSARGS args) {
 	HandleScope scope;
 	Local<External>wrap = Local<External>::Cast(args[0]);
@@ -156,6 +192,18 @@ static JSVAL ssh2_alive(JSARGS args) {
 	return scope.Close(Boolean::New(ssh2->Alive()));
 }
 
+/**
+ * @function ssh.error
+ * 
+ * ### Synopsis
+ * 
+ * var msg = ssh.error(conn);
+ * 
+ * Get last SSH error message.
+ * 
+ * @param {object} conn - connection returned from ssh.connect()
+ * @return {string} msg - last SSH error message.
+ */
 static JSVAL ssh2_error(JSARGS args) {
 	HandleScope scope;
 	Local<External>wrap = Local<External>::Cast(args[0]);
@@ -163,6 +211,17 @@ static JSVAL ssh2_error(JSARGS args) {
 	return scope.Close(String::New(ssh2->ErrorMessage()));
 }
 
+/**
+ * @function ssh.close
+ * 
+ * ### Synopsis
+ * 
+ * ssh.close(conn);
+ * 
+ * Close an SSH connection, free all resources used.
+ * 
+ * @param {object} conn - connection returned from ssh.connect()
+ */
 static JSVAL ssh2_close(JSARGS args) {
 	HandleScope scope;
 	Local<External>wrap = Local<External>::Cast(args[0]);
@@ -171,6 +230,20 @@ static JSVAL ssh2_close(JSARGS args) {
 	return scope.Close(Undefined());
 }
 
+/**
+ * @function ssh2.timeout
+ * 
+ * ### Synopsis
+ * 
+ * ssh.timeout(conn, msec);
+ * 
+ * Set the timeout in milliseconds for how long a blocking the SSH function calls may wait until they consider the situation an error and return a timeout error code.
+ *
+ * By default or if you set the timeout to zero, there will be no timeout for blocking functions
+ * 
+ * @param {object} conn - connection returned from ssh.connect()
+ * @param {int} msec - milliseconds to set timeout value to
+ */
 static JSVAL ssh2_timeout(JSARGS args) {
 	HandleScope scope;
 	Local<External>wrap = Local<External>::Cast(args[0]);
@@ -179,6 +252,19 @@ static JSVAL ssh2_timeout(JSARGS args) {
 	return scope.Close(Undefined());
 }
 
+/**
+ * @function ssh2.exec
+ * 
+ * ### Synopsis
+ * 
+ * var success = ssh2.exec(conn, command);
+ * 
+ * Execute command at remote host.
+ * 
+ * @param {object} conn - connection returned from ssh.connect()
+ * @param {string} command - command line to execute on remote host
+ * @return {boolean} success - true if the command was successfuly executed.
+ */
 static JSVAL ssh2_exec(JSARGS args) {
 	HandleScope scope;
 	Local<External>wrap = Local<External>::Cast(args[0]);
@@ -190,6 +276,18 @@ static JSVAL ssh2_exec(JSARGS args) {
 	return scope.Close(True());
 }
 
+/**
+ * @function ss2.exit_code
+ * 
+ * ### Synopsis
+ * 
+ * var code = ssh.exit_code(conn);
+ * 
+ * Get the return code from the last executed remote command.  This is equivalent to the argument that command passed to exit().
+ * 
+ * @param {object} conn - connection returned from ssh.connect()
+ * @return {int} code - exit code from remote program
+ */
 static JSVAL ssh2_exit_code(JSARGS args) {
 	HandleScope scope;
 	Local<External>wrap = Local<External>::Cast(args[0]);
@@ -197,6 +295,18 @@ static JSVAL ssh2_exit_code(JSARGS args) {
 	return scope.Close(Integer::New(ssh2->GetExitCode()));
 }
 
+/**
+ * @function ssh.response
+ * 
+ * ### Synopsis
+ * 
+ * var text = ssh.response(conn);
+ * 
+ * Get output (stdout) of remote command execution as a string.  If the output is multiple lines, the returned string will be multiple lines separated by newline.
+ * 
+ * @param {object} conn - connection returned from ssh.connect()
+ * @return {string} text - output of remote command.
+ */
 static JSVAL ssh2_response(JSARGS args) {
 	HandleScope scope;
 	Local<External>wrap = Local<External>::Cast(args[0]);
