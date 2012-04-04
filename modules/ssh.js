@@ -65,7 +65,7 @@ SSH.prototype.extend({
     },
     
     /**
-     * @functino SSH.exec
+     * @function SSH.exec
      * 
      * ### Synopsis
      * 
