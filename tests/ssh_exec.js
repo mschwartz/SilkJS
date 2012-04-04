@@ -3,7 +3,7 @@
 /* 
  * Sample program to test ssh exec
  */
-include('lib/ssh.js');
+var SSH = require('SSH');
 
 function main(hostname, username, password) {
     var console = require('builtin/console');

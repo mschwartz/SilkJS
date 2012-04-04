@@ -3,7 +3,7 @@
  * 
  * ### Synopsis
  * 
- * var SSH = require('ssh');
+ * var SSH = require('SSH');
  * var connection = new SSH(host, user, password);
  * 
  * SilkJS SSH2 integration.

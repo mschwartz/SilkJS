@@ -3,7 +3,7 @@
  * 
  * ### Synopsis
  * 
- * var FTP = require('builtin/SFTP');
+ * var SFTP = require('builtin/SFTP');
  * 
  * SFTP interface
  * 
@@ -24,15 +24,31 @@ static SFTP *HANDLE(Handle<Value> arg) {
 }
 
 
+/**
+ * @function SFTP.connect
+ * 
+ * ### Synopsis
+ * 
+ * var handle = SFTP.connect(host, username, password);
+ * var handle = SFTP.connect(host, username, password, port);
+ * 
+ * Create an SFTP connection to a remote host and log in.
+ * 
+ * @param {string} host - name of host to connect to.
+ * @param {string} username - name of user on remote host to log in as.
+ * @param {string} password - password for user on remote host.
+ * @param {int} port - port to connect to on remote host.  Default is port #21.
+ * 
+ * @return {object} handle - handle to use with other SFTP methods.
+ */
 static JSVAL sftp_connect(JSARGS args) {
     HandleScope scope;
 	String::Utf8Value host(args[0]);
 	String::Utf8Value username(args[1]);
 	String::Utf8Value password(args[2]);
-	String::Utf8Value path(args[2]);
 	int port = 22;
-	if (args.Length() > 4) {
-		port = args[4]->IntegerValue();
+	if (args.Length() > 3) {
+		port = args[3]->IntegerValue();
 	}
     
     struct hostent *hp = gethostbyname(*host);
@@ -86,6 +102,17 @@ static JSVAL sftp_connect(JSARGS args) {
     return scope.Close(External::New(p));
 }
 
+/**
+ * @function SFTP.close
+ * 
+ * ### Synopsis
+ * 
+ * SFTP.close(handle);
+ * 
+ * Close an SFTP connection and free up any resources used.
+ * 
+ * @param {object} handle - handle to open connect returned by SFTP.connect().
+ */
 JSVAL sftp_close(JSARGS args) {
     HandleScope scope;
     SFTP *handle = HANDLE(args[0]);
@@ -104,11 +131,11 @@ JSVAL sftp_close(JSARGS args) {
 }
 
 /**
- * @function sftp.readDir
+ * @function SFTP.readDir
  * 
  * ### Synopsis
  * 
- * var files = sftp.readDir(handle, path);
+ * var files = SFTP.readDir(handle, path);
  * 
  * Read a directory from remote server, return an array of objects of the form:
  * 
@@ -180,11 +207,11 @@ JSVAL sftp_readdir(JSARGS args) {
 }
 
 /**
- * @function sftp.stat
+ * @function SFTP.stat
  * 
  * ### Synopsis
  * 
- * var stat = sftp.stat(handle, path);
+ * var stat = SFTP.stat(handle, path);
  * 
  * Get attributes of a remote file.
  * 
@@ -243,11 +270,11 @@ JSVAL sftp_stat(JSARGS args) {
 }
 
 /**
- * @function sftp.mkdir
+ * @function SFTP.mkdir
  * 
  * ### Synopsis
  * 
- * var success = sftp.mkdir(handle, path, mode);
+ * var success = SFTP.mkdir(handle, path, mode);
  * 
  * Make a directory on the remote host.
  * 
@@ -270,11 +297,11 @@ JSVAL sftp_mkdir(JSARGS args) {
 }
 
 /**
- * @function sftp.rmdir
+ * @function SFTP.rmdir
  * 
  * ### Synopsis
  * 
- * var success = sftp.rmdir(handle, path);
+ * var success = SFTP.rmdir(handle, path);
  * 
  * Remove a directory on the remote host.
  * 
@@ -293,11 +320,11 @@ JSVAL sftp_rmdir(JSARGS args) {
 }
 
 /**
- * @function sftp.unlink
+ * @function SFTP.unlink
  * 
  * ### Synopsis
  * 
- * var success = sftp.unlink(handle, path);
+ * var success = SFTP.unlink(handle, path);
  * 
  * Remove a file on the remote host.
  * 
@@ -316,12 +343,12 @@ JSVAL sftp_unlink(JSARGS args) {
 }
 
 /**
- * @function sftp.writeFile
+ * @function SFTP.writeFile
  * 
  * ### Synopsis
  * 
- * var status = sftp.writeFile(handle, srcPath, dstPath);
- * var status = sftp.writeFile(handle, srcPath, dstPath, mode);
+ * var status = SFTP.writeFile(handle, srcPath, dstPath);
+ * var status = SFTP.writeFile(handle, srcPath, dstPath, mode);
  * 
  * Write file to remote server via SFTP.
  * 
