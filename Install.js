@@ -7,7 +7,6 @@ process = require('builtin/process');
 
 var examples = [
 	'systat.js',
-	'httpd-silk.js',
 	'ftpclient.js'
 ];
 
