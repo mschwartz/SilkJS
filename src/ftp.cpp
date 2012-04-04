@@ -73,7 +73,7 @@ static JSVAL ftp_lastResponse(JSARGS args) {
 }
 
 /**
- * @function ftp.sysType
+ * @function ftp.systemType
  * 
  * ### Synopsis
  * 
@@ -338,10 +338,110 @@ static JSVAL ftp_getcwd(JSARGS args) {
     return scope.Close(String::New(buf));
 }
 
+/**
+ * @function ftp.get
+ * 
+ * ### Synopsis
+ * 
+ * var success = ftp.get(handle, remotePath, localPath, mode);
+ * var success = ftp.get(handle, remotePath, localPath);
+ * 
+ * Retrieve a file from the remote system to a local file.  The second form will do a BINARY mode file transfer.
+ * 
+ * @param {object} handle - handle returned by ftp.connect().
+ * @param {string} remotePath - path to file on remote system to retrieve.
+ * @param {string} localPath - path to file on local file system where file will be stored..
+ * @param {int} mode - either ftp.ASCII or ftp.BINARY.
+ * @return {int} success - 1 if successful, 0 if an error occurred.
+ */
+static JSVAL ftp_get(JSARGS args) {
+    HandleScope scope;
+    netbuf *n = HANDLE(args[0]);
+	String::Utf8Value remotePath(args[1]->ToString());
+	String::Utf8Value localPath(args[2]->ToString());
+    char mode = FTPLIB_IMAGE;
+    if (args.Length() > 3) {
+        mode = (char)args[3]->IntegerValue();
+    }
+    return scope.Close(Integer::New(FtpGet(*localPath, *remotePath, mode, n)));
+}
+
+/**
+ * @function ftp.put
+ * 
+ * ### Synopsis
+ * 
+ * var success = ftp.put(handle, localPath, remotePath, mode);
+ * var success = ftp.put(handle, localPath, remotePath);
+ * 
+ * Send a file to the remote system.  The second form will do a BINARY mode file transfer.
+ * 
+ * @param {object} handle - handle returned by ftp.connect().
+ * @param {string} localPath - path to file on local file system that will be sent to remote server.
+ * @param {string} remotePath - path to file on remote system to store.
+ * @param {int} mode - either ftp.ASCII or ftp.BINARY.
+ * @return {int} success - 1 if successful, 0 if an error occurred.
+ */
+static JSVAL ftp_put(JSARGS args) {
+    HandleScope scope;
+    netbuf *n = HANDLE(args[0]);
+	String::Utf8Value localPath(args[1]->ToString());
+	String::Utf8Value remotePath(args[2]->ToString());
+    char mode = FTPLIB_IMAGE;
+    if (args.Length() > 3) {
+        mode = (char)args[3]->IntegerValue();
+    }
+    return scope.Close(Integer::New(FtpPut(*localPath, *remotePath, mode, n)));
+}
+
+/**
+ * @function ftp.unlink
+ * 
+ * var success = ftp.unlink(handle, path);
+ * 
+ * Requests that the server remove the specified file from the remote file system.
+ * 
+ * @param {object} handle - handle returned by ftp.connect().
+ * @param {string} path - path of remote file to remove.
+ * @return {int} success - 1 if successful, 0 if an error occurred.
+ */
+static JSVAL ftp_unlink(JSARGS args) {
+    HandleScope scope;
+    netbuf *n = HANDLE(args[0]);
+	String::Utf8Value path(args[1]->ToString());
+    return scope.Close(Integer::New(FtpDelete(*path, n)));
+}
+
+/**
+ * @function ftp.rename
+ * 
+ * ### Synopsis
+ * 
+ * var success = ftp.rename(handle, oldPath, newPath);
+ * 
+ * Sends a rename request to the remote server.
+ * 
+ * @param {object} handle - handle returned by ftp.connect().
+ * @param {string} oldPath - path of existing remote file to be renamed.
+ * @param {string} newPath - path to rename existing file to.
+ * @return {int} success - 1 if successful, 0 if an error occurred.
+ */
+static JSVAL ftp_rename(JSARGS args) {
+    HandleScope scope;
+    netbuf *n = HANDLE(args[0]);
+	String::Utf8Value oldPath(args[1]->ToString());
+	String::Utf8Value newPath(args[2]->ToString());
+    return scope.Close(Integer::New(FtpRename(*oldPath, *newPath, n)));
+}
+
 void init_ftp_object() {
 	HandleScope scope;
 
 	JSOBJT ftpObject = ObjectTemplate::New();
+    
+    ftpObject->Set(String::New("ASCII"), Integer::New(FTPLIB_ASCII));
+    ftpObject->Set(String::New("BINARY"), Integer::New(FTPLIB_IMAGE));
+    
 	ftpObject->Set(String::New("init"), FunctionTemplate::New(ftp_init));
 	ftpObject->Set(String::New("site"), FunctionTemplate::New(ftp_site));
 	ftpObject->Set(String::New("lastResponse"), FunctionTemplate::New(ftp_lastResponse));
@@ -358,6 +458,10 @@ void init_ftp_object() {
 	ftpObject->Set(String::New("rmdir"), FunctionTemplate::New(ftp_rmdir));
 	ftpObject->Set(String::New("dir"), FunctionTemplate::New(ftp_dir));
 	ftpObject->Set(String::New("getcwd"), FunctionTemplate::New(ftp_getcwd));
+	ftpObject->Set(String::New("get"), FunctionTemplate::New(ftp_get));
+	ftpObject->Set(String::New("put"), FunctionTemplate::New(ftp_put));
+	ftpObject->Set(String::New("unlink"), FunctionTemplate::New(ftp_unlink));
+	ftpObject->Set(String::New("rename"), FunctionTemplate::New(ftp_rename));
 
     builtinObject->Set(String::New("ftp"), ftpObject);
 }
