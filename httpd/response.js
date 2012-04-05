@@ -191,7 +191,6 @@ res = function() {
 			}
 			catch (e) {
 			}
-			res.stop();
 		},
 
 		flush: function() {

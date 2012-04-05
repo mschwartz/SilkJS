@@ -16,6 +16,7 @@
 
 "use strict";
 
+/*global error */
 var sftp = require('builtin/sftp');
 
 function isString(v) {
@@ -134,7 +135,7 @@ SFTP.prototype.extend({
      * @returns {boolean} success - true if directory was created.
      */
     mkdir: function(path, mode) {
-        return sftp.mkdir(this.handle, path, mode || 0755);
+        return sftp.mkdir(this.handle, path, mode || parseInt('755', 8));
     },
 
     /**
@@ -186,7 +187,7 @@ SFTP.prototype.extend({
      * ### Note
      * If mode is not provided, the file mode of the file being sent will be used.
      */
-    writeFile: function(srcPath, destPath, mode) {
+    writeFile: function(srcPath, dstPath, mode) {
         if (mode) {
             return sftp.writeFile(this.handle, srcPath, dstPath, mode);
         }

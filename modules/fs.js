@@ -126,7 +126,7 @@ var newfs = {
                 files.each(function(file) {
                     if (fs.isDir(path+'/'+file)) {
                         recurse(path + '/' + file);
-                        fs.rmdir(path);
+                        fs.rmdir(path + '/' + file);
                     }
                     else {
                         fs.unlink(path + '/' + file);

@@ -49,6 +49,7 @@ HttpChild = (function() {
 
     function sendFile(fn) {
         res.sendFile(fn);
+        res.stop();
     }
 
 	var coffee_cache = {};
@@ -268,6 +269,7 @@ HttpChild = (function() {
             res.contentType = mimeTypes[extension] || 'text/plain';
 //            res.sendHeaders();
             res.sendFile(fn);
+            res.stop();
         }
 	}
 
