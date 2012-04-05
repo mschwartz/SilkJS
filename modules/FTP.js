@@ -21,14 +21,15 @@
  */
 
 var _ftp = require('builtin/ftp'),
-    fs = require('fs');
+    fs = require('fs'),
+    uuid = require('phpjs').uuid;
 
-function uuid() {
-    function S4() {
-        return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
-    }
-    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
-}
+//function uuid() {
+//    function S4() {
+//        return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+//    }
+//    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+//}
 
 // parse a directory listing line
 function parseLine(line) {

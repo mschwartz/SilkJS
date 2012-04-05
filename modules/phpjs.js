@@ -1522,6 +1522,13 @@ function urlencode (str) {
     return encodeURIComponent(str).replace(/!/g, '%21').replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A').replace(/%20/g, '+');
 }
 
+function uuid() {
+    function S4() {
+        return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
+    }
+    return (S4()+S4()+"-"+S4()+"-"+S4()+"-"+S4()+"-"+S4()+S4()+S4());
+}
+
 function file_put_contents(fn, data) {
     var fs = require('fs');
     fs.writeFile(fn, data);
@@ -1566,6 +1573,7 @@ exports && exports.extend({
     trim: trim,
     ucwords: ucwords,
     unserialize: unserialize,
-    urlencode: urlencode
+    urlencode: urlencode,
+    uuid: uuid
 });
 
