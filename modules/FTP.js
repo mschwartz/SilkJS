@@ -372,6 +372,37 @@ FTP.prototype.extend({
         var contents = fs.readFile(tmpFile);
         fs.unlink(tmpFile);
         return contents;
+    },
+    
+    /**
+    * @function ftp.unlink
+    * 
+    * var success = ftp.unlink(path);
+    * 
+    * Requests that the server remove the specified file from the remote file system.
+    * 
+    * @param {string} path - path of remote file to remove.
+    * @return {int} success - 1 if successful, 0 if an error occurred.
+    */
+    unlink: function(remotePath) {
+        return _ftp.unlink(this.handle, remotePath);
+    },
+    
+    /**
+    * @function ftp.rename
+    * 
+    * ### Synopsis
+    * 
+    * var success = ftp.rename(oldPath, newPath);
+    * 
+    * Sends a rename request to the remote server.
+    * 
+    * @param {string} oldPath - path of existing remote file to be renamed.
+    * @param {string} newPath - path to rename existing file to.
+    * @return {int} success - 1 if successful, 0 if an error occurred.
+    */
+    rename: function(oldPath, newPath) {
+        return _ftp.rename(this.handle, oldPath, newPath);
     }
 });
 exports = FTP;

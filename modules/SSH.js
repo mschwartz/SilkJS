@@ -27,8 +27,8 @@ var ssh2 = require('builtin/ssh2');
  * @param {string} password - user password at remote host
  * @returns {object} ssh - ssh connection instance, connected.
  */
-var SSH = function(aHost, aUser, aPassword) {
-    this.connection = ssh2.connect(aHost, aUser, aPassword);
+var SSH = function(host, user, password) {
+    this.connection = ssh2.connect(host, user, password);
     if (!ssh2.alive(this.connection)) {
         throw ssh2.error(this.connection);
     }

@@ -43,9 +43,9 @@ static SFTP *HANDLE(Handle<Value> arg) {
  */
 static JSVAL sftp_connect(JSARGS args) {
     HandleScope scope;
-	String::Utf8Value host(args[0]);
-	String::Utf8Value username(args[1]);
-	String::Utf8Value password(args[2]);
+	String::AsciiValue host(args[0]);
+	String::AsciiValue username(args[1]);
+	String::AsciiValue password(args[2]);
 	int port = 22;
 	if (args.Length() > 3) {
 		port = args[3]->IntegerValue();
@@ -76,6 +76,11 @@ static JSVAL sftp_connect(JSARGS args) {
     LIBSSH2_SESSION *session = libssh2_session_init();
     if (!session) {
         close(sock);
+        return scope.Close(String::New("Could not initialize SSH2 session"));
+    }
+    if (libssh2_session_startup(session, sock)) {
+        close(sock);
+        sock = -1;
         return scope.Close(String::New("Could not initialize SSH2 session"));
     }
     libssh2_session_set_blocking(session, 1);
@@ -200,7 +205,7 @@ JSVAL sftp_readdir(JSARGS args) {
             o->Set(_mtime, Integer::New(attrs.mtime));
             o->Set(_atime, Integer::New(attrs.atime));
         }
-        a->Set(aIndex, o);
+        a->Set(aIndex++, o);
     }
     libssh2_sftp_closedir(sftp_handle);
     return scope.Close(a);
@@ -414,7 +419,7 @@ void init_sftp_object() {
 	Handle<ObjectTemplate>sftp  = ObjectTemplate::New();
 	sftp->Set(String::New("connect"), FunctionTemplate::New(sftp_connect));
 	sftp->Set(String::New("close"), FunctionTemplate::New(sftp_close));
-	sftp->Set(String::New("readdir"), FunctionTemplate::New(sftp_readdir));
+	sftp->Set(String::New("readDir"), FunctionTemplate::New(sftp_readdir));
 	sftp->Set(String::New("stat"), FunctionTemplate::New(sftp_stat));
 	sftp->Set(String::New("mkdir"), FunctionTemplate::New(sftp_mkdir));
 	sftp->Set(String::New("rmdir"), FunctionTemplate::New(sftp_rmdir));

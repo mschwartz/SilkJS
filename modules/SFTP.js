@@ -14,7 +14,9 @@
  * ```
  */
 
-var sftp = require('builtin/SFTP');
+"use strict";
+
+var sftp = require('builtin/sftp');
 
 function isString(v) {
     return typeof v === 'string';
@@ -41,10 +43,15 @@ function isString(v) {
  * Throws an error if connection does not succeed.
  */
 function SFTP(host, username, password, port) {
-    this.handle = port ? SFTP.connect(host, username, password, port) : SFTP.connect(host, username, password);
+//    console.log('SFTP CONSTRUCTOR')
+//    console.dir(this);
+//    console.dir(this.prototype);
+    this.handle = sftp.connect(host, username, password, port || 22);
     if (isString(this.handle)) {
-        throw this.handle;
+        error(this.handle);
     }
+    this.connected = true;
+//    console.dir(this.prototpye);
 }
 
 SFTP.prototype.extend({
@@ -188,6 +195,4 @@ SFTP.prototype.extend({
     
 });
 
-if (exports) {
-    exports = SFTP;
-}
+exports = SFTP;
