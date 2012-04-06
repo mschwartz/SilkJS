@@ -6,8 +6,8 @@ HttpChild = (function() {
     var mimeTypes = require('MimeTypes');
 
 	function notFound() {
+        res.reset();
         global.notFound_action && global.notFound_action();
-		res.reset();
 		res.status = 404;
 		res.write('<h1>Not Found</h1>');
 		res.stop();
@@ -252,7 +252,7 @@ HttpChild = (function() {
 			notFound();
 		}
 
-		req.script_path = fn.replace(/\index\..*$/, '').replace(fs.realpath(Config.documentRoot), '');
+		req.script_path = fn.replace(/index\..*$/, '').replace(fs.realpath(Config.documentRoot), '');
 		res.status = 200;
         req.path = fn;
 		parts = fn.split('.');
@@ -325,6 +325,7 @@ HttpChild = (function() {
                     req.data = {};
                     res.data = {};
 					res.flush();
+                    res.reset();
 					// this logfile.write() reduces # requests/sec by 5000!
                     var elapsed = ('' + (process.rusage().time - rstart.time)).substr(0,8);
 					logfile.write(req.remote_addr + ' ' + req.method + ' ' + req.uri + ' completed in ' + elapsed + 's\n');

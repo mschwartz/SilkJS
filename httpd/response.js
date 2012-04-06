@@ -204,7 +204,8 @@ res = function() {
 				res.sendHeaders();
 			}
 			net.cork(res.sock, false);
-		},
+            buffer.reset(buf);
+        },
 		
 		redirect: function(uri) {
 			res.status = 302;
