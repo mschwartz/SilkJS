@@ -1,3 +1,12 @@
+/**
+ * @module builtin/editline
+ * 
+ * ### Synopsis
+ * 
+ * var editline = require('builtin/editline');
+ * 
+ * Interface to libedit (line editor/readline substitute)
+ */
 #include "SilkJS.h"
 #include <histedit.h>
 
@@ -20,6 +29,18 @@ static char *prompt(EditLine *el) {
     return e->prompt;
 }
 
+/**
+ * @function editline.init
+ * 
+ * ### Synopsis
+ * 
+ * var handle = editline.init(programName);
+ * 
+ * Initialize editline.  The programName is used to deal with .editrc.  See man editline for details.
+ * 
+ * @param (string) programName - name of program.
+ * @return {object} handle - opaque handle to use with other editline methods.
+ */
 static JSVAL editline_init(JSARGS args) {
     HandleScope scope;
 	String::Utf8Value prog(args[0]->ToString());
@@ -32,6 +53,17 @@ static JSVAL editline_init(JSARGS args) {
     return scope.Close(External::New(handle));
 }
 
+/**
+ * @function editline.end
+ * 
+ * ### Synopsis
+ * 
+ * editline.end(handle);
+ * 
+ * End editline session for the given handle, freeing any resources used.
+ * 
+ * @param {object} handle - handle returned from editline.init();
+ */
 static JSVAL editline_end(JSARGS args) {
     HandleScope scope;
     EHANDLE *e = HANDLE(args[0]);
@@ -40,6 +72,18 @@ static JSVAL editline_end(JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function editline.gets
+ * 
+ * ### Synopsis
+ * 
+ * var line = editline.gets(handle);
+ * 
+ * Read a line from the console using libedit.
+ * 
+ * @param {object} handle - handle returned from editline.init();
+ * @return {string} line - line read from console or false on EOF or error.
+ */
 static JSVAL editline_gets(JSARGS args) {
     HandleScope scope;
     EHANDLE *e = HANDLE(args[0]);
@@ -51,6 +95,20 @@ static JSVAL editline_gets(JSARGS args) {
     return scope.Close(String::New(s));
 }
 
+/**
+ * @function editline.prompt
+ * 
+ * ### Synopsis
+ * 
+ * editline.prompt(handle, prompt);
+ * 
+ * Set the prompt for lines read with libedit.
+ * 
+ * If you set the prompt to "foo> ", then the user will see "foo> " (without the quotes) and the cursor placed after that.
+ * 
+ * @param {object} handle - handle returned from editline.init();
+ * @param {string) prompt - the prompt to set
+ */
 static JSVAL editline_prompt(JSARGS args) {
     HandleScope scope;
     EHANDLE *e = HANDLE(args[0]);
