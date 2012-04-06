@@ -81,7 +81,7 @@ Mail.prototype.extend({
             putln(this.text);
         }
         else {
-            var boundary = 'frontier'; // uuid().replace(/-/g, '');
+            var boundary = 'silk_mail_'+uuid();
             putln('MIME-Version: 1.0');
             if (this.attachments.length) {
                 putln('Content-Type: multipart/mixed; boundary="'+boundary+'"');
@@ -125,6 +125,7 @@ Mail.prototype.extend({
         }
         fs.writeFile('/tmp/'+boundary, out.join('\r\n'));
         process.exec('sendmail -t </tmp/'+boundary);
+        fs.unlink('/tmp/'+boundary);
 //        sendmail.close();
     }
 });
