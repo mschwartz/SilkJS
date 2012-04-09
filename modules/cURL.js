@@ -41,7 +41,8 @@ function isString(v) {
  * + followRedirects (optional) true (default) to follow redirect responses from the server
  * + cookies: (optional) Object, Array, or String representation of cookie header to send
  * + headers: (optional) Object, Array, or String representation of HTTP headers to add to the request.
- * + params: (valid for POST only): POST variables to send to server
+ * + params: POST variables to send to server
+ * + verbose: set to > 0 to have cURL library log debugging info to console
  * 
  * The result returned is an object of the form:
  * 
@@ -70,7 +71,9 @@ function cURL(config) {
 //                c.setMethod(handle, config.method);
                 break;
             default:
-                error('GET/POST are only allowed methods.');
+                method = config.method.toUpperCase();
+                c.setMethod(handle, method);
+                break;
         }
     }
     if (config.followRedirects) {
@@ -112,12 +115,8 @@ function cURL(config) {
         else {
             error('Invalid params config');
         }
-        switch (method) {
-            case 'POST':
-                c.setPostFields(handle, paramString);
-                break;
-            default:
-                error('The params config is only valid for POST');
+        if (method !== 'GET') {
+            c.setPostFields(handle, paramString);
         }
     }
     
@@ -142,8 +141,8 @@ function cURL(config) {
             error('Invalid headers config');
         }
     }
-    
-    var errorCode = c.perform(handle);
+
+    var errorCode = c.perform(handle, config.verbose || 0);
     if (errorCode) {
         error(c.error(errorCode));
     }

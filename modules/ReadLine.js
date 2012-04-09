@@ -26,12 +26,14 @@ var editline = require('builtin/editline');
  * ### Synopsis:
  * 
  * var stdin = new ReadLine(program_name);
+ * var stdin = new ReadLine(program_name, historySize);
  * 
  * @param {string} program_name - name of program (see man editline).
+ * @param {int} historySize - number of lines of history to keep around. Defaults to 50.
  */
-function ReadLine(prog) {
+function ReadLine(prog, historySize) {
     prog = prog || 'SilkJS';
-    this.handle = editline.init(prog);
+    this.handle = editline.init(prog, historySize || 50);
     editline.prompt(this.handle, '> ');
 }
 ReadLine.prototype.extend({
@@ -63,7 +65,20 @@ ReadLine.prototype.extend({
      * @return {string} line - text that user entered, or false if EOF (e.g. user hit ^D).
      */
     gets: function() {
-        return editline.gets(this.handle);
+        var ret = editline.gets(this.handle);
+        if (ret === -1) {
+            throw 'SIGINT';
+        }
+        else if (ret === -2) {
+            throw 'SIGQUIT';
+        }
+        else if (ret === -3) {
+            throw 'SIGHUP';
+        }
+        else if (ret === -4) {
+            throw 'SIGTERM';
+        }
+        return ret;
     },
     
     /**

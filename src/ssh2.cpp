@@ -1,5 +1,5 @@
 /**
- *  @module builtin.SSH2
+ *  @module builtin/SSH2
  * 
  * ### Synopsis
  * 

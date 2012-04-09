@@ -116,8 +116,11 @@ static JSVAL setMethod(JSARGS args) {
     if (!strcasecmp(*method, "post")) {
         return scope.Close(Integer::New(curl_easy_setopt(h->curl, CURLOPT_POST, 1)));
     }
-    else {
+    else if (!strcasecmp(*method, "get")) {
         return scope.Close(Integer::New(curl_easy_setopt(h->curl, CURLOPT_HTTPGET, 1)));
+    }
+    else {
+        return scope.Close(Integer::New(curl_easy_setopt(h->curl, CURLOPT_CUSTOMREQUEST, *method)));
     }
 }
 
@@ -225,12 +228,14 @@ static JSVAL setPostFields(JSARGS args) {
  * ###Synopsis
  * 
  * var status = curl.perform(handle);
+ * var status = curl.perform(handle, verbose);
  * 
  * Perform the CURL request.
  * 
  * This function is called after the curl.init() and all the method calls to set options are made, and will perform the transfer as described in the options. It must be called with the same handle as input as the curl.init() call returned.
  * 
  * @param {object} handle - CURL handle
+ * @param {int} verbose - set to > 0 to have cURL library print debugging info to console
  * @return {int} status - 0 for success, otherwise an error code.
  */
 static JSVAL perform(JSARGS args) {
@@ -239,7 +244,9 @@ static JSVAL perform(JSARGS args) {
     if (h->slist) {
         curl_easy_setopt(h->curl, CURLOPT_HTTPHEADER, h->slist);
     }
-//    curl_easy_setopt(h->curl, CURLOPT_VERBOSE, 1);
+    if (args.Length() > 1) {
+        curl_easy_setopt(h->curl, CURLOPT_VERBOSE, args[1]->IntegerValue());
+    }
     return scope.Close(Integer::New(curl_easy_perform(h->curl)));
 }
 
@@ -280,6 +287,9 @@ static JSVAL getContentType(JSARGS args) {
     CHANDLE *h = HANDLE(args[0]);
     char *contentType;
 	curl_easy_getinfo(h->curl, CURLINFO_CONTENT_TYPE, &contentType);
+    if (!contentType) {
+        contentType = "";
+    }
     return scope.Close(String::New(contentType));
 }
 
@@ -298,6 +308,9 @@ static JSVAL getContentType(JSARGS args) {
 static JSVAL getResponseText(JSARGS args) {
     HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
+    if (!h->size) {
+        return scope.Close(String::New("{}"));
+    }
     return scope.Close(String::New(h->memory, h->size));
 }
 

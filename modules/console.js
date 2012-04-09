@@ -88,6 +88,7 @@
         * @returns {string} password - the password entered by the user
         */
        getPassword: function(prompt) {
+           prompt = prompt || '';
            return console.getPassword(prompt);
        }
         

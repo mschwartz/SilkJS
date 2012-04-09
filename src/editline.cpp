@@ -8,12 +8,17 @@
  * Interface to libedit (line editor/readline substitute)
  */
 #include "SilkJS.h"
+#include <setjmp.h>
 #include <histedit.h>
 
 struct EHANDLE {
     EditLine *el;
+    History *h;
     char *prompt;
+    jmp_buf jmpbuf;
 };
+
+static EHANDLE *currentHandle = NULL;
 
 static inline EHANDLE *HANDLE(Handle<Value>v) {
     if (v->IsNull()) {
@@ -29,27 +34,52 @@ static char *prompt(EditLine *el) {
     return e->prompt;
 }
 
+static sig_atomic_t gotsig = 0;
+
+static void sig(int i) {
+    signal(i, sig);
+    gotsig = i;
+    siglongjmp(currentHandle->jmpbuf, 1);
+}
+
 /**
  * @function editline.init
  * 
  * ### Synopsis
  * 
  * var handle = editline.init(programName);
+ * var handle = editline.init(programName, historySize);
  * 
  * Initialize editline.  The programName is used to deal with .editrc.  See man editline for details.
  * 
  * @param (string) programName - name of program.
+ * @param (int) historySize - size of history (number of lines of history to keep), defaults to 50.
  * @return {object} handle - opaque handle to use with other editline methods.
  */
 static JSVAL editline_init(JSARGS args) {
     HandleScope scope;
 	String::Utf8Value prog(args[0]->ToString());
+    int historySize = 50;
+    if (args.Length() > 1) {
+        historySize = args[1]->IntegerValue();
+    }
     EditLine *el = el_init(*prog, stdin, stdout, stderr);
     EHANDLE *handle = new EHANDLE;
     handle->el = el;
     handle->prompt = strdup("> ");
+    el_set(el, EL_SIGNAL, 1);
     el_set(el, EL_CLIENTDATA, handle);
     el_set(el, EL_PROMPT, prompt);
+    handle->h = history_init();
+    HistEvent ev;
+    history(handle->h, &ev, H_SETSIZE, historySize);
+    history(handle->h, &ev, H_SETUNIQUE, 1);
+    el_set(el, EL_HIST, history, handle->h);
+    (void) signal(SIGINT, sig);
+    (void) signal(SIGQUIT, sig);
+    (void) signal(SIGHUP, sig);
+    (void) signal(SIGTERM, sig);
+
     return scope.Close(External::New(handle));
 }
 
@@ -67,6 +97,7 @@ static JSVAL editline_init(JSARGS args) {
 static JSVAL editline_end(JSARGS args) {
     HandleScope scope;
     EHANDLE *e = HANDLE(args[0]);
+    history_end(e->h);
     el_end(e->el);
     delete [] e->prompt;
     return Undefined();
@@ -85,14 +116,43 @@ static JSVAL editline_end(JSARGS args) {
  * @return {string} line - line read from console or false on EOF or error.
  */
 static JSVAL editline_gets(JSARGS args) {
-    HandleScope scope;
+//    HandleScope scope;
     EHANDLE *e = HANDLE(args[0]);
     int count;
+    
+    if (sigsetjmp(e->jmpbuf, 1) != 0) {
+        el_reset(e->el);
+        if (gotsig) {
+            int retval = 0;
+            switch (gotsig) {
+                case SIGINT:
+                    retval = -1;
+                    break;
+                case SIGQUIT:
+                    retval = -2;
+                    break;
+                case SIGHUP:
+                    retval = -3;
+                    break;
+                case SIGTERM:
+                    retval = -4;
+                    break;
+            }
+            gotsig = 0;
+            return Integer::New(retval);
+        }
+        else {
+            return False();
+        }
+    }
+    currentHandle = e;
     const char *s = el_gets(e->el, &count);
     if (!s) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(String::New(s));
+    HistEvent ev;
+    history(e->h, &ev, H_ENTER, s);
+    return String::New(s);
 }
 
 /**
