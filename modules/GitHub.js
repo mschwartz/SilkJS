@@ -4,7 +4,7 @@ var cURL = require('cURL'),
     Json = require('Json'),
     console = require('console');
 
-var GitHub = function(username, password) {
+function GitHub(username, password) {
     this.username = username;
     this.password = password;
     this.url = 'https://' + username + ':' + password + '@api.github.com';
@@ -92,7 +92,7 @@ GitHub.prototype.extend({
             url: this.url + '/user/following/'+username
         });
         this.status = response.status;
-        return this.status == 204 ? true : false;
+        return this.status === 204;
     },
     follow: function(username) {
         var response = cURL({
@@ -180,10 +180,27 @@ GitHub.prototype.extend({
         return this.status == 204 ? true : Json.decode(response.responseText);
     },
 
-    listRepos: function(user) {
+    /**
+     * @function GitHub.listRepos
+     *
+     * ### Synopsis
+     *
+     * var repos = gh.listRepos();
+     * var repos = gh.listRepos(user);
+     * var repos = gh.listRepos(user, type);
+     *
+     * List repositories for the specified user.  The type variable may be "all", "owner", "member" or "public" (default).
+     *
+     * @param {string} user - username of user to get repositories for.  If ommitted, it is the current authenticated user.
+     * @param {string} type - type of repositories to get.
+     * @returns {array} repos - array of repo objects.
+     */
+    listRepos: function(user, type) {
         user = user || this.username;
         var url = this.url + '/users/' + user + '/repos';
-        console.log(url);
+        if (type) {
+            url += '?type='+type;
+        }
         var response = cURL({
             url: url
         });

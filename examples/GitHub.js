@@ -155,9 +155,15 @@ var commands = {
         }
     },
     listRepos: {
-        help: 'listRepos [user] - list [a user\'s] repositories.',
+        help: 'listRepos [user [type]] - list [a user\'s] repositories of [type].\n\ttype may be "all", "public", "member", or "all" (default),',
         fn: function(args) {
-            console.dir(gh.listRepos(args));
+            var parts = args.split(/\s+/);
+            var name = parts.shift();
+            var type = parts.join(' ');
+            name = name || gh.username;
+            gh.listRepos(name, type).each(function(repo) {
+                console.log(new Date(repo.updated_at).toString('MM/dd/yyyy HH:mm:ss') + ' ' + name + '/' + repo.name);
+            });
         }
     },
     listCollaborators: {
@@ -217,6 +223,12 @@ function main(username, password) {
             line = stdin.gets();
         }
         catch (e) {
+            if (e == 'SIGQUIT') {
+                continue;
+            }
+            else if (e == 'SIGTERM') {
+                break;
+            }
             console.log('');
             continue;
         }

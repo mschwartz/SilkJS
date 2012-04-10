@@ -33,8 +33,11 @@ var editline = require('builtin/editline');
  */
 function ReadLine(prog, historySize) {
     prog = prog || 'SilkJS';
-    this.handle = editline.init(prog, historySize || 50);
-    editline.prompt(this.handle, '> ');
+    this.prog = prog;
+    editline.loadHistory('.'+prog+'rc');
+    this.promptString = '> ';
+//    this.handle = editline.init(prog, historySize || 50);
+//    editline.prompt(this.handle, '> ');
 }
 ReadLine.prototype.extend({
     /**
@@ -50,7 +53,8 @@ ReadLine.prototype.extend({
      * 
      */
     prompt: function(txt) {
-        editline.prompt(this.handle, txt);
+        this.promptString = txt;
+//        editline.prompt(this.handle, txt);
     },
     
     /**
@@ -65,7 +69,7 @@ ReadLine.prototype.extend({
      * @return {string} line - text that user entered, or false if EOF (e.g. user hit ^D).
      */
     gets: function() {
-        var ret = editline.gets(this.handle);
+        var ret = editline.gets(this.promptString);
         if (ret === -1) {
             throw 'SIGINT';
         }
@@ -78,6 +82,10 @@ ReadLine.prototype.extend({
         else if (ret === -4) {
             throw 'SIGTERM';
         }
+        if (ret === false) {
+            console.log('^D hit');
+        }
+        editline.saveHistory('.'+this.prog+'rc');
         return ret;
     },
     
@@ -91,7 +99,7 @@ ReadLine.prototype.extend({
      * Close ReadLine instance and free any resources used.
      */
     close: function() {
-        editline.end(this.handle);
+//        editline.end(this.handle);
     }
 });
 

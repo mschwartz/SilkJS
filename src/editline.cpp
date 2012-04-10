@@ -9,6 +9,76 @@
  */
 #include "SilkJS.h"
 #include <setjmp.h>
+
+#define USE_LINENOISE
+#ifdef USE_LINENOISE
+// https://github.com/antirez/linenoise
+#include "linenoise.h"
+
+//static sig_atomic_t gotsig = 0;
+//static void sig(int i) {
+//    printf("GOT SIGNAL %d\n", i);
+//    signal(i, sig);
+//    gotsig = i;
+//}
+
+static bool initialized = false;
+static JSVAL editline_gets(JSARGS args) {
+    HandleScope scope;
+//    if (!initialized) {
+//        printf("initializing\n");
+//        initialized = true;
+//        (void) signal(SIGINT, sig);
+//        (void) signal(SIGQUIT, sig);
+//        (void) signal(SIGHUP, sig);
+//        (void) signal(SIGTERM, sig);
+//    }
+    String::Utf8Value prompt(args[0]->ToString());
+    char *line = linenoise(*prompt);
+    if (line) {
+        linenoiseHistoryAdd(line);
+        Local<Value> s = String::New(line);
+        delete [] line;
+        return scope.Close(s);
+    }
+    else {
+        if (errno == EAGAIN) {
+            return scope.Close(Integer::New(-4));
+        }
+        else if (errno == EPIPE) {
+            return scope.Close(Integer::New(-2));
+        }
+        return scope.Close(False());
+    }
+}
+
+static JSVAL editline_loadhistory(JSARGS args) {
+    HandleScope scope;
+    String::Utf8Value filename(args[0]->ToString());
+    linenoiseHistoryLoad(*filename);
+    return Undefined();
+}
+
+static JSVAL editline_savehistory(JSARGS args) {
+    HandleScope scope;
+    String::Utf8Value filename(args[0]->ToString());
+    linenoiseHistorySave(*filename);
+    return Undefined();
+}
+
+void init_editline_object() {
+	HandleScope scope;
+
+	JSOBJT editlineObject = ObjectTemplate::New();
+
+    editlineObject->Set(String::New("gets"), FunctionTemplate::New(editline_gets));
+    editlineObject->Set(String::New("loadHistory"), FunctionTemplate::New(editline_loadhistory));
+    editlineObject->Set(String::New("saveHistory"), FunctionTemplate::New(editline_savehistory));
+
+    builtinObject->Set(String::New("editline"), editlineObject);
+}
+
+#else
 #include <histedit.h>
 
 struct EHANDLE {
@@ -70,6 +140,7 @@ static JSVAL editline_init(JSARGS args) {
     el_set(el, EL_SIGNAL, 1);
     el_set(el, EL_CLIENTDATA, handle);
     el_set(el, EL_PROMPT, prompt);
+    el_set(el, EL_EDITOR, "vi");
     handle->h = history_init();
     HistEvent ev;
     history(handle->h, &ev, H_SETSIZE, historySize);
@@ -80,6 +151,7 @@ static JSVAL editline_init(JSARGS args) {
     (void) signal(SIGHUP, sig);
     (void) signal(SIGTERM, sig);
 
+    el_source(el, NULL);
     return scope.Close(External::New(handle));
 }
 
@@ -192,3 +264,4 @@ void init_editline_object() {
 
     builtinObject->Set(String::New("editline"), editlineObject);
 }
+#endif
