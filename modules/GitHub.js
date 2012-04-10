@@ -178,7 +178,38 @@ GitHub.prototype.extend({
         });
         this.status = response.status;
         return this.status == 204 ? true : Json.decode(response.responseText);
+    },
+
+    listRepos: function(user) {
+        user = user || this.username;
+        var url = this.url + '/users/' + user + '/repos';
+        console.log(url);
+        var response = cURL({
+            url: url
+        });
+        this.status = response.status;
+        return Json.decode(response.responseText);
+    },
+
+    listCollaborators: function(name) {
+        var parts = name.split('/');
+        var user;
+        if (parts.length > 1) {
+            name = parts[1];
+            user = parts[0];
+        }
+        else {
+            user = this.username;
+        }
+
+        var url = this.url + '/repos/' + user + '/' + name + '/collaborators';
+        var response = cURL({
+            url: url
+        });
+        this.status = response.status;
+        return Json.decode(response.responseText);
     }
+
 });
 
 exports.GitHub = GitHub;

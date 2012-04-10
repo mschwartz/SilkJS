@@ -134,6 +134,38 @@ var commands = {
             }
         }
     },
+    createKey: {
+        help: 'createKey name filename - create a key from file containing RSA/DSA key.',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var name = parts.shift();
+            var filename = parts.join(' ');
+            var key = fs.readFile(filename);
+            if (!key) {
+                console.log('*** error: ' + filename + ' not found');
+                return;
+            }
+            console.dir(gh.createKey(name, key));
+        }
+    },
+    deleteKey: {
+        help: 'deleteKey id - delete key identifeid by id.',
+        fn: function(args) {
+            console.dir(gh.deleteKey(args));
+        }
+    },
+    listRepos: {
+        help: 'listRepos [user] - list [a user\'s] repositories.',
+        fn: function(args) {
+            console.dir(gh.listRepos(args));
+        }
+    },
+    listCollaborators: {
+        help: 'listCollaborators user/repo - list a repository\'s collaborators.',
+        fn: function(args) {
+            console.dir(gh.listCollaborators(args));
+        }
+    },
     cd: {
         help: 'cd path - change working directory to path.',
         fn: function(args) {
