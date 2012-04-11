@@ -347,31 +347,27 @@ static JSVAL fetch_row(JSARGS args) {
 		else {
 			switch (fields[i].type) {
 			case MYSQL_TYPE_TINY:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
+				o->Set(String::New(fields[i].name), Integer::New(atol(row[i])));
 				break;
 			case MYSQL_TYPE_SHORT:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
-				break;
-			case MYSQL_TYPE_LONG:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
+				o->Set(String::New(fields[i].name), Integer::New(atol(row[i])));
 				break;
 			case MYSQL_TYPE_FLOAT:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
+				o->Set(String::New(fields[i].name), Number::New(atof(row[i])));
 				break;
 			case MYSQL_TYPE_DOUBLE:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
+				o->Set(String::New(fields[i].name), Number::New(atof(row[i])));
 				break;
 			case MYSQL_TYPE_NULL:
 				o->Set(String::New(fields[i].name), Null());
 				break;
 			case MYSQL_TYPE_TIMESTAMP:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
+				o->Set(String::New(fields[i].name), Integer::New(atol(row[i])));
 				break;
 			case MYSQL_TYPE_LONGLONG:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
-				break;
+            case MYSQL_TYPE_LONG:
 			case MYSQL_TYPE_INT24:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
+				o->Set(String::New(fields[i].name), Integer::New(atol(row[i])));
 				break;
 			default:
 				o->Set(String::New(fields[i].name), String::New(row[i], lengths[i]));
@@ -703,7 +699,7 @@ JSVAL getDataRows(JSARGS args) {
 				case MYSQL_TYPE_TIMESTAMP:
 				case MYSQL_TYPE_LONGLONG:
 				case MYSQL_TYPE_INT24:
-					o->Set(names[i], Integer::New(atoi(row[i])));
+					o->Set(names[i], Number::New(atol(row[i])));
 					break;
 				case MYSQL_TYPE_FLOAT:
 				case MYSQL_TYPE_DOUBLE:
@@ -749,31 +745,21 @@ JSVAL getDataRow(JSARGS args) {
 		else {
 			switch (fields[i].type) {
 			case MYSQL_TYPE_TINY:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
-				break;
 			case MYSQL_TYPE_SHORT:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
-				break;
 			case MYSQL_TYPE_LONG:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
+			case MYSQL_TYPE_TIMESTAMP:
+			case MYSQL_TYPE_LONGLONG:
+			case MYSQL_TYPE_INT24:
+				o->Set(String::New(fields[i].name), Number::New(atol(row[i])));
 				break;
 			case MYSQL_TYPE_FLOAT:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
+				o->Set(String::New(fields[i].name), Number::New(atof(row[i])));
 				break;
 			case MYSQL_TYPE_DOUBLE:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
+				o->Set(String::New(fields[i].name), Number::New(atof(row[i])));
 				break;
 			case MYSQL_TYPE_NULL:
 				o->Set(String::New(fields[i].name), Null());
-				break;
-			case MYSQL_TYPE_TIMESTAMP:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
-				break;
-			case MYSQL_TYPE_LONGLONG:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
-				break;
-			case MYSQL_TYPE_INT24:
-				o->Set(String::New(fields[i].name), Integer::New(atoi(row[i])));
 				break;
 			default:
 				o->Set(String::New(fields[i].name), String::New(row[i], lengths[i]));
@@ -811,23 +797,18 @@ JSVAL getScalar(JSARGS args) {
 	else {
 		switch (fields[0].type) {
 		case MYSQL_TYPE_TINY:
-			return scope.Close(Integer::New(atoi(row[0])));
 		case MYSQL_TYPE_SHORT:
-			return scope.Close(Integer::New(atoi(row[0])));
 		case MYSQL_TYPE_LONG:
-			return scope.Close(Integer::New(atoi(row[0])));
+		case MYSQL_TYPE_TIMESTAMP:
+		case MYSQL_TYPE_LONGLONG:
+		case MYSQL_TYPE_INT24:
+			return scope.Close(Number::New(atol(row[0])));
 		case MYSQL_TYPE_FLOAT:
-			return scope.Close(Integer::New(atoi(row[0])));
+			return scope.Close(Number::New(atof(row[0])));
 		case MYSQL_TYPE_DOUBLE:
-			return scope.Close(Integer::New(atoi(row[0])));
+			return scope.Close(Number::New(atof(row[0])));
 		case MYSQL_TYPE_NULL:
 			return Null();
-		case MYSQL_TYPE_TIMESTAMP:
-			return scope.Close(Integer::New(atoi(row[0])));
-		case MYSQL_TYPE_LONGLONG:
-			return scope.Close(Integer::New(atoi(row[0])));
-		case MYSQL_TYPE_INT24:
-			return scope.Close(Integer::New(atoi(row[0])));
 		default:
 			return scope.Close(String::New(row[0], lengths[0]));
 		}

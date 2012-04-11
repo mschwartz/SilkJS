@@ -731,6 +731,8 @@ static JSVAL fs_readfile(JSARGS args) {
     if (fd == -1) {
         return scope.Close(Null());
     }
+    flock(fd, LOCK_SH);
+    lseek(fd, 0, 0);
     std::string s;
     //	long size = lseek(fd, 0, 2); lseek(fd, 0, 0);
     //	printf("size = %ld\n", size);
@@ -742,6 +744,7 @@ static JSVAL fs_readfile(JSARGS args) {
     //	if (read(fd, buf, size) != size) {
     //		return scope.Close(Null());
     //	}
+    flock(fd, LOCK_UN);
     close(fd);
     Handle<String>ret = String::New(s.c_str(), s.size());
     return scope.Close(ret);
@@ -772,6 +775,7 @@ static JSVAL fs_readfile64(JSARGS args) {
         printf("%s\n%s\n", *path, strerror(errno));
         return scope.Close(Null());
     }
+    flock(fd, LOCK_SH);
     long size = lseek(fd, 0, 2);
     lseek(fd, 0, 0);
     unsigned char buf[size];
@@ -831,10 +835,13 @@ static JSVAL fs_writefile(JSARGS args) {
     if (fd == -1) {
         return scope.Close(False());
     }
+    flock(fd, LOCK_EX);
     if (write(fd, *data, size) != size) {
+        flock(fd, LOCK_UN);
         close(fd);
         return scope.Close(False());
     }
+    flock(fd, LOCK_UN);
     close(fd);
     return scope.Close(True());
 }
