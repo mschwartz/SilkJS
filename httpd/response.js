@@ -50,6 +50,7 @@ res = function() {
 		contentLength: 0,
 		contentType: 'text/html',
 		headers: {},
+        data: {},
 		
 		init: function(sock, keepAlive, requestsHandled) {
 			buffer.reset(buf);
