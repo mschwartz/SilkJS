@@ -90,12 +90,17 @@ void ReportException(v8::TryCatch* try_catch) {
 int main(int argc, char** argv) {
     signal(SIGSEGV, AnsiSignalHandler);
     //    printf("SILK V0.1\n");
+    char *startup;
+    const char *progName;
+    
     if (argc < 2) {
-        printf("usage: %s file.js\n", argv[0]);
-        exit(1);
+        startup = readFile("/usr/share/silkjs/builtin/interpreter.js");
+        progName = "interpreter";
     }
-
-    char *startup = readFile(argv[1]);
+    else {
+        startup = readFile(argv[1]);
+        progName = argv[1];
+    }
     if (!startup) {
         printf("%s not found\n", argv[1]);
         exit(1);
@@ -122,7 +127,7 @@ int main(int argc, char** argv) {
 			Handle<Script>init = Script::New(String::New("global=this; module = {}; include('builtin/all.js');"), String::New("builtin"));
 			init->Run();
 
-			mainScript = Persistent<Script>::New(Script::Compile(String::New(startup), String::New(argv[1])));
+			mainScript = Persistent<Script>::New(Script::Compile(String::New(startup), String::New(progName)));
 			V8::SetCaptureStackTraceForUncaughtExceptions(true, 50, StackTrace::kDetailed);
 			TryCatch tryCatch;
 			Handle<Value>v = mainScript->Run();
@@ -135,7 +140,10 @@ int main(int argc, char** argv) {
 			if (!process_val.IsEmpty() && process_val->IsFunction()) {
 				Handle<Function> process_fun = Handle<Function>::Cast(process_val);
 				mainFunc = Persistent<Function>::New(process_fun);
-				const int ac = argc - 2;
+				int ac = argc - 2;
+                if (ac < 0) {
+                    ac = 0;
+                }
 				Handle<Value>av[ac];
 				for (int i = 2; i < argc; i++) {
 					av[i - 2] = String::New(argv[i]);

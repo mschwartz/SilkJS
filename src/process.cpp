@@ -16,6 +16,7 @@
  */
 #include "SilkJS.h"
 #include "v8-read-only/src/v8.h"
+#include <pwd.h>
 
 // TODO:
 // getcwd()
@@ -102,8 +103,7 @@ static JSVAL process_fork(JSARGS args) {
 	context->Exit();
 	pid_t pid = fork();
 	context->Enter();
-	HandleScope scope;
-	return scope.Close(Integer::New(pid));
+	return Integer::New(pid);
 }
 
 /**
@@ -119,7 +119,6 @@ static JSVAL process_fork(JSARGS args) {
  * @return NEVER
  */
 static JSVAL process_exit(JSARGS args) {
-	HandleScope scope;
 	exit(args[0]->IntegerValue());
 	return Undefined();
 }
@@ -135,7 +134,6 @@ static JSVAL process_exit(JSARGS args) {
  * @param {int} seconds - number of seconds to suspend.
  */
 static JSVAL process_sleep(JSARGS args) {
-	HandleScope scope;
 	sleep(args[0]->IntegerValue());
 	return Undefined();
 }
@@ -151,7 +149,6 @@ static JSVAL process_sleep(JSARGS args) {
  * @param {int} microseconds - number of microseconds to suspend.
  */
 static JSVAL process_usleep(JSARGS args) {
-	HandleScope scope;
 	usleep(args[0]->IntegerValue());
 	return Undefined();
 }
@@ -178,7 +175,6 @@ static JSVAL process_usleep(JSARGS args) {
  * process.exit()
  */
 static JSVAL process_wait(JSARGS args) {
-	HandleScope scope;
 	int status;
 	pid_t childPid = waitpid(-1, &status, 0);
 	if (childPid == -1) {
@@ -187,7 +183,7 @@ static JSVAL process_wait(JSARGS args) {
 	Handle<Object>o = Object::New();
 	o->Set(String::New("pid"), Integer::New(childPid));
 	o->Set(String::New("status"), Integer::New(status));
-	return scope.Close(o);
+	return o;
 }
 
 /**
@@ -207,7 +203,6 @@ static JSVAL process_wait(JSARGS args) {
  * @return {string} output - the output of the command executed.
  */
 static JSVAL process_exec(JSARGS args) {
-	HandleScope scope;
 	String::AsciiValue cmd(args[0]);
 	string s;
 	char buf[2048];
@@ -217,7 +212,7 @@ static JSVAL process_exec(JSARGS args) {
 		s.append(buf, size);
 	}
 	pclose(fp);
-	return scope.Close(String::New(s.c_str(), s.size()));
+	return String::New(s.c_str(), s.size());
 }
 
 /**
@@ -232,8 +227,7 @@ static JSVAL process_exec(JSARGS args) {
  * @return {int} uid - the user ID of the calling process.
  */
 static JSVAL process_getuid(JSARGS args) {
-	HandleScope scope;
-	return scope.Close(Integer::New(getuid()));
+	return Integer::New(getuid());
 }
 
 /**
@@ -254,10 +248,10 @@ static JSVAL process_getuid(JSARGS args) {
  */
 static JSVAL process_env(JSARGS args) {
 	extern char **environ;
-	HandleScope scope;
 	int size = 0;
 	while (environ[size]) size++;
 	Handle<Object>env = Object::New();
+    char *home = NULL;
 	for (int i = 0; i < size; ++i) {
 		const char* key = environ[i];
 		const char* val = strchr(key, '=');
@@ -265,8 +259,16 @@ static JSVAL process_env(JSARGS args) {
 		if (val[0] == '=') val = val + 1;
 		const int vlen = val ? strlen(val) : 0;
 		env->Set(String::New(key, klen), String::New(val, vlen));
+        if (!strcmp(key, "HOME")) {
+            home = (char *)val;
+        }
 	}
-	return scope.Close(env);
+    if (!home) {
+        struct passwd *pw = getpwuid(getuid());
+        home = pw->pw_dir;
+        env->Set(String::New("HOME"), String::New(home));
+    }
+	return env;
 }
 
 /**

@@ -18,7 +18,8 @@
  * ```
  */
 
-var editline = require('builtin/editline');
+var editline = require('builtin/editline'),
+    process = require('builtin/process');
 
 /** 
  * @constructor ReadLine
@@ -28,13 +29,17 @@ var editline = require('builtin/editline');
  * var stdin = new ReadLine(program_name);
  * var stdin = new ReadLine(program_name, historySize);
  * 
+ * Create a line editor instance.  A history file is written to $HOME/.program_namerc.
+ * 
+ * 
  * @param {string} program_name - name of program (see man editline).
  * @param {int} historySize - number of lines of history to keep around. Defaults to 50.
  */
 function ReadLine(prog, historySize) {
     prog = prog || 'SilkJS';
     this.prog = prog;
-    editline.loadHistory('.'+prog+'rc');
+    this.historyFile = process.env().HOME + '/' + '.'+prog+'rc';
+    editline.loadHistory(this.historyFile);
     this.promptString = '> ';
 //    this.handle = editline.init(prog, historySize || 50);
 //    editline.prompt(this.handle, '> ');
@@ -85,7 +90,7 @@ ReadLine.prototype.extend({
         if (ret === false) {
             console.log('^D hit');
         }
-        editline.saveHistory('.'+this.prog+'rc');
+        editline.saveHistory(this.historyFile);
         return ret;
     },
     
