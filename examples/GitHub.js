@@ -362,6 +362,9 @@ function main(username, password) {
             console.log(process.exec(line.substr(1).trim()));
             continue;
         }
+        if (line === '?') {
+            line = 'help';
+        }
         var parts = line.split(/\s+/);
         var cmd = parts.shift();
         var args = parts.join(' ');

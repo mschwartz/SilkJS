@@ -1,0 +1,16 @@
+var console = require('console'),
+    GitHub = require('GitHub').Connection;
+
+function main(username, password) {
+    if (!username) {
+        console.log('Usage: GitHub.js username [password]');
+        return;
+    }
+    if (!password) {
+        password = console.getPassword('GitHub password for ' + username + ': ');
+    }
+
+    gh = new GitHub(username, password);
+    var u = gh.getUser();
+    console.dir(u);
+}
