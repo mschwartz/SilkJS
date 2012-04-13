@@ -67,14 +67,21 @@ ReadLine.prototype.extend({
      * 
      * ### Synopsis
      * 
-     * var line = stdin.gets();
+     * var line = stdin.gets(addHistory);
      * 
      * Read a line from stdin with prompt.
-     * 
+     *
+     * @param {boolean} addHistory - set to false to not add input to history.
      * @return {string} line - text that user entered, or false if EOF (e.g. user hit ^D).
      */
-    gets: function() {
-        var ret = editline.gets(this.promptString);
+    gets: function(addHistory) {
+        if (addHistory === undefined || addHistory === true) {
+            addHistory = true;
+        }
+        else {
+            addHistory = false;
+        }
+        var ret = editline.gets(this.promptString, addHistory );
         if (ret === -1) {
             throw 'SIGINT';
         }
@@ -90,7 +97,9 @@ ReadLine.prototype.extend({
         if (ret === false) {
             console.log('^D hit');
         }
-        editline.saveHistory(this.historyFile);
+        if (addHistory) {
+            editline.saveHistory(this.historyFile);
+        }
         return ret;
     },
     

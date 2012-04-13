@@ -25,6 +25,8 @@
 static bool initialized = false;
 static JSVAL editline_gets(JSARGS args) {
     HandleScope scope;
+    bool addHistory = true;
+    addHistory = args[1]->BooleanValue();
 //    if (!initialized) {
 //        printf("initializing\n");
 //        initialized = true;
@@ -36,7 +38,9 @@ static JSVAL editline_gets(JSARGS args) {
     String::Utf8Value prompt(args[0]->ToString());
     char *line = linenoise(*prompt);
     if (line) {
-        linenoiseHistoryAdd(line);
+        if (addHistory) {
+            linenoiseHistoryAdd(line);
+        }
         Local<Value> s = String::New(line);
         delete [] line;
         return scope.Close(s);
@@ -181,10 +185,12 @@ static JSVAL editline_end(JSARGS args) {
  * ### Synopsis
  * 
  * var line = editline.gets(handle);
- * 
+ * var line = editline.gets(handle, addHistory);
+ *
  * Read a line from the console using libedit.
  * 
  * @param {object} handle - handle returned from editline.init();
+ * @param {boolean} addHistory - true to add input line to history.  Defaults to true.
  * @return {string} line - line read from console or false on EOF or error.
  */
 static JSVAL editline_gets(JSARGS args) {

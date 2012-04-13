@@ -29,15 +29,15 @@ var commands = {
             try {
                 ['name', 'email', 'blog', 'company', 'location', 'hireable', 'bio'].each(function(s) {
                     stdin.prompt(s + ' (' + gh.user[s] + '): ');
-                    var inp = stdin.gets();
-                    if (!inp) {
+                    var inp = stdin.gets(false);
+                    if (inp === '') {
+                        inp = gh.user[s];
+                    }
+                    else if (!inp) {
                         alive = false;
                         return false;
                     }
-                    o[s] = inp.trim();
-                    if (!o[s].length) {
-                        o[s] = gh.user[s];
-                    }
+                    o[s] = inp;
                 });
             }
             catch (e) {
@@ -166,6 +166,125 @@ var commands = {
             });
         }
     },
+    listOrgRepos: {
+        help: 'listOrgRepos org - list an organization\'s repos; you must be a member of the organization.',
+        fn: function(args) {
+            gh.listOrgRepos(args).each(function(repo) {
+                console.log(new Date(repo.updated_at).toString('MM/dd/yyyy HH:mm:ss') + ' ' + args + '/' + repo.name);
+            });
+        }
+    },
+    createRepo: {
+        help: 'createRepo name - create a repository',
+        fn: function(args) {
+            var o = {
+                name: args,
+                description: '',
+                homepage: '',
+                private: false,
+                has_issues: true,
+                has_wiki: true,
+                has_downloads: true
+            };
+            console.log('Enter repository information below.  Hit ^C to abort.');
+            try {
+                ['description', 'homepage', 'private', 'has_issues', 'has_wiki', 'has_downloads'].each(function (s) {
+                    stdin.prompt(s + ' ('+ o[s] + '): ');
+                    var inp = stdin.gets(false);
+                    if (inp === '') {
+                        inp = o[s];
+                    }
+                    else if (!inp) {
+                        alive = false;
+                        return false;
+                    }
+                    o[s] = inp;
+                });
+            }
+            catch (e) {
+                defaultPrompt();
+                console.log('*** Aborted');
+                return;
+            }
+            defaultPrompt();
+            console.dir(gh.createRepository(o));
+        }
+    },
+    repo: {
+        help: 'repo repository - get info about specified repository',
+        fn: function(args) {
+            console.dir(gh.getRepository(args));
+            console.log('status: ' + gh.status);
+        }
+    },
+    editRepo: {
+        help: 'editRepo name - edit a repository',
+        fn: function (args) {
+            var fields = ['description', 'homepage', 'private', 'has_issues', 'has_wiki', 'has_downloads'];
+            var repo = gh.getRepository(args);
+            if (gh.status == 404) {
+                console.log('*** Repository ' + args + ' not found');
+                return;
+            }
+            var o = {};
+            fields.each(function(field) {
+                o[field] = repo[field];
+            });
+            o.name = args;
+            console.log('Enter repository information below.  Hit ^C to abort.');
+            try {
+                fields.each(function (s) {
+                    stdin.prompt(s + ' (' + o[s] + '): ');
+                    var inp = stdin.gets(false);
+                    if (inp === '') {
+                        inp = o[s];
+                    }
+                    else if (!inp) {
+                        alive = false;
+                        return false;
+                    }
+                    o[s] = inp;
+                });
+            }
+            catch (e) {
+                defaultPrompt();
+                console.log('*** Aborted');
+                return;
+            }
+            defaultPrompt();
+            console.dir(gh.editRepository(args, o));
+        }
+    },
+    listContributors: {
+        help: 'listContributors [user/]repo - list a repository\'s contributors.',
+        fn: function(args) {
+            console.dir(gh.listContributors(args));
+        }
+    },
+    listLanguages: {
+        help: 'listLanguages [user/]repo - list a repository\'s languages.',
+        fn: function(args) {
+            console.dir(gh.listLanguages(args));
+        }
+    },
+    listTeams: {
+        help: 'listTeams [user/]repo - list a repository\'s teams.',
+        fn: function(args) {
+            console.dir(gh.listTeams(args));
+        }
+    },
+    listTags: {
+        help: 'listTags [user/]repo - list a repository\'s tags.',
+        fn: function(args) {
+            console.dir(gh.listTags(args));
+        }
+    },
+    listBranches: {
+        help: 'listBranches[user/]repo - list a repository\'s branches.',
+        fn: function(args) {
+            console.dir(gh.listBranches(args));
+        }
+    },
     listCollaborators: {
         help: 'listCollaborators user/repo - list a repository\'s collaborators.',
         fn: function(args) {
@@ -199,7 +318,7 @@ var commands = {
         help: 'help - show this list.',
         fn: function() {
             commands.each(function(cmd) {
-                console.log(cmd.help);
+                console.log('    ' + cmd.help);
             });
         }
     }
@@ -236,6 +355,9 @@ function main(username, password) {
             break;
         }
         line = line.trim();
+        if (!line.length) {
+            continue;
+        }
         if (line[0] === '!') {
             console.log(process.exec(line.substr(1).trim()));
             continue;
@@ -244,7 +366,13 @@ function main(username, password) {
         var cmd = parts.shift();
         var args = parts.join(' ');
         if (commands[cmd]) {
-            commands[cmd].fn(args);
+            try {
+                commands[cmd].fn(args);
+            }
+            catch (e) {
+                console.log('Exception');
+                console.log(e);
+            }
         }
         else {
             console.log('*** Invalid command.  Type help for command list.');
