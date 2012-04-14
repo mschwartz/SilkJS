@@ -208,7 +208,7 @@ HttpChild = (function() {
         var action = parts[0] + '_action';
         if (global[action]) {
             global[action]();
-//            res.stop();
+            res.stop();
         }
 
 		var fnPath = Config.documentRoot + req.uri;
