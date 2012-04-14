@@ -38,7 +38,7 @@ static JSVAL editline_gets(JSARGS args) {
     String::Utf8Value prompt(args[0]->ToString());
     char *line = linenoise(*prompt);
     if (line) {
-        if (addHistory) {
+        if (addHistory && strlen(line)) {
             linenoiseHistoryAdd(line);
         }
         Local<Value> s = String::New(line);

@@ -46,6 +46,10 @@ function GitHub(username, password) {
 }
 
 GitHub.prototype.extend({
+    repoName: function(repo) {
+        return (repo.indexOf('/') !== -1) ? repo : (this.username + '/' + repo);
+    },
+
     /**
      * @function GitHub.getUser
      *
@@ -743,6 +747,17 @@ GitHub.prototype.extend({
         return Json.decode(response.responseText);
     },
 
+    /**
+     * @function GitHub.isCollaborator
+     *
+     * var isCollaborator = gh.isCollaborator(repo, user);
+     *
+     * Determine if a user is a collaborator for a repo.
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} oUser - name of a user to check.
+     * @return {boolean} isCollaborator - true if user is a collaborator.
+     */
     isCollaborator: function(repo, oUser) {
         var parts = repo.split('/');
         var user;
@@ -755,6 +770,131 @@ GitHub.prototype.extend({
         }
 
         var url = this.url + '/repos/' + user + '/' + repo + '/collaborators/' + oUser;
+        var response = cURL({
+            url: url
+        });
+        this.status = response.status;
+        return this.status == 204;
+    },
+
+    /**
+     * @function GitHub.addCollaborator
+     *
+     * var success = gh.addCollaborator(repo, user);
+     *
+     * Add a user as a collaborator for a repo.
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} oUser - name of a user to add.
+     * @return {boolean} success - true if user added as a collaborator.
+     */
+    addCollaborator: function(repo, oUser) {
+        var parts = repo.split('/');
+        var user;
+        if (parts.length > 1) {
+            repo = parts[1];
+            user = parts[0];
+        }
+        else {
+            user = this.username;
+        }
+        var url = this.url + '/repos/' + user + '/' + repo + '/collaborators/' + oUser;
+        var response = cURL({
+            method: 'PUT',
+            url: url,
+            params: ' ' // hack - forces a content-length: 1 header, required by github api
+        });
+        this.status = response.status;
+        if (this.status == 204) {
+            return true;
+        }
+        if (response.responseText.length) {
+            throw Json.decode(response.responseText).message;
+        }
+    },
+
+    /**
+     * @function GitHub.removeCollaborator
+     *
+     * var success = gh.removeCollaborator(repo, user);
+     *
+     * Remove a user as a collaborator for a repo.
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} oUser - name of a user to remove.
+     * @return {boolean} success - true if user removed as a collaborator.
+     */
+    removeCollaborator: function(repo, oUser) {
+        var url = this.url + '/repos/' + this.repoName(repo) + '/collaborators/' + oUser;
+        var response = cURL({
+            method: 'DELETE',
+            url: url
+        });
+        this.status = response.status;
+        if (this.status == 204) {
+            return true;
+        }
+        if (response.responseText.length) {
+            throw Json.decode(response.responseText).message;
+        }
+    },
+
+    /**
+     * @funciton GitHub.listCommits
+     *
+     * ### Synopsis
+     *
+     * var commits = gh.listCommits(repo);
+     * var commits = gh.listCommits(repo, params);
+     *
+     * List commits on a repository.
+     *
+     * The params object has the form:
+     *
+     * + {string} sha - optional, SHA or branch to start listingj commits from.
+     * + {string} path - optional, Only commits containing this file path will be returned.
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {object} params - params object, per above description.
+     * @return {array} commits - array of objects describing the commits.
+     */
+    listCommits: function(repo, params) {
+        var url = this.url + '/repos/' + this.repoName(repo) + '/commits';
+        var response = cURL({
+            url: url
+        });
+        this.status = response.status;
+        return Json.decode(response.responseText);
+    },
+
+    /**
+     * @function GitHub.getCommit
+     *
+     * ### Synopsis
+     *
+     * var commit = gh.getCommit(repo, sha);
+     *
+     * Get a single commmit.
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} sha - sha string that identifies the commit
+     * @return {object} commit - info about the commit
+     */
+    getCommit: function(repo, sha) {
+        var url = this.url + '/repos/' + this.repoName(repo) + '/commits/' + sha;
+        var response = cURL({
+            url: url
+        });
+        this.status = response.status;
+        return Json.decode(response.responseText);
+    },
+
+    listComments: function(repo, sha) {
+        var url = this.url + '/repos/' + this.repoName(repo);
+        if (sha) {
+            url += '/commits/' + sha;
+        }
+        url += '/comments';
         var response = cURL({
             url: url
         });

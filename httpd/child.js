@@ -15,6 +15,9 @@ HttpChild = (function() {
 
 	var jst_cache = {};
 	function getCachedJst(fn) {
+        if (!fs.exists(fn)) {
+            throw 'Cannot find included .jst file ' + fn;
+        }
 		var jst = jst_cache[fn];
 		if (!jst || fs.stat(fn).mtime < jst.mtime) {
 			var source = fs.readFile(fn);
