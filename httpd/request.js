@@ -106,7 +106,11 @@ req = (function() {
 							};
 						}
 						else {
-							data[name] = lines[3];
+                            lines.shift(); lines.shift(); lines.shift();
+                            if (lines[lines.length-1] == '') {
+                                lines.pop();
+                            }
+							data[name] = lines.join('\n');
 						}
 					});
 				}
