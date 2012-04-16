@@ -286,9 +286,80 @@ var commands = {
         }
     },
     listCollaborators: {
-        help: 'listCollaborators user/repo - list a repository\'s collaborators.',
+        help: 'listCollaborators [user/]repo - list a repository\'s collaborators.',
         fn: function(args) {
             console.dir(gh.listCollaborators(args));
+        }
+    },
+    isCollaborator: {
+        help: 'isCollaborator [user/]repo user - determine if a user is a repo\'s collaborator',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var user = parts.join(' ');
+            console.dir(gh.isCollaborator(repo, user));
+        }
+    },
+    addCollaborator: {
+        help: 'addCollaborator [user/]repo user - add a user as a repo\'s collaborator',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var user = parts.join(' ');
+            console.dir(gh.addCollaborator(repo, user));
+        }
+    },
+    removeCollaborator: {
+        help: 'removeCollaborator [user/]repo user - remove a user as a repo\'s collaborator',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var user = parts.join(' ');
+            console.dir(gh.removeCollaborator(repo, user));
+        }
+    },
+    listCommits: {
+        help: 'listCommits [user/]repo - list commits for a repository',
+        fn: function(args) {
+            gh.listCommits(args).reverse().each(function(commit) {
+                delete commit.patch;
+                console.log('commit  ' + commit.sha);
+                console.log('Author: ' + commit.commit.author.name + ' <' + commit.commit.author.email + '>');
+                console.log('Date:   ' + commit.commit.author.date);
+//                console.log(commit.commit.author.date + ' ' + commit.commit.author.email);
+                var message = '     ' + commit.commit.message.split('\n').join('\n     ');
+                console.log(message);
+                console.log('');
+            });
+        }
+    },
+    getCommit: {
+        help: 'getCommit [user/]repo sha - get a single commit for a repository',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var sha = parts.join(' ');
+            var commit = gh.getCommit(repo, sha);
+            console.log('');
+            console.log(commit.commit.committer.date + ' ' + commit.commit.committer.email);
+            console.log(commit.sha);
+            console.log(commit.commit.message);
+            console.log('FILES: ');
+            commit.files.each(function(file) {
+                console.log(' + ' + file.filename + ' (' + file.changes + ' changes)');
+                delete file.patch;
+            });
+            console.log('');
+//            console.dir(commit);
+        }
+    },
+    listComments: {
+        help: 'listComments [user/]repo [sha] - list comments for a repo or a commit',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var sha = parts.join(' ');
+            console.dir(gh.listComments(repo, sha));
         }
     },
     cd: {
@@ -362,6 +433,9 @@ function main(username, password) {
             console.log(process.exec(line.substr(1).trim()));
             continue;
         }
+        if (line === '?') {
+            line = 'help';
+        }
         var parts = line.split(/\s+/);
         var cmd = parts.shift();
         var args = parts.join(' ');
@@ -370,8 +444,7 @@ function main(username, password) {
                 commands[cmd].fn(args);
             }
             catch (e) {
-                console.log('Exception');
-                console.log(e);
+                console.log('Exception: ' + e);
             }
         }
         else {
