@@ -122,6 +122,9 @@ req = (function() {
 							data[part[0]] = decodeURIComponent(part[1].replace(/\+/gm, ' '));
 						});
 					}
+                    else {
+                        req.data.post = post;
+                    }
 				}
 			}
 			req.data = data;
