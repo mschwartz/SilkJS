@@ -28,19 +28,6 @@ var Json = function() {
         },
         
         /**
-		 * @function Json.decode
-         * 
-         *
-         * Encode an object using NATIVE JSON object for speed
-         *
-         * @param {Object} obj - Object to be encoded as a string
-         * @returns {string} s - Object encoded as a string
-         */
-        encode : function(o) {
-            return JSON.stringify(o);
-        },
-
-        /**
          * @function Json.decode
          *
          * ### Synopsis
