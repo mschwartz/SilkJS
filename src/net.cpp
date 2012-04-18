@@ -88,6 +88,7 @@ static JSVAL net_connect (JSARGS args) {
  * 
  * var sock = net.listen(port);
  * var sock = net.listen(port, backlog);
+ * var sock = net.listen(port, backlog, ip);
  * 
  * This function creates a TCP SOCK_STREAM socket, binds it to the specified port, and does a listen(2) on the socket.
  * 
@@ -95,8 +96,11 @@ static JSVAL net_connect (JSARGS args) {
  * 
  * The backlog argument specifies the maximum length for the queue of pending connections.  If the queue fills and another connection attempt is made, the client will likely receive a "connection refused" error.
  * 
+ * The ip argument specifies what IP address to listen on.  By default, it will be 0.0.0.0 for "listen on any IP."  If you set this to a different value, only that IP will be listened on, and the socket will not be reachable via localhost (for example).
+ * 
  * @param {int} port - port number to listen on
  * @param {int} backlog - length of pending connection queue
+ * @param {string} ip - ip address to listen on
  * @return {int} sock - file descriptor of socket in listen mode
  * 
  * ### Exceptions
@@ -108,6 +112,11 @@ static JSVAL net_listen (JSARGS args) {
     int backlog = 30;
     if (args.Length() > 1) {
         backlog = args[1]->IntegerValue();
+    }
+    int listenAddress = INADDR_ANY;
+    if (args.Length() > 2) {
+        String::Utf8Value addr(args[2]);
+        listenAddress = inet_addr(*addr);
     }
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0) {
@@ -121,7 +130,7 @@ static JSVAL net_listen (JSARGS args) {
     bzero(&my_addr, sizeof (my_addr));
     my_addr.sin_family = AF_INET;
     my_addr.sin_port = htons(port);
-    my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    my_addr.sin_addr.s_addr = htonl(listenAddress);
     if (bind(sock, (struct sockaddr *) &my_addr, sizeof (my_addr))) {
         return ThrowException(String::Concat(String::New("bind()Error: "), String::New(strerror(errno))));
     }

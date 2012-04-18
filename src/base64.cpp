@@ -59,8 +59,6 @@ string Base64Decode (const char *encodedString) {
     unsigned char char_array_4[4], char_array_3[3];
     string ret;
 
-    printf("indize %ld\n", in_len);
-
     while (in_len-- && (encoded_string[in_] != '=') && is_base64(encoded_string[in_])) {
         char_array_4[i++] = encoded_string[in_];
         in_++;

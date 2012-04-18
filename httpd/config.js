@@ -4,6 +4,7 @@ Config = {
 	port: 9090,
 	numChildren: 250,
 	requestsPerChild: 100000,
+    listenIp: '0.0.0.0',
 	documentRoot: fs.exists('httpd/docroot') ? 'httpd/docroot' : '/usr/share/silkjs/httpd/docroot',
     logFile: '/tmp/httpd-silkjs.log',
 	directoryIndex: [
