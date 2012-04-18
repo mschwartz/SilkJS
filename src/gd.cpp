@@ -26,7 +26,7 @@
 // gd2 file format functions
 // animated gif functions
 
-static JSVAL gd_imageCreate(JSARGS args) {
+static JSVAL gd_imageCreate (JSARGS args) {
     HandleScope scope;
     int sx = args[0]->IntegerValue();
     int sy = args[1]->IntegerValue();
@@ -37,7 +37,7 @@ static JSVAL gd_imageCreate(JSARGS args) {
     return scope.Close(External::New(im));
 }
 
-static JSVAL gd_imageCreateTrueColor(JSARGS args) {
+static JSVAL gd_imageCreateTrueColor (JSARGS args) {
     HandleScope scope;
     int sx = args[0]->IntegerValue();
     int sy = args[1]->IntegerValue();
@@ -48,7 +48,7 @@ static JSVAL gd_imageCreateTrueColor(JSARGS args) {
     return scope.Close(External::New(im));
 }
 
-static JSVAL gd_ImageCreateFromJpeg(JSARGS args) {
+static JSVAL gd_ImageCreateFromJpeg (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
     FILE *in = fopen(*data, "rb");
@@ -59,20 +59,20 @@ static JSVAL gd_ImageCreateFromJpeg(JSARGS args) {
     {
         unsigned char buf[12];
         ssize_t size;
-        if ((size = fread((char *)buf, 1, 12, in)) != 12) {
+        if ((size = fread((char *) buf, 1, 12, in)) != 12) {
             printf("gd_ImageCreateFromJpeg: could not read 12 bytes %d\n", size);
             fclose(in);
             return Null();
         }
-        if (buf[0] != 0xff || buf[1] != 0xd8 || buf[2] != 0xff || (strcasecmp((char *)&buf[6], "JFIF") && strcasecmp((char *)&buf[6], "EXIF"))) {
-//            printf("gd_ImageCreateFromJpeg: %s signature match failed\n", *data);
+        if (buf[0] != 0xff || buf[1] != 0xd8 || buf[2] != 0xff || (strcasecmp((char *) &buf[6], "JFIF") && strcasecmp((char *) &buf[6], "EXIF"))) {
+            //            printf("gd_ImageCreateFromJpeg: %s signature match failed\n", *data);
             fclose(in);
             return Null();
         }
-//        printf("%s Is a JPEG\n", *data);
+        //        printf("%s Is a JPEG\n", *data);
         fseek(in, 0, SEEK_SET);
     }
-    
+
     gdImagePtr im = gdImageCreateFromJpeg(in);
     fclose(in);
     if (!im) {
@@ -87,21 +87,21 @@ static JSVAL gd_ImageCreateFromJpeg(JSARGS args) {
  * @param args
  * @return 
  */
-static JSVAL gd_imageCreateFromJpeg64(JSARGS args) {
+static JSVAL gd_imageCreateFromJpeg64 (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
     unsigned char buf[data.length()];
     int decoded = decode_base64(buf, *data);
     gdImagePtr im = gdImageCreateFromJpegPtr(decoded, (void *) buf);
-//    string s = Base64Decode(*data);
-//    gdImagePtr im = gdImageCreateFromJpegPtr(s.size(), (void *) s.c_str());
+    //    string s = Base64Decode(*data);
+    //    gdImagePtr im = gdImageCreateFromJpegPtr(s.size(), (void *) s.c_str());
     if (!im) {
         return Null();
     }
     return scope.Close(External::New(im));
 }
 
-static JSVAL gd_imageCreateFromPng(JSARGS args) {
+static JSVAL gd_imageCreateFromPng (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
     FILE *in = fopen(*data, "rb");
@@ -122,22 +122,22 @@ static JSVAL gd_imageCreateFromPng(JSARGS args) {
  * @param args
  * @return 
  */
-static JSVAL gd_imageCreateFromPng64(JSARGS args) {
+static JSVAL gd_imageCreateFromPng64 (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
     unsigned char buf[data.length()];
     int decoded = decode_base64(buf, *data);
     gdImagePtr im = gdImageCreateFromPngPtr(decoded, (void *) buf);
 
-//    string s = Base64Decode(*data);
-//    gdImagePtr im = gdImageCreateFromPngPtr(s.size(), (void *) s.c_str());
+    //    string s = Base64Decode(*data);
+    //    gdImagePtr im = gdImageCreateFromPngPtr(s.size(), (void *) s.c_str());
     if (!im) {
         return Null();
     }
     return scope.Close(External::New(im));
 }
 
-static JSVAL gd_imageCreateFromGif(JSARGS args) {
+static JSVAL gd_imageCreateFromGif (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
     FILE *in = fopen(*data, "rb");
@@ -158,23 +158,23 @@ static JSVAL gd_imageCreateFromGif(JSARGS args) {
  * @param args
  * @return 
  */
-static JSVAL gd_imageCreateFromGif64(JSARGS args) {
+static JSVAL gd_imageCreateFromGif64 (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
-    
+
     unsigned char buf[data.length()];
     int decoded = decode_base64(buf, *data);
     gdImagePtr im = gdImageCreateFromGifPtr(decoded, (void *) buf);
 
-//    string s = Base64Decode(*data);
-//    gdImagePtr im = gdImageCreateFromGifPtr(s.size(), (void *) s.c_str());
+    //    string s = Base64Decode(*data);
+    //    gdImagePtr im = gdImageCreateFromGifPtr(s.size(), (void *) s.c_str());
     if (!im) {
         return Null();
     }
     return scope.Close(External::New(im));
 }
 
-static JSVAL gd_imageCreateFromGd(JSARGS args) {
+static JSVAL gd_imageCreateFromGd (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
     FILE *in = fopen(*data, "rb");
@@ -195,21 +195,21 @@ static JSVAL gd_imageCreateFromGd(JSARGS args) {
  * @param args
  * @return 
  */
-static JSVAL gd_imageCreateFromGd64(JSARGS args) {
+static JSVAL gd_imageCreateFromGd64 (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
     unsigned char buf[data.length()];
     int decoded = decode_base64(buf, *data);
     gdImagePtr im = gdImageCreateFromGdPtr(decoded, (void *) buf);
-//    string s = Base64Decode(*data);
-//    gdImagePtr im = gdImageCreateFromGdPtr(s.size(), (void *) s.c_str());
+    //    string s = Base64Decode(*data);
+    //    gdImagePtr im = gdImageCreateFromGdPtr(s.size(), (void *) s.c_str());
     if (!im) {
         return Null();
     }
     return scope.Close(External::New(im));
 }
 
-static JSVAL gd_imageCreateFromWBMP(JSARGS args) {
+static JSVAL gd_imageCreateFromWBMP (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
     FILE *in = fopen(*data, "rb");
@@ -230,28 +230,28 @@ static JSVAL gd_imageCreateFromWBMP(JSARGS args) {
  * @param args
  * @return 
  */
-static JSVAL gd_imageCreateFromWBMP64(JSARGS args) {
+static JSVAL gd_imageCreateFromWBMP64 (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
     unsigned char buf[data.length()];
     int decoded = decode_base64(buf, *data);
     gdImagePtr im = gdImageCreateFromWBMPPtr(decoded, (void *) buf);
-//    string s = Base64Decode(*data);
-//    gdImagePtr im = gdImageCreateFromWBMPPtr(s.size(), (void *) s.c_str());
+    //    string s = Base64Decode(*data);
+    //    gdImagePtr im = gdImageCreateFromWBMPPtr(s.size(), (void *) s.c_str());
     if (!im) {
         return Null();
     }
     return scope.Close(External::New(im));
 }
 
-static JSVAL gd_imageCreateFromXpm(JSARGS args) {
+static JSVAL gd_imageCreateFromXpm (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
     gdImagePtr im = gdImageCreateFromXpm(*data);
     return scope.Close(External::New(im));
 }
 
-static JSVAL gd_imageCreateFromXbm(JSARGS args) {
+static JSVAL gd_imageCreateFromXbm (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
     FILE *in = fopen(*data, "rb");
@@ -266,7 +266,7 @@ static JSVAL gd_imageCreateFromXbm(JSARGS args) {
     return scope.Close(External::New(im));
 }
 
-static JSVAL gd_imageDestroy(JSARGS args) {
+static JSVAL gd_imageDestroy (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -292,7 +292,7 @@ static JSVAL gd_imageDestroy(JSARGS args) {
  * @param {int} quality - see note above
  * @return {boolean} success - true if the file was written, false if there was an error.
  */
-static JSVAL gd_imageJpeg(JSARGS args) {
+static JSVAL gd_imageJpeg (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -308,7 +308,7 @@ static JSVAL gd_imageJpeg(JSARGS args) {
     return True();
 }
 
-static JSVAL gd_imageJpeg64(JSARGS args) {
+static JSVAL gd_imageJpeg64 (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -335,7 +335,7 @@ static JSVAL gd_imageJpeg64(JSARGS args) {
  * @param {string} filename - file to write.
  * @return {boolean} success - true if the file was written, false if there was an error..
  */
-static JSVAL gd_imageGif(JSARGS args) {
+static JSVAL gd_imageGif (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -350,7 +350,7 @@ static JSVAL gd_imageGif(JSARGS args) {
     return True();
 }
 
-static JSVAL gd_imageGif64(JSARGS args) {
+static JSVAL gd_imageGif64 (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -376,7 +376,7 @@ static JSVAL gd_imageGif64(JSARGS args) {
  * @param {string} filename - file to write.
  * @return {boolean} success - true if the file was written, false if there was an error..
  */
-static JSVAL gd_imagePng(JSARGS args) {
+static JSVAL gd_imagePng (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -391,7 +391,7 @@ static JSVAL gd_imagePng(JSARGS args) {
     return True();
 }
 
-static JSVAL gd_imagePng64(JSARGS args) {
+static JSVAL gd_imagePng64 (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -418,7 +418,7 @@ static JSVAL gd_imagePng64(JSARGS args) {
  * @param {int} level - compression level, see notes above.
  * @return {boolean} success - true if the file was written, false if there was an error.
  */
-static JSVAL gd_imagePngEx(JSARGS args) {
+static JSVAL gd_imagePngEx (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -434,7 +434,7 @@ static JSVAL gd_imagePngEx(JSARGS args) {
     return True();
 }
 
-static JSVAL gd_imagePng64Ex(JSARGS args) {
+static JSVAL gd_imagePng64Ex (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -446,7 +446,7 @@ static JSVAL gd_imagePng64Ex(JSARGS args) {
     return String::New(out.c_str(), out.size());
 }
 
-static JSVAL gd_imageWBMP(JSARGS args) {
+static JSVAL gd_imageWBMP (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -462,7 +462,7 @@ static JSVAL gd_imageWBMP(JSARGS args) {
     return True();
 }
 
-static JSVAL gd_imageWBMP64(JSARGS args) {
+static JSVAL gd_imageWBMP64 (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -474,7 +474,7 @@ static JSVAL gd_imageWBMP64(JSARGS args) {
     return String::New(out.c_str(), out.size());
 }
 
-static JSVAL gd_imageGd(JSARGS args) {
+static JSVAL gd_imageGd (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -489,7 +489,7 @@ static JSVAL gd_imageGd(JSARGS args) {
     return True();
 }
 
-static JSVAL gd_imageGd64(JSARGS args) {
+static JSVAL gd_imageGd64 (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -502,7 +502,7 @@ static JSVAL gd_imageGd64(JSARGS args) {
 
 // true color / palette functions
 
-static JSVAL gd_imageTrueColorToPalette(JSARGS args) {
+static JSVAL gd_imageTrueColorToPalette (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -512,7 +512,7 @@ static JSVAL gd_imageTrueColorToPalette(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageCreatePaletteFromTrueColor(JSARGS args) {
+static JSVAL gd_imageCreatePaletteFromTrueColor (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -522,7 +522,7 @@ static JSVAL gd_imageCreatePaletteFromTrueColor(JSARGS args) {
     return scope.Close(External::New(newImage));
 }
 
-static JSVAL gd_imageSetPixel(JSARGS args) {
+static JSVAL gd_imageSetPixel (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -533,7 +533,7 @@ static JSVAL gd_imageSetPixel(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageLine(JSARGS args) {
+static JSVAL gd_imageLine (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -559,7 +559,7 @@ static JSVAL gd_imageLine(JSARGS args) {
  * @param args
  * @return 
  */
-static JSVAL gd_imagePolygon(JSARGS args) {
+static JSVAL gd_imagePolygon (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -592,7 +592,7 @@ static JSVAL gd_imagePolygon(JSARGS args) {
  * @param args
  * @return 
  */
-static JSVAL gd_imageOpenPolygon(JSARGS args) {
+static JSVAL gd_imageOpenPolygon (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -612,7 +612,7 @@ static JSVAL gd_imageOpenPolygon(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageRectangle(JSARGS args) {
+static JSVAL gd_imageRectangle (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -638,7 +638,7 @@ static JSVAL gd_imageRectangle(JSARGS args) {
  * @param args
  * @return 
  */
-static JSVAL gd_imageFilledPolygon(JSARGS args) {
+static JSVAL gd_imageFilledPolygon (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -658,7 +658,7 @@ static JSVAL gd_imageFilledPolygon(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageFilledRectangle(JSARGS args) {
+static JSVAL gd_imageFilledRectangle (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -671,7 +671,7 @@ static JSVAL gd_imageFilledRectangle(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageArc(JSARGS args) {
+static JSVAL gd_imageArc (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -686,7 +686,7 @@ static JSVAL gd_imageArc(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageFilledArc(JSARGS args) {
+static JSVAL gd_imageFilledArc (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -702,7 +702,7 @@ static JSVAL gd_imageFilledArc(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageFilledEllipse(JSARGS args) {
+static JSVAL gd_imageFilledEllipse (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -715,7 +715,7 @@ static JSVAL gd_imageFilledEllipse(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageFillToBorder(JSARGS args) {
+static JSVAL gd_imageFillToBorder (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -727,7 +727,7 @@ static JSVAL gd_imageFillToBorder(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageFill(JSARGS args) {
+static JSVAL gd_imageFill (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -738,7 +738,7 @@ static JSVAL gd_imageFill(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageSetAntiAliased(JSARGS args) {
+static JSVAL gd_imageSetAntiAliased (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -747,7 +747,7 @@ static JSVAL gd_imageSetAntiAliased(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageSetAntiAliasedDontBlend(JSARGS args) {
+static JSVAL gd_imageSetAntiAliasedDontBlend (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -756,7 +756,7 @@ static JSVAL gd_imageSetAntiAliasedDontBlend(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageSetBrush(JSARGS args) {
+static JSVAL gd_imageSetBrush (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -766,7 +766,7 @@ static JSVAL gd_imageSetBrush(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageSetTile(JSARGS args) {
+static JSVAL gd_imageSetTile (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -776,7 +776,7 @@ static JSVAL gd_imageSetTile(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageSetStyle(JSARGS args) {
+static JSVAL gd_imageSetStyle (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -790,7 +790,7 @@ static JSVAL gd_imageSetStyle(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageSetThickness(JSARGS args) {
+static JSVAL gd_imageSetThickness (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -799,7 +799,7 @@ static JSVAL gd_imageSetThickness(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageAlphaBlending(JSARGS args) {
+static JSVAL gd_imageAlphaBlending (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -808,7 +808,7 @@ static JSVAL gd_imageAlphaBlending(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageSaveAlpha(JSARGS args) {
+static JSVAL gd_imageSaveAlpha (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -817,7 +817,7 @@ static JSVAL gd_imageSaveAlpha(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageSetClip(JSARGS args) {
+static JSVAL gd_imageSetClip (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -829,7 +829,7 @@ static JSVAL gd_imageSetClip(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageGetClip(JSARGS args) {
+static JSVAL gd_imageGetClip (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -845,7 +845,7 @@ static JSVAL gd_imageGetClip(JSARGS args) {
 
 // Query Functions
 
-static JSVAL gd_imageAlpha(JSARGS args) {
+static JSVAL gd_imageAlpha (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -854,7 +854,7 @@ static JSVAL gd_imageAlpha(JSARGS args) {
     return scope.Close(Integer::New(alpha));
 }
 
-static JSVAL gd_imageGetPixel(JSARGS args) {
+static JSVAL gd_imageGetPixel (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -864,7 +864,7 @@ static JSVAL gd_imageGetPixel(JSARGS args) {
     return scope.Close(Integer::New(color));
 }
 
-static JSVAL gd_imageBoundsSafe(JSARGS args) {
+static JSVAL gd_imageBoundsSafe (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -873,7 +873,7 @@ static JSVAL gd_imageBoundsSafe(JSARGS args) {
     return gdImageBoundsSafe(im, x, y) ? True() : False();
 }
 
-static JSVAL gd_imageBlue(JSARGS args) {
+static JSVAL gd_imageBlue (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -882,7 +882,7 @@ static JSVAL gd_imageBlue(JSARGS args) {
     return scope.Close(Integer::New(blue));
 }
 
-static JSVAL gd_imageGreen(JSARGS args) {
+static JSVAL gd_imageGreen (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -891,7 +891,7 @@ static JSVAL gd_imageGreen(JSARGS args) {
     return scope.Close(Integer::New(green));
 }
 
-static JSVAL gd_imageRed(JSARGS args) {
+static JSVAL gd_imageRed (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -900,14 +900,14 @@ static JSVAL gd_imageRed(JSARGS args) {
     return scope.Close(Integer::New(red));
 }
 
-static JSVAL gd_imageSX(JSARGS args) {
+static JSVAL gd_imageSX (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
     return scope.Close(Integer::New(gdImageSX(im)));
 }
 
-static JSVAL gd_imageSY(JSARGS args) {
+static JSVAL gd_imageSY (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -916,32 +916,32 @@ static JSVAL gd_imageSY(JSARGS args) {
 
 // Fonts and text-handling functions
 
-static JSVAL gd_fontGetSmall(JSARGS args) {
+static JSVAL gd_fontGetSmall (JSARGS args) {
     HandleScope scope;
     return scope.Close(External::New(gdFontGetSmall()));
 }
 
-static JSVAL gd_fontGetLarge(JSARGS args) {
+static JSVAL gd_fontGetLarge (JSARGS args) {
     HandleScope scope;
     return scope.Close(External::New(gdFontGetLarge()));
 }
 
-static JSVAL gd_fontGetMediumBold(JSARGS args) {
+static JSVAL gd_fontGetMediumBold (JSARGS args) {
     HandleScope scope;
     return scope.Close(External::New(gdFontGetMediumBold()));
 }
 
-static JSVAL gd_fontGetGiant(JSARGS args) {
+static JSVAL gd_fontGetGiant (JSARGS args) {
     HandleScope scope;
     return scope.Close(External::New(gdFontGetGiant()));
 }
 
-static JSVAL gd_fontGetTiny(JSARGS args) {
+static JSVAL gd_fontGetTiny (JSARGS args) {
     HandleScope scope;
     return scope.Close(External::New(gdFontGetTiny()));
 }
 
-static JSVAL gd_imageChar(JSARGS args) {
+static JSVAL gd_imageChar (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -955,7 +955,7 @@ static JSVAL gd_imageChar(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageCharUp(JSARGS args) {
+static JSVAL gd_imageCharUp (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -969,7 +969,7 @@ static JSVAL gd_imageCharUp(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageString(JSARGS args) {
+static JSVAL gd_imageString (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -983,7 +983,7 @@ static JSVAL gd_imageString(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageString16(JSARGS args) {
+static JSVAL gd_imageString16 (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -997,7 +997,7 @@ static JSVAL gd_imageString16(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageStringUp(JSARGS args) {
+static JSVAL gd_imageStringUp (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -1011,7 +1011,7 @@ static JSVAL gd_imageStringUp(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageStringUp16(JSARGS args) {
+static JSVAL gd_imageStringUp16 (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -1025,7 +1025,7 @@ static JSVAL gd_imageStringUp16(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_FTUseFontConfig(JSARGS args) {
+static JSVAL gd_FTUseFontConfig (JSARGS args) {
     HandleScope scope;
     int flag = args[0]->IntegerValue();
     return scope.Close(Integer::New(gdFTUseFontConfig(flag)));
@@ -1037,7 +1037,7 @@ static JSVAL gd_FTUseFontConfig(JSARGS args) {
 
 // Color handling functions
 
-static JSVAL gd_imageColorAllocate(JSARGS args) {
+static JSVAL gd_imageColorAllocate (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -1047,7 +1047,7 @@ static JSVAL gd_imageColorAllocate(JSARGS args) {
     return scope.Close(Integer::New(gdImageColorAllocate(im, red, green, blue)));
 }
 
-static JSVAL gd_imageColorAllocateAlpha(JSARGS args) {
+static JSVAL gd_imageColorAllocateAlpha (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -1058,7 +1058,7 @@ static JSVAL gd_imageColorAllocateAlpha(JSARGS args) {
     return scope.Close(Integer::New(gdImageColorAllocateAlpha(im, red, green, blue, alpha)));
 }
 
-static JSVAL gd_imageColorClosest(JSARGS args) {
+static JSVAL gd_imageColorClosest (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -1068,7 +1068,7 @@ static JSVAL gd_imageColorClosest(JSARGS args) {
     return scope.Close(Integer::New(gdImageColorClosest(im, red, green, blue)));
 }
 
-static JSVAL gd_imageColorClosestAlpha(JSARGS args) {
+static JSVAL gd_imageColorClosestAlpha (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -1079,7 +1079,7 @@ static JSVAL gd_imageColorClosestAlpha(JSARGS args) {
     return scope.Close(Integer::New(gdImageColorClosestAlpha(im, red, green, blue, alpha)));
 }
 
-static JSVAL gd_imageColorClosestHWB(JSARGS args) {
+static JSVAL gd_imageColorClosestHWB (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -1089,7 +1089,7 @@ static JSVAL gd_imageColorClosestHWB(JSARGS args) {
     return scope.Close(Integer::New(gdImageColorClosestHWB(im, red, green, blue)));
 }
 
-static JSVAL gd_imageColorExact(JSARGS args) {
+static JSVAL gd_imageColorExact (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -1099,7 +1099,7 @@ static JSVAL gd_imageColorExact(JSARGS args) {
     return scope.Close(Integer::New(gdImageColorExact(im, red, green, blue)));
 }
 
-static JSVAL gd_imageColorResolve(JSARGS args) {
+static JSVAL gd_imageColorResolve (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -1109,7 +1109,7 @@ static JSVAL gd_imageColorResolve(JSARGS args) {
     return scope.Close(Integer::New(gdImageColorResolve(im, red, green, blue)));
 }
 
-static JSVAL gd_imageColorResolveAlpha(JSARGS args) {
+static JSVAL gd_imageColorResolveAlpha (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -1120,28 +1120,28 @@ static JSVAL gd_imageColorResolveAlpha(JSARGS args) {
     return scope.Close(Integer::New(gdImageColorResolveAlpha(im, red, green, blue, alpha)));
 }
 
-static JSVAL gd_imageColorsTotal(JSARGS args) {
+static JSVAL gd_imageColorsTotal (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
     return scope.Close(Integer::New(gdImageColorsTotal(im)));
 }
 
-static JSVAL gd_imageGetInterlaced(JSARGS args) {
+static JSVAL gd_imageGetInterlaced (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
     return scope.Close(Integer::New(gdImageGetInterlaced(im)));
 }
 
-static JSVAL gd_imageGetTransparent(JSARGS args) {
+static JSVAL gd_imageGetTransparent (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
     return scope.Close(Integer::New(gdImageGetTransparent(im)));
 }
 
-static JSVAL gd_imageColorDeallocate(JSARGS args) {
+static JSVAL gd_imageColorDeallocate (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -1150,7 +1150,7 @@ static JSVAL gd_imageColorDeallocate(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageColorTransparent(JSARGS args) {
+static JSVAL gd_imageColorTransparent (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
@@ -1159,7 +1159,7 @@ static JSVAL gd_imageColorTransparent(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_TrueColor(JSARGS args) {
+static JSVAL gd_TrueColor (JSARGS args) {
     HandleScope scope;
     int red = args[0]->IntegerValue();
     int green = args[1]->IntegerValue();
@@ -1167,7 +1167,7 @@ static JSVAL gd_TrueColor(JSARGS args) {
     return Integer::New(gdTrueColor(red, green, blue));
 }
 
-static JSVAL gd_TrueColorAlpha(JSARGS args) {
+static JSVAL gd_TrueColorAlpha (JSARGS args) {
     HandleScope scope;
     int red = args[0]->IntegerValue();
     int green = args[1]->IntegerValue();
@@ -1197,7 +1197,7 @@ static JSVAL gd_TrueColorAlpha(JSARGS args) {
  * @param {int} h - height of the region
  * @return 
  */
-static JSVAL gd_imageCopy(JSARGS args) {
+static JSVAL gd_imageCopy (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr dst = (gdImagePtr) wrap->Value();
@@ -1234,7 +1234,7 @@ static JSVAL gd_imageCopy(JSARGS args) {
  * @param {int} srcH - height of the source region
  * @return 
  */
-static JSVAL gd_imageCopyResized(JSARGS args) {
+static JSVAL gd_imageCopyResized (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr dst = (gdImagePtr) wrap->Value();
@@ -1273,7 +1273,7 @@ static JSVAL gd_imageCopyResized(JSARGS args) {
  * @param {int} srcH - height of the source region
  * @return 
  */
-static JSVAL gd_imageCopyResampled(JSARGS args) {
+static JSVAL gd_imageCopyResampled (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr dst = (gdImagePtr) wrap->Value();
@@ -1291,7 +1291,7 @@ static JSVAL gd_imageCopyResampled(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageCopyRotated(JSARGS args) {
+static JSVAL gd_imageCopyRotated (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr dst = (gdImagePtr) wrap->Value();
@@ -1308,7 +1308,7 @@ static JSVAL gd_imageCopyRotated(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageCopyMerge(JSARGS args) {
+static JSVAL gd_imageCopyMerge (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr dst = (gdImagePtr) wrap->Value();
@@ -1325,7 +1325,7 @@ static JSVAL gd_imageCopyMerge(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageCopyMergeGray(JSARGS args) {
+static JSVAL gd_imageCopyMergeGray (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr dst = (gdImagePtr) wrap->Value();
@@ -1342,7 +1342,7 @@ static JSVAL gd_imageCopyMergeGray(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imagePaletteCopy(JSARGS args) {
+static JSVAL gd_imagePaletteCopy (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr dst = (gdImagePtr) wrap->Value();
@@ -1352,7 +1352,7 @@ static JSVAL gd_imagePaletteCopy(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageSquareToCircle(JSARGS args) {
+static JSVAL gd_imageSquareToCircle (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr dst = (gdImagePtr) wrap->Value();
@@ -1361,7 +1361,7 @@ static JSVAL gd_imageSquareToCircle(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageSharpen(JSARGS args) {
+static JSVAL gd_imageSharpen (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr dst = (gdImagePtr) wrap->Value();
@@ -1370,7 +1370,7 @@ static JSVAL gd_imageSharpen(JSARGS args) {
     return Undefined();
 }
 
-static JSVAL gd_imageCompare(JSARGS args) {
+static JSVAL gd_imageCompare (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im1 = (gdImagePtr) wrap->Value();
@@ -1379,7 +1379,7 @@ static JSVAL gd_imageCompare(JSARGS args) {
     return scope.Close(Integer::New(gdImageCompare(im1, im2)));
 }
 
-static JSVAL gd_imageInterlace(JSARGS args) {
+static JSVAL gd_imageInterlace (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr dst = (gdImagePtr) wrap->Value();
@@ -1393,7 +1393,7 @@ static JSVAL gd_imageInterlace(JSARGS args) {
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-void init_gd_object() {
+void init_gd_object () {
     HandleScope scope;
 
     Handle<ObjectTemplate>gd = ObjectTemplate::New();

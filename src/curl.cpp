@@ -19,31 +19,31 @@
 
 struct CHANDLE {
     CURL *curl;
-	char *memory;
-	size_t size;
+    char *memory;
+    size_t size;
     curl_slist *slist;
 };
 
-static inline CHANDLE *HANDLE(Handle<Value>v) {
+static inline CHANDLE *HANDLE (Handle<Value>v) {
     if (v->IsNull()) {
         ThrowException(String::New("Handle is NULL"));
         return NULL;
     }
-    CHANDLE *w = (CHANDLE *)JSEXTERN(v);
+    CHANDLE *w = (CHANDLE *) JSEXTERN(v);
     return w;
 }
 
-static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp) {
-	size_t realsize = size * nmemb;
-	struct CHANDLE *w = (CHANDLE *)userp;
-	w->memory = (char *)realloc(w->memory, w->size+realsize+1);
-	if (w->memory == NULL) {
-		return -1;
-	}
-	memcpy(&w->memory[w->size], contents, realsize);
-	w->size += realsize;
-	w->memory[w->size] = '\0';
-	return realsize;
+static size_t WriteMemoryCallback (void *contents, size_t size, size_t nmemb, void *userp) {
+    size_t realsize = size * nmemb;
+    struct CHANDLE *w = (CHANDLE *) userp;
+    w->memory = (char *) realloc(w->memory, w->size + realsize + 1);
+    if (w->memory == NULL) {
+        return -1;
+    }
+    memcpy(&w->memory[w->size], contents, realsize);
+    w->size += realsize;
+    w->memory[w->size] = '\0';
+    return realsize;
 }
 
 /**
@@ -58,9 +58,9 @@ static size_t WriteMemoryCallback(void *contents, size_t size, size_t nmemb, voi
  * @param {int} code - CURL error code.
  * @return {string} msg - string describing the error.
  */
-static JSVAL error(JSARGS args) {
+static JSVAL error (JSARGS args) {
     HandleScope scope;
-    CURLcode eNumber = (CURLcode)args[0]->IntegerValue();
+    CURLcode eNumber = (CURLcode) args[0]->IntegerValue();
     return scope.Close(String::New(curl_easy_strerror(eNumber)));
 }
 
@@ -78,23 +78,23 @@ static JSVAL error(JSARGS args) {
  * @param {string} url - the URL for the connection.
  * @return {object} handle - opaque handle
  */
-static JSVAL init(JSARGS args) {
+static JSVAL init (JSARGS args) {
     HandleScope scope;
-	String::Utf8Value url(args[0]->ToString());
+    String::Utf8Value url(args[0]->ToString());
     CURL *curl = curl_easy_init();
     if (!curl) {
         return scope.Close(String::New("Could not initialize CURL library"));
     }
     struct CHANDLE *w = new CHANDLE;
     w->curl = curl;
-    w->memory = (char *)malloc(1);
+    w->memory = (char *) malloc(1);
     w->size = 0;
     w->slist = NULL;
-	curl_easy_setopt(curl, CURLOPT_URL, *url);
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)w);
-	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-	curl_easy_setopt(curl, CURLOPT_USERAGENT, "SilkJS/1.0");
+    curl_easy_setopt(curl, CURLOPT_URL, *url);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) w);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "SilkJS/1.0");
     return scope.Close(External::New(w));
 }
 
@@ -109,10 +109,10 @@ static JSVAL init(JSARGS args) {
  * @param {string} method - may be either "GET" or "POST".
  * @return {int} status - 0 for success, otherwise an error code.
  */
-static JSVAL setMethod(JSARGS args) {
+static JSVAL setMethod (JSARGS args) {
     HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
-	String::Utf8Value method(args[1]->ToString());
+    String::Utf8Value method(args[1]->ToString());
     if (!strcasecmp(*method, "post")) {
         return scope.Close(Integer::New(curl_easy_setopt(h->curl, CURLOPT_POST, 1)));
     }
@@ -137,10 +137,10 @@ static JSVAL setMethod(JSARGS args) {
  * @param {int} flag - 1 to follow redirects, 0 to not follow redirects.
  * @return {int} status - 0 for success, otherwise an error code.
  */
-static JSVAL followRedirects(JSARGS args) {
+static JSVAL followRedirects (JSARGS args) {
     HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
-    long flag = (long)args[0]->IntegerValue();
+    long flag = (long) args[0]->IntegerValue();
     return scope.Close(Integer::New(curl_easy_setopt(h->curl, CURLOPT_FOLLOWLOCATION, flag)));
 }
 
@@ -163,10 +163,10 @@ static JSVAL followRedirects(JSARGS args) {
  * @param {string} cookie_string - see comments above for the format.
  * @return {int} status - 0 for success, otherwise an error code.
  */
-static JSVAL setCookie(JSARGS args) {
+static JSVAL setCookie (JSARGS args) {
     HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
-	String::Utf8Value cookie_string(args[1]->ToString());
+    String::Utf8Value cookie_string(args[1]->ToString());
     return scope.Close(Integer::New(curl_easy_setopt(h->curl, CURLOPT_COOKIE, *cookie_string)));
 }
 
@@ -187,10 +187,10 @@ static JSVAL setCookie(JSARGS args) {
  * @param {string} header_string - see comments above for the format.
  * @return {int} status - 0 for success, otherwise an error code.
  */
-static JSVAL setHeader(JSARGS args) {
+static JSVAL setHeader (JSARGS args) {
     HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
-	String::Utf8Value header_string(args[1]->ToString());
+    String::Utf8Value header_string(args[1]->ToString());
     h->slist = curl_slist_append(h->slist, *header_string);
     return Undefined();
 }
@@ -213,11 +213,11 @@ static JSVAL setHeader(JSARGS args) {
  * @param {string} cookie_string - see comments above for the format.
  * @return {int} status - 0 for success, otherwise an error code.
  */
-static JSVAL setPostFields(JSARGS args) {
+static JSVAL setPostFields (JSARGS args) {
     HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
-	String::Utf8Value post_fields(args[1]->ToString());
-//    printf("%d %s\n", strlen(*post_fields), *post_fields);
+    String::Utf8Value post_fields(args[1]->ToString());
+    //    printf("%d %s\n", strlen(*post_fields), *post_fields);
     curl_easy_setopt(h->curl, CURLOPT_POSTFIELDSIZE, strlen(*post_fields));
     return scope.Close(Integer::New(curl_easy_setopt(h->curl, CURLOPT_COPYPOSTFIELDS, *post_fields)));
 }
@@ -238,7 +238,7 @@ static JSVAL setPostFields(JSARGS args) {
  * @param {int} verbose - set to > 0 to have cURL library print debugging info to console
  * @return {int} status - 0 for success, otherwise an error code.
  */
-static JSVAL perform(JSARGS args) {
+static JSVAL perform (JSARGS args) {
     HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
     if (h->slist) {
@@ -262,11 +262,11 @@ static JSVAL perform(JSARGS args) {
  * @param {object} handle - CURL handle
  * @return {int} status - 200 for OK, etc.
  */
-static JSVAL getResponseCode(JSARGS args) {
+static JSVAL getResponseCode (JSARGS args) {
     HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
-	long status;
-	curl_easy_getinfo(h->curl, CURLINFO_RESPONSE_CODE, &status);
+    long status;
+    curl_easy_getinfo(h->curl, CURLINFO_RESPONSE_CODE, &status);
     return scope.Close(Integer::New(status));
 }
 
@@ -282,11 +282,11 @@ static JSVAL getResponseCode(JSARGS args) {
  * @param {object} handle - CURL handle
  * @return {string} contentType - MIME string / content-type
  */
-static JSVAL getContentType(JSARGS args) {
+static JSVAL getContentType (JSARGS args) {
     HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
     char *contentType;
-	curl_easy_getinfo(h->curl, CURLINFO_CONTENT_TYPE, &contentType);
+    curl_easy_getinfo(h->curl, CURLINFO_CONTENT_TYPE, &contentType);
     if (!contentType) {
         contentType = "";
     }
@@ -305,7 +305,7 @@ static JSVAL getContentType(JSARGS args) {
  * @param {object} handle - CURL handle
  * @return {string} responseText - the response text of the completed CURL request.
  */
-static JSVAL getResponseText(JSARGS args) {
+static JSVAL getResponseText (JSARGS args) {
     HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
     if (!h->size) {
@@ -323,37 +323,35 @@ static JSVAL getResponseText(JSARGS args) {
  * 
  * @param {object} handle - CURL handle
  */
-static JSVAL destroy(JSARGS args) {
+static JSVAL destroy (JSARGS args) {
     HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
     if (h->slist) {
         curl_slist_free_all(h->slist);
         h->slist = NULL;
     }
-	curl_easy_cleanup(h->curl);
-	free(h->memory);
-	free(h);
+    curl_easy_cleanup(h->curl);
+    free(h->memory);
+    free(h);
     return Undefined();
 }
 
+void init_curl_object () {
+    HandleScope scope;
 
-
-void init_curl_object() {
-	HandleScope scope;
-
-	JSOBJT curlObject = ObjectTemplate::New();
-	curlObject->Set(String::New("error"), FunctionTemplate::New(error));
-	curlObject->Set(String::New("init"), FunctionTemplate::New(init));
-	curlObject->Set(String::New("setMethod"), FunctionTemplate::New(setMethod));
-	curlObject->Set(String::New("followRedirects"), FunctionTemplate::New(followRedirects));
-	curlObject->Set(String::New("setCookie"), FunctionTemplate::New(setCookie));
-	curlObject->Set(String::New("setHeader"), FunctionTemplate::New(setHeader));
-	curlObject->Set(String::New("setPostFields"), FunctionTemplate::New(setPostFields));
-	curlObject->Set(String::New("perform"), FunctionTemplate::New(perform));
-	curlObject->Set(String::New("getResponseCode"), FunctionTemplate::New(getResponseCode));
-	curlObject->Set(String::New("getContentType"), FunctionTemplate::New(getContentType));
-	curlObject->Set(String::New("getResponseText"), FunctionTemplate::New(getResponseText));
-	curlObject->Set(String::New("destroy"), FunctionTemplate::New(destroy));
+    JSOBJT curlObject = ObjectTemplate::New();
+    curlObject->Set(String::New("error"), FunctionTemplate::New(error));
+    curlObject->Set(String::New("init"), FunctionTemplate::New(init));
+    curlObject->Set(String::New("setMethod"), FunctionTemplate::New(setMethod));
+    curlObject->Set(String::New("followRedirects"), FunctionTemplate::New(followRedirects));
+    curlObject->Set(String::New("setCookie"), FunctionTemplate::New(setCookie));
+    curlObject->Set(String::New("setHeader"), FunctionTemplate::New(setHeader));
+    curlObject->Set(String::New("setPostFields"), FunctionTemplate::New(setPostFields));
+    curlObject->Set(String::New("perform"), FunctionTemplate::New(perform));
+    curlObject->Set(String::New("getResponseCode"), FunctionTemplate::New(getResponseCode));
+    curlObject->Set(String::New("getContentType"), FunctionTemplate::New(getContentType));
+    curlObject->Set(String::New("getResponseText"), FunctionTemplate::New(getResponseText));
+    curlObject->Set(String::New("destroy"), FunctionTemplate::New(destroy));
 
     builtinObject->Set(String::New("curl"), curlObject);
 }

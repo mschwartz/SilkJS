@@ -36,9 +36,9 @@
  * 
  * @return {string} message - error message.
  */
-static JSVAL process_error(JSARGS args) {
-	HandleScope scope;
-	return scope.Close(String::New(strerror(errno)));
+static JSVAL process_error (JSARGS args) {
+    HandleScope scope;
+    return scope.Close(String::New(strerror(errno)));
 }
 
 /**
@@ -53,10 +53,10 @@ static JSVAL process_error(JSARGS args) {
  * @param {int} pid - process ID (pid) of process to kill.
  * @return {int} success - 0 on success, 1 if an error occurred.
  */
-static JSVAL process_kill(JSARGS args) {
-	HandleScope scope;
-	pid_t pid = args[0]->IntegerValue();
-	return scope.Close(Integer::New(kill(pid, SIGKILL)));
+static JSVAL process_kill (JSARGS args) {
+    HandleScope scope;
+    pid_t pid = args[0]->IntegerValue();
+    return scope.Close(Integer::New(kill(pid, SIGKILL)));
 }
 
 /**
@@ -70,9 +70,9 @@ static JSVAL process_kill(JSARGS args) {
  * 
  * @return {int} my_pid - process ID (pid) of the current process.
  */
-static JSVAL process_getpid(JSARGS args) {
-	HandleScope scope;
-	return scope.Close(Integer::New(getpid()));
+static JSVAL process_getpid (JSARGS args) {
+    HandleScope scope;
+    return scope.Close(Integer::New(getpid()));
 }
 
 /**
@@ -98,12 +98,12 @@ static JSVAL process_getpid(JSARGS args) {
  * 
  * @return 0 to the child, the pid of the created process to the parent.  If an error occurred, -1 is returned.
  */
-static JSVAL process_fork(JSARGS args) {
-	extern Persistent<Context> context;
-	context->Exit();
-	pid_t pid = fork();
-	context->Enter();
-	return Integer::New(pid);
+static JSVAL process_fork (JSARGS args) {
+    extern Persistent<Context> context;
+    context->Exit();
+    pid_t pid = fork();
+    context->Enter();
+    return Integer::New(pid);
 }
 
 /**
@@ -118,9 +118,9 @@ static JSVAL process_fork(JSARGS args) {
  * @param {int} status - status code to return to parent or shell.
  * @return NEVER
  */
-static JSVAL process_exit(JSARGS args) {
-	exit(args[0]->IntegerValue());
-	return Undefined();
+static JSVAL process_exit (JSARGS args) {
+    exit(args[0]->IntegerValue());
+    return Undefined();
 }
 
 /**
@@ -133,9 +133,9 @@ static JSVAL process_exit(JSARGS args) {
  * 
  * @param {int} seconds - number of seconds to suspend.
  */
-static JSVAL process_sleep(JSARGS args) {
-	sleep(args[0]->IntegerValue());
-	return Undefined();
+static JSVAL process_sleep (JSARGS args) {
+    sleep(args[0]->IntegerValue());
+    return Undefined();
 }
 
 /**
@@ -148,9 +148,9 @@ static JSVAL process_sleep(JSARGS args) {
  * 
  * @param {int} microseconds - number of microseconds to suspend.
  */
-static JSVAL process_usleep(JSARGS args) {
-	usleep(args[0]->IntegerValue());
-	return Undefined();
+static JSVAL process_usleep (JSARGS args) {
+    usleep(args[0]->IntegerValue());
+    return Undefined();
 }
 
 /**
@@ -174,16 +174,16 @@ static JSVAL process_usleep(JSARGS args) {
  * ### See Also
  * process.exit()
  */
-static JSVAL process_wait(JSARGS args) {
-	int status;
-	pid_t childPid = waitpid(-1, &status, 0);
-	if (childPid == -1) {
-		perror("wait ");
-	}
-	Handle<Object>o = Object::New();
-	o->Set(String::New("pid"), Integer::New(childPid));
-	o->Set(String::New("status"), Integer::New(status));
-	return o;
+static JSVAL process_wait (JSARGS args) {
+    int status;
+    pid_t childPid = waitpid(-1, &status, 0);
+    if (childPid == -1) {
+        perror("wait ");
+    }
+    Handle<Object>o = Object::New();
+    o->Set(String::New("pid"), Integer::New(childPid));
+    o->Set(String::New("status"), Integer::New(status));
+    return o;
 }
 
 /**
@@ -202,17 +202,17 @@ static JSVAL process_wait(JSARGS args) {
  * @param {string} command_line - a Unix command to execute
  * @return {string} output - the output of the command executed.
  */
-static JSVAL process_exec(JSARGS args) {
-	String::AsciiValue cmd(args[0]);
-	string s;
-	char buf[2048];
-	FILE *fp = popen(*cmd, "r");
-	int fd = fileno(fp);
-	while (ssize_t size = read(fd, buf, 2048)) {
-		s.append(buf, size);
-	}
-	pclose(fp);
-	return String::New(s.c_str(), s.size());
+static JSVAL process_exec (JSARGS args) {
+    String::AsciiValue cmd(args[0]);
+    string s;
+    char buf[2048];
+    FILE *fp = popen(*cmd, "r");
+    int fd = fileno(fp);
+    while (ssize_t size = read(fd, buf, 2048)) {
+        s.append(buf, size);
+    }
+    pclose(fp);
+    return String::New(s.c_str(), s.size());
 }
 
 /**
@@ -226,8 +226,8 @@ static JSVAL process_exec(JSARGS args) {
  * 
  * @return {int} uid - the user ID of the calling process.
  */
-static JSVAL process_getuid(JSARGS args) {
-	return Integer::New(getuid());
+static JSVAL process_getuid (JSARGS args) {
+    return Integer::New(getuid());
 }
 
 /**
@@ -246,29 +246,29 @@ static JSVAL process_getuid(JSARGS args) {
  * 
  * @return {object} env - hash of key/value environment variables.
  */
-static JSVAL process_env(JSARGS args) {
-	extern char **environ;
-	int size = 0;
-	while (environ[size]) size++;
-	Handle<Object>env = Object::New();
+static JSVAL process_env (JSARGS args) {
+    extern char **environ;
+    int size = 0;
+    while (environ[size]) size++;
+    Handle<Object>env = Object::New();
     char *home = NULL;
-	for (int i = 0; i < size; ++i) {
-		const char* key = environ[i];
-		const char* val = strchr(key, '=');
-		const int klen = val ? val - key : strlen(key);
-		if (val[0] == '=') val = val + 1;
-		const int vlen = val ? strlen(val) : 0;
-		env->Set(String::New(key, klen), String::New(val, vlen));
+    for (int i = 0; i < size; ++i) {
+        const char* key = environ[i];
+        const char* val = strchr(key, '=');
+        const int klen = val ? val - key : strlen(key);
+        if (val[0] == '=') val = val + 1;
+        const int vlen = val ? strlen(val) : 0;
+        env->Set(String::New(key, klen), String::New(val, vlen));
         if (!strcmp(key, "HOME")) {
-            home = (char *)val;
+            home = (char *) val;
         }
-	}
+    }
     if (!home) {
         struct passwd *pw = getpwuid(getuid());
         home = pw->pw_dir;
         env->Set(String::New("HOME"), String::New(home));
     }
-	return env;
+    return env;
 }
 
 /**
@@ -300,25 +300,27 @@ static JSVAL process_env(JSARGS args) {
  * + nvcsw: voluntary context switches.
  * + nivcsw: involuntary context switches.
  */
-static double timeval2sec(const timeval& t) {
-  double f = (double) t.tv_sec + t.tv_usec / 1000000.0;
-  f = long(f*1000000.0+.5);
-  f /= 1000000;
-  return f; 
+static double timeval2sec (const timeval& t) {
+    double f = (double) t.tv_sec + t.tv_usec / 1000000.0;
+    f = long(f * 1000000.0 + .5);
+    f /= 1000000;
+    return f;
 }
-static timeval addTime(timeval& t1, timeval& t2) {
-  timeval t;
-  t.tv_sec  = t1.tv_sec  + t2.tv_sec;
-  t.tv_usec = t1.tv_usec + t2.tv_usec;
-  
-  if(t.tv_usec >= 1000000) {
-    t.tv_sec += 1;
-    t.tv_usec -= 1000000;
-  }
-  
-  return t;
+
+static timeval addTime (timeval& t1, timeval& t2) {
+    timeval t;
+    t.tv_sec = t1.tv_sec + t2.tv_sec;
+    t.tv_usec = t1.tv_usec + t2.tv_usec;
+
+    if (t.tv_usec >= 1000000) {
+        t.tv_sec += 1;
+        t.tv_usec -= 1000000;
+    }
+
+    return t;
 }
-static JSVAL process_rusage(JSARGS args) {
+
+static JSVAL process_rusage (JSARGS args) {
     HandleScope scope;
     struct rusage r;
     getrusage(RUSAGE_SELF, &r);
@@ -353,7 +355,7 @@ static JSVAL process_rusage(JSARGS args) {
  * Get a string containing the name of the user logged in on the controlling terminal of the process.
  * @return {string} username - name of user or false if error.
  */
-static JSVAL process_getlogin(JSARGS args) {
+static JSVAL process_getlogin (JSARGS args) {
     HandleScope scope;
     char *s = getlogin();
     if (!s) {
@@ -362,23 +364,23 @@ static JSVAL process_getlogin(JSARGS args) {
     return scope.Close(String::New(s));
 }
 
-void init_process_object() {
-	HandleScope scope;
+void init_process_object () {
+    HandleScope scope;
 
-	Handle<ObjectTemplate>process = ObjectTemplate::New();
-	process->Set(String::New("env"), FunctionTemplate::New(process_env));
-	process->Set(String::New("error"), FunctionTemplate::New(process_error));
-	process->Set(String::New("kill"), FunctionTemplate::New(process_kill));
-	process->Set(String::New("getpid"), FunctionTemplate::New(process_getpid));
-	process->Set(String::New("fork"), FunctionTemplate::New(process_fork));
-	process->Set(String::New("exit"), FunctionTemplate::New(process_exit));
-	process->Set(String::New("sleep"), FunctionTemplate::New(process_sleep));
-	process->Set(String::New("usleep"), FunctionTemplate::New(process_usleep));
-	process->Set(String::New("wait"), FunctionTemplate::New(process_wait));
-	process->Set(String::New("exec"), FunctionTemplate::New(process_exec));
-	process->Set(String::New("getuid"), FunctionTemplate::New(process_getuid));
-	process->Set(String::New("rusage"), FunctionTemplate::New(process_rusage));
-	process->Set(String::New("getlogin"), FunctionTemplate::New(process_getlogin));
+    Handle<ObjectTemplate>process = ObjectTemplate::New();
+    process->Set(String::New("env"), FunctionTemplate::New(process_env));
+    process->Set(String::New("error"), FunctionTemplate::New(process_error));
+    process->Set(String::New("kill"), FunctionTemplate::New(process_kill));
+    process->Set(String::New("getpid"), FunctionTemplate::New(process_getpid));
+    process->Set(String::New("fork"), FunctionTemplate::New(process_fork));
+    process->Set(String::New("exit"), FunctionTemplate::New(process_exit));
+    process->Set(String::New("sleep"), FunctionTemplate::New(process_sleep));
+    process->Set(String::New("usleep"), FunctionTemplate::New(process_usleep));
+    process->Set(String::New("wait"), FunctionTemplate::New(process_wait));
+    process->Set(String::New("exec"), FunctionTemplate::New(process_exec));
+    process->Set(String::New("getuid"), FunctionTemplate::New(process_getuid));
+    process->Set(String::New("rusage"), FunctionTemplate::New(process_rusage));
+    process->Set(String::New("getlogin"), FunctionTemplate::New(process_getlogin));
 
-	builtinObject->Set(String::New("process"), process);
+    builtinObject->Set(String::New("process"), process);
 }

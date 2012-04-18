@@ -23,18 +23,19 @@
 //}
 
 static bool initialized = false;
-static JSVAL editline_gets(JSARGS args) {
+
+static JSVAL editline_gets (JSARGS args) {
     HandleScope scope;
     bool addHistory = true;
     addHistory = args[1]->BooleanValue();
-//    if (!initialized) {
-//        printf("initializing\n");
-//        initialized = true;
-//        (void) signal(SIGINT, sig);
-//        (void) signal(SIGQUIT, sig);
-//        (void) signal(SIGHUP, sig);
-//        (void) signal(SIGTERM, sig);
-//    }
+    //    if (!initialized) {
+    //        printf("initializing\n");
+    //        initialized = true;
+    //        (void) signal(SIGINT, sig);
+    //        (void) signal(SIGQUIT, sig);
+    //        (void) signal(SIGHUP, sig);
+    //        (void) signal(SIGTERM, sig);
+    //    }
     String::Utf8Value prompt(args[0]->ToString());
     char *line = linenoise(*prompt);
     if (line) {
@@ -56,24 +57,24 @@ static JSVAL editline_gets(JSARGS args) {
     }
 }
 
-static JSVAL editline_loadhistory(JSARGS args) {
+static JSVAL editline_loadhistory (JSARGS args) {
     HandleScope scope;
     String::Utf8Value filename(args[0]->ToString());
     linenoiseHistoryLoad(*filename);
     return Undefined();
 }
 
-static JSVAL editline_savehistory(JSARGS args) {
+static JSVAL editline_savehistory (JSARGS args) {
     HandleScope scope;
     String::Utf8Value filename(args[0]->ToString());
     linenoiseHistorySave(*filename);
     return Undefined();
 }
 
-void init_editline_object() {
-	HandleScope scope;
+void init_editline_object () {
+    HandleScope scope;
 
-	JSOBJT editlineObject = ObjectTemplate::New();
+    JSOBJT editlineObject = ObjectTemplate::New();
 
     editlineObject->Set(String::New("gets"), FunctionTemplate::New(editline_gets));
     editlineObject->Set(String::New("loadHistory"), FunctionTemplate::New(editline_loadhistory));
@@ -94,15 +95,15 @@ struct EHANDLE {
 
 static EHANDLE *currentHandle = NULL;
 
-static inline EHANDLE *HANDLE(Handle<Value>v) {
+static inline EHANDLE *HANDLE (Handle<Value>v) {
     if (v->IsNull()) {
         ThrowException(String::New("Handle is NULL"));
         return NULL;
     }
-    return (EHANDLE *)JSEXTERN(v);
+    return (EHANDLE *) JSEXTERN(v);
 }
 
-static char *prompt(EditLine *el) {
+static char *prompt (EditLine *el) {
     EHANDLE *e;
     el_get(el, EL_CLIENTDATA, &e);
     return e->prompt;
@@ -110,7 +111,7 @@ static char *prompt(EditLine *el) {
 
 static sig_atomic_t gotsig = 0;
 
-static void sig(int i) {
+static void sig (int i) {
     signal(i, sig);
     gotsig = i;
     siglongjmp(currentHandle->jmpbuf, 1);
@@ -130,9 +131,9 @@ static void sig(int i) {
  * @param (int) historySize - size of history (number of lines of history to keep), defaults to 50.
  * @return {object} handle - opaque handle to use with other editline methods.
  */
-static JSVAL editline_init(JSARGS args) {
+static JSVAL editline_init (JSARGS args) {
     HandleScope scope;
-	String::Utf8Value prog(args[0]->ToString());
+    String::Utf8Value prog(args[0]->ToString());
     int historySize = 50;
     if (args.Length() > 1) {
         historySize = args[1]->IntegerValue();
@@ -170,7 +171,7 @@ static JSVAL editline_init(JSARGS args) {
  * 
  * @param {object} handle - handle returned from editline.init();
  */
-static JSVAL editline_end(JSARGS args) {
+static JSVAL editline_end (JSARGS args) {
     HandleScope scope;
     EHANDLE *e = HANDLE(args[0]);
     history_end(e->h);
@@ -193,11 +194,11 @@ static JSVAL editline_end(JSARGS args) {
  * @param {boolean} addHistory - true to add input line to history.  Defaults to true.
  * @return {string} line - line read from console or false on EOF or error.
  */
-static JSVAL editline_gets(JSARGS args) {
-//    HandleScope scope;
+static JSVAL editline_gets (JSARGS args) {
+    //    HandleScope scope;
     EHANDLE *e = HANDLE(args[0]);
     int count;
-    
+
     if (sigsetjmp(e->jmpbuf, 1) != 0) {
         el_reset(e->el);
         if (gotsig) {
@@ -247,10 +248,10 @@ static JSVAL editline_gets(JSARGS args) {
  * @param {object} handle - handle returned from editline.init();
  * @param {string) prompt - the prompt to set
  */
-static JSVAL editline_prompt(JSARGS args) {
+static JSVAL editline_prompt (JSARGS args) {
     HandleScope scope;
     EHANDLE *e = HANDLE(args[0]);
-	String::Utf8Value prompt(args[1]->ToString());
+    String::Utf8Value prompt(args[1]->ToString());
     if (e->prompt) {
         delete [] e->prompt;
     }
@@ -258,10 +259,10 @@ static JSVAL editline_prompt(JSARGS args) {
     return Undefined();
 }
 
-void init_editline_object() {
-	HandleScope scope;
+void init_editline_object () {
+    HandleScope scope;
 
-	JSOBJT editlineObject = ObjectTemplate::New();
+    JSOBJT editlineObject = ObjectTemplate::New();
 
     editlineObject->Set(String::New("init"), FunctionTemplate::New(editline_init));
     editlineObject->Set(String::New("end"), FunctionTemplate::New(editline_end));

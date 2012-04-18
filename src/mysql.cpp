@@ -11,11 +11,13 @@ struct mstate {
     char *host;
     char *user;
     char *passwd;
+
     mstate(MYSQL *h, const char *d) {
         this->handle = h;
         this->currentDb = strdup(d);
         this->host = this->user = this->passwd = NULL;
     }
+
     ~mstate() {
         if (this->currentDb) {
             delete[] this->currentDb;
@@ -30,6 +32,7 @@ struct mstate {
             delete [] this->host;
         }
     }
+
     void setCurrentDb(const char *d) {
         if (this->currentDb) {
             delete[] this->currentDb;
@@ -38,21 +41,21 @@ struct mstate {
     }
 };
 
-static inline const char *currentDb(Handle<Value>v) {
+static inline const char *currentDb (Handle<Value>v) {
     if (v->IsNull()) {
         ThrowException(String::New("Handle is NULL"));
         return NULL;
     }
-    mstate *m = (mstate *)JSEXTERN(v);
+    mstate *m = (mstate *) JSEXTERN(v);
     return m->currentDb;
 }
 
-static inline MYSQL* HANDLE(Handle<Value>v) {
+static inline MYSQL* HANDLE (Handle<Value>v) {
     if (v->IsNull()) {
         ThrowException(String::New("Handle is NULL"));
         return NULL;
     }
-    mstate *m = (mstate *)JSEXTERN(v);
+    mstate *m = (mstate *) JSEXTERN(v);
     if (!mysql_ping(m->handle)) {
         return m->handle;
     }
@@ -67,59 +70,58 @@ static inline MYSQL* HANDLE(Handle<Value>v) {
     return m->handle;
 }
 
-static inline void deleteHandle(Handle<Value>v) {
+static inline void deleteHandle (Handle<Value>v) {
     if (v->IsNull()) {
         ThrowException(String::New("Handle is NULL"));
         return;
     }
-    mstate *m = (mstate *)JSEXTERN(v);
+    mstate *m = (mstate *) JSEXTERN(v);
     delete m;
 }
 
-
-static inline void setCurrentDb(Handle<Value>v, const char *s) {
+static inline void setCurrentDb (Handle<Value>v, const char *s) {
     if (v->IsNull()) {
         ThrowException(String::New("Handle is NULL"));
         return;
     }
-    mstate *m = (mstate *)JSEXTERN(v);
+    mstate *m = (mstate *) JSEXTERN(v);
     m->setCurrentDb(s);
 }
 
-static inline MYSQL_RES *RESULT_SET(Handle<Value> v) {
+static inline MYSQL_RES *RESULT_SET (Handle<Value> v) {
     if (v->IsNull()) {
         ThrowException(String::New("Handle is NULL"));
         return NULL;
     }
-    return (MYSQL_RES *)JSEXTERN(v);
+    return (MYSQL_RES *) JSEXTERN(v);
 }
 
-static JSVAL affected_rows(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	return scope.Close(Integer::New(mysql_affected_rows(handle)));
+static JSVAL affected_rows (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    return scope.Close(Integer::New(mysql_affected_rows(handle)));
 }
 
-static JSVAL autocommit(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	bool flag = args[1]->BooleanValue();
-	return scope.Close(Boolean::New(mysql_autocommit(handle, flag)));
+static JSVAL autocommit (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    bool flag = args[1]->BooleanValue();
+    return scope.Close(Boolean::New(mysql_autocommit(handle, flag)));
 }
 
-static JSVAL change_user(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	String::Utf8Value user(args[1]->ToString());
-	String::Utf8Value password(args[2]->ToString());
-	String::Utf8Value db(args[3]->ToString());
-	return scope.Close(Boolean::New(mysql_change_user(handle, *user, *password, *db)));
+static JSVAL change_user (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    String::Utf8Value user(args[1]->ToString());
+    String::Utf8Value password(args[2]->ToString());
+    String::Utf8Value db(args[3]->ToString());
+    return scope.Close(Boolean::New(mysql_change_user(handle, *user, *password, *db)));
 }
 
-static JSVAL character_set_name(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	return scope.Close(String::New(mysql_character_set_name(handle)));
+static JSVAL character_set_name (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    return scope.Close(String::New(mysql_character_set_name(handle)));
 }
 
 //static JSVAL close(JSARGS args) {
@@ -129,31 +131,32 @@ static JSVAL character_set_name(JSARGS args) {
 //	return Undefined();
 //}
 
-static JSVAL commit(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	return scope.Close(Boolean::New(mysql_commit(handle)));
+static JSVAL commit (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    return scope.Close(Boolean::New(mysql_commit(handle)));
 }
 
-static JSVAL data_seek(JSARGS args) {
-	HandleScope scope;
-	MYSQL_RES *res = RESULT_SET(args[0]);
-	mysql_data_seek(res, args[1]->IntegerValue());
-	return Undefined();
+static JSVAL data_seek (JSARGS args) {
+    HandleScope scope;
+    MYSQL_RES *res = RESULT_SET(args[0]);
+    mysql_data_seek(res, args[1]->IntegerValue());
+    return Undefined();
 }
 
 #undef errno
-static JSVAL errno(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	return scope.Close(Integer::New(mysql_errno(handle)));
+
+static JSVAL errno (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    return scope.Close(Integer::New(mysql_errno(handle)));
 }
 
-static JSVAL error(JSARGS args) {
-	HandleScope scope;
+static JSVAL error (JSARGS args) {
+    HandleScope scope;
     MYSQL *handle = HANDLE(args[0]);
-	const char *error = mysql_error(handle);
-	return scope.Close(String::New(error));
+    const char *error = mysql_error(handle);
+    return scope.Close(String::New(error));
 }
 
 //  char *name;                 /* Name of column */
@@ -178,7 +181,7 @@ static JSVAL error(JSARGS args) {
 //  enum enum_field_types type; /* Type of field. See mysql_com.h for types */
 //  void *extension;
 
-static void MakeField(MYSQL_FIELD *f, JSOBJ o) {
+static void MakeField (MYSQL_FIELD *f, JSOBJ o) {
     o->Set(String::New("name"), String::New(f->name));
     o->Set(String::New("org_name"), String::New(f->org_name));
     o->Set(String::New("table"), String::New(f->table));
@@ -197,219 +200,220 @@ static void MakeField(MYSQL_FIELD *f, JSOBJ o) {
     o->Set(String::New("flags"), Integer::New(f->flags));
     o->Set(String::New("decimals"), Integer::New(f->decimals));
     o->Set(String::New("charsetnr"), Integer::New(f->charsetnr));
-	switch (f->type) {
-		case MYSQL_TYPE_DECIMAL:
-			o->Set(String::New("type"), String::New("DECIMAL"));
-			break;
-		case MYSQL_TYPE_TINY:
-			o->Set(String::New("type"), String::New("TINY"));
-			break;
-		case MYSQL_TYPE_SHORT:
-			o->Set(String::New("type"), String::New("SHORT"));
-			break;
-		case MYSQL_TYPE_LONG:
-			o->Set(String::New("type"), String::New("LONG"));
-			break;
-		case MYSQL_TYPE_FLOAT:
-			o->Set(String::New("type"), String::New("FLOAT"));
-			break;
-		case MYSQL_TYPE_DOUBLE:
-			o->Set(String::New("type"), String::New("DOUBLE"));
-			break;
-		case MYSQL_TYPE_NULL:
-			o->Set(String::New("type"), String::New("NULL"));
-			break;
-		case MYSQL_TYPE_TIMESTAMP:
-			o->Set(String::New("type"), String::New("TIMESTAMP"));
-			break;
-		case MYSQL_TYPE_LONGLONG:
-			o->Set(String::New("type"), String::New("LONGLONG"));
-			break;
-		case MYSQL_TYPE_INT24:
-			o->Set(String::New("type"), String::New("INT24"));
-			break;
-		case MYSQL_TYPE_DATE:
-			o->Set(String::New("type"), String::New("DATE"));
-			break;
-		case MYSQL_TYPE_TIME:
-			o->Set(String::New("type"), String::New("TIME"));
-			break;
-		case MYSQL_TYPE_DATETIME:
-			o->Set(String::New("type"), String::New("DATETIME"));
-			break;
-		case MYSQL_TYPE_YEAR:
-			o->Set(String::New("type"), String::New("YEAR"));
-			break;
-		case MYSQL_TYPE_NEWDATE:
-			o->Set(String::New("type"), String::New("NEWDATE"));
-			break;
-		case MYSQL_TYPE_VARCHAR:
-			o->Set(String::New("type"), String::New("VARCHAR"));
-			break;
-		case MYSQL_TYPE_BIT:
-			o->Set(String::New("type"), String::New("BIT"));
-			break;
-		case MYSQL_TYPE_NEWDECIMAL:
-			o->Set(String::New("type"), String::New("NEWDECIMAL"));
-			break;
-		case MYSQL_TYPE_ENUM:
-			o->Set(String::New("type"), String::New("ENUM"));
-			break;
-		case MYSQL_TYPE_SET:
-			o->Set(String::New("type"), String::New("SET"));
-			break;
-		case MYSQL_TYPE_TINY_BLOB:
-			o->Set(String::New("type"), String::New("TINY_BLOB"));
-			break;
-		case MYSQL_TYPE_MEDIUM_BLOB:
-			o->Set(String::New("type"), String::New("MEDIUM_BLOB"));
-			break;
-		case MYSQL_TYPE_LONG_BLOB:
-			o->Set(String::New("type"), String::New("LONG_BLOB"));
-			break;
-		case MYSQL_TYPE_BLOB:
-			o->Set(String::New("type"), String::New("BLOB"));
-			break;
-		case MYSQL_TYPE_VAR_STRING:
-			o->Set(String::New("type"), String::New("VAR_STRING"));
-			break;
-		case MYSQL_TYPE_STRING:
-			o->Set(String::New("type"), String::New("STRING"));
-			break;
-		case MYSQL_TYPE_GEOMETRY:
-			o->Set(String::New("type"), String::New("GEOMETRY"));
-			break;
-		default:
-			o->Set(String::New("type"), String::New("UNKNOWN"));
-			break;
-	}
+    switch (f->type) {
+        case MYSQL_TYPE_DECIMAL:
+            o->Set(String::New("type"), String::New("DECIMAL"));
+            break;
+        case MYSQL_TYPE_TINY:
+            o->Set(String::New("type"), String::New("TINY"));
+            break;
+        case MYSQL_TYPE_SHORT:
+            o->Set(String::New("type"), String::New("SHORT"));
+            break;
+        case MYSQL_TYPE_LONG:
+            o->Set(String::New("type"), String::New("LONG"));
+            break;
+        case MYSQL_TYPE_FLOAT:
+            o->Set(String::New("type"), String::New("FLOAT"));
+            break;
+        case MYSQL_TYPE_DOUBLE:
+            o->Set(String::New("type"), String::New("DOUBLE"));
+            break;
+        case MYSQL_TYPE_NULL:
+            o->Set(String::New("type"), String::New("NULL"));
+            break;
+        case MYSQL_TYPE_TIMESTAMP:
+            o->Set(String::New("type"), String::New("TIMESTAMP"));
+            break;
+        case MYSQL_TYPE_LONGLONG:
+            o->Set(String::New("type"), String::New("LONGLONG"));
+            break;
+        case MYSQL_TYPE_INT24:
+            o->Set(String::New("type"), String::New("INT24"));
+            break;
+        case MYSQL_TYPE_DATE:
+            o->Set(String::New("type"), String::New("DATE"));
+            break;
+        case MYSQL_TYPE_TIME:
+            o->Set(String::New("type"), String::New("TIME"));
+            break;
+        case MYSQL_TYPE_DATETIME:
+            o->Set(String::New("type"), String::New("DATETIME"));
+            break;
+        case MYSQL_TYPE_YEAR:
+            o->Set(String::New("type"), String::New("YEAR"));
+            break;
+        case MYSQL_TYPE_NEWDATE:
+            o->Set(String::New("type"), String::New("NEWDATE"));
+            break;
+        case MYSQL_TYPE_VARCHAR:
+            o->Set(String::New("type"), String::New("VARCHAR"));
+            break;
+        case MYSQL_TYPE_BIT:
+            o->Set(String::New("type"), String::New("BIT"));
+            break;
+        case MYSQL_TYPE_NEWDECIMAL:
+            o->Set(String::New("type"), String::New("NEWDECIMAL"));
+            break;
+        case MYSQL_TYPE_ENUM:
+            o->Set(String::New("type"), String::New("ENUM"));
+            break;
+        case MYSQL_TYPE_SET:
+            o->Set(String::New("type"), String::New("SET"));
+            break;
+        case MYSQL_TYPE_TINY_BLOB:
+            o->Set(String::New("type"), String::New("TINY_BLOB"));
+            break;
+        case MYSQL_TYPE_MEDIUM_BLOB:
+            o->Set(String::New("type"), String::New("MEDIUM_BLOB"));
+            break;
+        case MYSQL_TYPE_LONG_BLOB:
+            o->Set(String::New("type"), String::New("LONG_BLOB"));
+            break;
+        case MYSQL_TYPE_BLOB:
+            o->Set(String::New("type"), String::New("BLOB"));
+            break;
+        case MYSQL_TYPE_VAR_STRING:
+            o->Set(String::New("type"), String::New("VAR_STRING"));
+            break;
+        case MYSQL_TYPE_STRING:
+            o->Set(String::New("type"), String::New("STRING"));
+            break;
+        case MYSQL_TYPE_GEOMETRY:
+            o->Set(String::New("type"), String::New("GEOMETRY"));
+            break;
+        default:
+            o->Set(String::New("type"), String::New("UNKNOWN"));
+            break;
+    }
 }
 
-static JSVAL fetch_field(JSARGS args) {
-	HandleScope scope;
-	MYSQL_RES *res = RESULT_SET(args[0]);
-	MYSQL_FIELD *f = mysql_fetch_field(res);
+static JSVAL fetch_field (JSARGS args) {
+    HandleScope scope;
+    MYSQL_RES *res = RESULT_SET(args[0]);
+    MYSQL_FIELD *f = mysql_fetch_field(res);
     JSOBJ o = Object::New();
-	MakeField(f, o);
+    MakeField(f, o);
     return scope.Close(o);
 }
 
-static JSVAL fetch_field_direct(JSARGS args) {
-	HandleScope scope;
-	MYSQL_RES *res = RESULT_SET(args[0]);
-	MYSQL_FIELD *f = mysql_fetch_field_direct(res, args[1]->IntegerValue());
+static JSVAL fetch_field_direct (JSARGS args) {
+    HandleScope scope;
+    MYSQL_RES *res = RESULT_SET(args[0]);
+    MYSQL_FIELD *f = mysql_fetch_field_direct(res, args[1]->IntegerValue());
     JSOBJ o = Object::New();
-	MakeField(f, o);
+    MakeField(f, o);
     return scope.Close(o);
 }
 
-static JSVAL fetch_fields(JSARGS args) {
-	HandleScope scope;
-	MYSQL_RES *result = RESULT_SET(args[0]);
-	unsigned int num_fields = mysql_num_fields(result);
-	MYSQL_FIELD *fields = mysql_fetch_fields(result);
-	JSARRAY a = Array::New();
-	for (unsigned int i=0; i<num_fields; i++) {
-		JSOBJ o = Object::New();
-		MakeField(&fields[i], o);
-		a->Set(i, o);
-	}
-	return scope.Close(a);
+static JSVAL fetch_fields (JSARGS args) {
+    HandleScope scope;
+    MYSQL_RES *result = RESULT_SET(args[0]);
+    unsigned int num_fields = mysql_num_fields(result);
+    MYSQL_FIELD *fields = mysql_fetch_fields(result);
+    JSARRAY a = Array::New();
+    for (unsigned int i = 0; i < num_fields; i++) {
+        JSOBJ o = Object::New();
+        MakeField(&fields[i], o);
+        a->Set(i, o);
+    }
+    return scope.Close(a);
 }
 
-static JSVAL fetch_lengths(JSARGS args) {
-	HandleScope scope;
-	MYSQL_RES *result = RESULT_SET(args[0]);
-	unsigned int num_fields = mysql_num_fields(result);
-	unsigned long *lengths = mysql_fetch_lengths(result);
-	JSARRAY a = Array::New();;
-	for (unsigned int i=0; i<num_fields; i++) {
-		a->Set(i, Integer::New(lengths[i]));
-	}
-	return scope.Close(a);
+static JSVAL fetch_lengths (JSARGS args) {
+    HandleScope scope;
+    MYSQL_RES *result = RESULT_SET(args[0]);
+    unsigned int num_fields = mysql_num_fields(result);
+    unsigned long *lengths = mysql_fetch_lengths(result);
+    JSARRAY a = Array::New();
+    ;
+    for (unsigned int i = 0; i < num_fields; i++) {
+        a->Set(i, Integer::New(lengths[i]));
+    }
+    return scope.Close(a);
 }
 
-static JSVAL fetch_row(JSARGS args) {
-	HandleScope scope;
-	MYSQL_RES *result = RESULT_SET(args[0]);
-	MYSQL_ROW row = mysql_fetch_row(result);
-	if (!row) {
-		return scope.Close(Null());
-	}
-	unsigned int num_fields = mysql_num_fields(result);
-	unsigned long *lengths = mysql_fetch_lengths(result);
-	MYSQL_FIELD *fields = mysql_fetch_fields(result);
-	JSOBJ o = Object::New();
-	for (unsigned int i=0; i<num_fields; i++) {
-		if (row[i] == NULL) {
-			o->Set(String::New(fields[i].name), Null());
-		}
-		else {
-			switch (fields[i].type) {
-			case MYSQL_TYPE_TINY:
-				o->Set(String::New(fields[i].name), Integer::New(atol(row[i])));
-				break;
-			case MYSQL_TYPE_SHORT:
-				o->Set(String::New(fields[i].name), Integer::New(atol(row[i])));
-				break;
-			case MYSQL_TYPE_FLOAT:
-				o->Set(String::New(fields[i].name), Number::New(atof(row[i])));
-				break;
-			case MYSQL_TYPE_DOUBLE:
-				o->Set(String::New(fields[i].name), Number::New(atof(row[i])));
-				break;
-			case MYSQL_TYPE_NULL:
-				o->Set(String::New(fields[i].name), Null());
-				break;
-			case MYSQL_TYPE_TIMESTAMP:
-				o->Set(String::New(fields[i].name), Integer::New(atol(row[i])));
-				break;
-			case MYSQL_TYPE_LONGLONG:
-            case MYSQL_TYPE_LONG:
-			case MYSQL_TYPE_INT24:
-				o->Set(String::New(fields[i].name), Integer::New(atol(row[i])));
-				break;
-			default:
-				o->Set(String::New(fields[i].name), String::New(row[i], lengths[i]));
-				break;
-			}
-		}
-	}
-	return scope.Close(o);
+static JSVAL fetch_row (JSARGS args) {
+    HandleScope scope;
+    MYSQL_RES *result = RESULT_SET(args[0]);
+    MYSQL_ROW row = mysql_fetch_row(result);
+    if (!row) {
+        return scope.Close(Null());
+    }
+    unsigned int num_fields = mysql_num_fields(result);
+    unsigned long *lengths = mysql_fetch_lengths(result);
+    MYSQL_FIELD *fields = mysql_fetch_fields(result);
+    JSOBJ o = Object::New();
+    for (unsigned int i = 0; i < num_fields; i++) {
+        if (row[i] == NULL) {
+            o->Set(String::New(fields[i].name), Null());
+        }
+        else {
+            switch (fields[i].type) {
+                case MYSQL_TYPE_TINY:
+                    o->Set(String::New(fields[i].name), Integer::New(atol(row[i])));
+                    break;
+                case MYSQL_TYPE_SHORT:
+                    o->Set(String::New(fields[i].name), Integer::New(atol(row[i])));
+                    break;
+                case MYSQL_TYPE_FLOAT:
+                    o->Set(String::New(fields[i].name), Number::New(atof(row[i])));
+                    break;
+                case MYSQL_TYPE_DOUBLE:
+                    o->Set(String::New(fields[i].name), Number::New(atof(row[i])));
+                    break;
+                case MYSQL_TYPE_NULL:
+                    o->Set(String::New(fields[i].name), Null());
+                    break;
+                case MYSQL_TYPE_TIMESTAMP:
+                    o->Set(String::New(fields[i].name), Integer::New(atol(row[i])));
+                    break;
+                case MYSQL_TYPE_LONGLONG:
+                case MYSQL_TYPE_LONG:
+                case MYSQL_TYPE_INT24:
+                    o->Set(String::New(fields[i].name), Integer::New(atol(row[i])));
+                    break;
+                default:
+                    o->Set(String::New(fields[i].name), String::New(row[i], lengths[i]));
+                    break;
+            }
+        }
+    }
+    return scope.Close(o);
 }
 
-static JSVAL field_count(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	return scope.Close(Integer::New(mysql_field_count(handle)));
+static JSVAL field_count (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    return scope.Close(Integer::New(mysql_field_count(handle)));
 }
 
-static JSVAL field_seek(JSARGS args) {
-	HandleScope scope;
-	MYSQL_RES *result = RESULT_SET(args[0]);
-	MYSQL_FIELD_OFFSET offset = (MYSQL_FIELD_OFFSET)args[1]->IntegerValue();
-	return scope.Close(Integer::New(mysql_field_seek(result, offset)));
+static JSVAL field_seek (JSARGS args) {
+    HandleScope scope;
+    MYSQL_RES *result = RESULT_SET(args[0]);
+    MYSQL_FIELD_OFFSET offset = (MYSQL_FIELD_OFFSET) args[1]->IntegerValue();
+    return scope.Close(Integer::New(mysql_field_seek(result, offset)));
 }
 
-static JSVAL field_tell(JSARGS args) {
-	HandleScope scope;
-	MYSQL_RES *result = RESULT_SET(args[0]);
-	return scope.Close(Integer::New(mysql_field_tell(result)));
+static JSVAL field_tell (JSARGS args) {
+    HandleScope scope;
+    MYSQL_RES *result = RESULT_SET(args[0]);
+    return scope.Close(Integer::New(mysql_field_tell(result)));
 }
 
-static JSVAL free_result(JSARGS args) {
-	HandleScope scope;
-	MYSQL_RES *result = RESULT_SET(args[0]);
-	mysql_free_result(result);
-	return scope.Close(Undefined());
+static JSVAL free_result (JSARGS args) {
+    HandleScope scope;
+    MYSQL_RES *result = RESULT_SET(args[0]);
+    mysql_free_result(result);
+    return scope.Close(Undefined());
 }
 
-static JSVAL get_character_set_info(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	MY_CHARSET_INFO cs;
-	mysql_get_character_set_info(handle, &cs);
-	JSOBJ o = Object::New();
+static JSVAL get_character_set_info (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    MY_CHARSET_INFO cs;
+    mysql_get_character_set_info(handle, &cs);
+    JSOBJ o = Object::New();
     o->Set(String::New("number"), Integer::New(cs.number));
     o->Set(String::New("name"), String::New(cs.name));
     o->Set(String::New("csname"), String::New(cs.csname));
@@ -417,152 +421,152 @@ static JSVAL get_character_set_info(JSARGS args) {
     o->Set(String::New("dir"), String::New(cs.dir));
     o->Set(String::New("mbminlen"), Integer::New(cs.mbminlen));
     o->Set(String::New("mbmaxlen"), Integer::New(cs.mbmaxlen));
-	return scope.Close(o);
+    return scope.Close(o);
 }
 
-static JSVAL get_client_info(JSARGS args) {
-	HandleScope scope;
-	return scope.Close(String::New(mysql_get_client_info()));
+static JSVAL get_client_info (JSARGS args) {
+    HandleScope scope;
+    return scope.Close(String::New(mysql_get_client_info()));
 }
 
-static JSVAL get_client_version(JSARGS args) {
-	HandleScope scope;
-	return scope.Close(Integer::New(mysql_get_client_version()));
+static JSVAL get_client_version (JSARGS args) {
+    HandleScope scope;
+    return scope.Close(Integer::New(mysql_get_client_version()));
 }
 
-static JSVAL get_host_info(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	return scope.Close(String::New(mysql_get_host_info(handle)));
+static JSVAL get_host_info (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    return scope.Close(String::New(mysql_get_host_info(handle)));
 }
 
-static JSVAL get_proto_info(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	return scope.Close(Integer::New(mysql_get_proto_info(handle)));
+static JSVAL get_proto_info (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    return scope.Close(Integer::New(mysql_get_proto_info(handle)));
 }
 
-static JSVAL get_server_info(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	const char *s = mysql_get_server_info(handle);
-	return scope.Close(String::New(s));
+static JSVAL get_server_info (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    const char *s = mysql_get_server_info(handle);
+    return scope.Close(String::New(s));
 }
 
-static JSVAL get_server_version(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	return scope.Close(Integer::New(mysql_get_server_version(handle)));
+static JSVAL get_server_version (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    return scope.Close(Integer::New(mysql_get_server_version(handle)));
 }
 
-static JSVAL info(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	const char *info = mysql_info(handle);
-	if (info) {
-		return scope.Close(String::New(info));
-	}
-	else {
-		return scope.Close(Null());
-	}
+static JSVAL info (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    const char *info = mysql_info(handle);
+    if (info) {
+        return scope.Close(String::New(info));
+    }
+    else {
+        return scope.Close(Null());
+    }
 }
 
-static JSVAL insert_id(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	return scope.Close(Integer::New(mysql_insert_id(handle)));
+static JSVAL insert_id (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    return scope.Close(Integer::New(mysql_insert_id(handle)));
 }
 
-static JSVAL kill(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
+static JSVAL kill (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
 
-	return scope.Close(Integer::New(mysql_kill(handle, args[1]->IntegerValue())));
+    return scope.Close(Integer::New(mysql_kill(handle, args[1]->IntegerValue())));
 }
 
-static JSVAL list_dbs(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	const char *wild = NULL;
-	if (args.Length() > 1) {
-		String::Utf8Value pat(args[1]->ToString());
-		wild = *pat;
-	}
-	return scope.Close(Integer::New((unsigned long)mysql_list_dbs(handle, wild)));
+static JSVAL list_dbs (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    const char *wild = NULL;
+    if (args.Length() > 1) {
+        String::Utf8Value pat(args[1]->ToString());
+        wild = *pat;
+    }
+    return scope.Close(Integer::New((unsigned long) mysql_list_dbs(handle, wild)));
 }
 
-static JSVAL list_fields(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	const char *table = NULL;
-	const char *wild = NULL;
-	if (args.Length() > 1) {
-		String::Utf8Value tbl(args[1]->ToString());
-		table = *tbl;
-	}
-	if (args.Length() > 2) {
-		String::Utf8Value pat(args[1]->ToString());
-		wild = *pat;
-	}
-	return scope.Close(Integer::New((unsigned long)mysql_list_fields(handle, table, wild)));
+static JSVAL list_fields (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    const char *table = NULL;
+    const char *wild = NULL;
+    if (args.Length() > 1) {
+        String::Utf8Value tbl(args[1]->ToString());
+        table = *tbl;
+    }
+    if (args.Length() > 2) {
+        String::Utf8Value pat(args[1]->ToString());
+        wild = *pat;
+    }
+    return scope.Close(Integer::New((unsigned long) mysql_list_fields(handle, table, wild)));
 }
 
-static JSVAL list_processes(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	return scope.Close(Integer::New((unsigned long)mysql_list_processes(handle)));
+static JSVAL list_processes (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    return scope.Close(Integer::New((unsigned long) mysql_list_processes(handle)));
 }
 
-static JSVAL list_tables(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	const char *wild = NULL;
-	if (args.Length() > 1) {
-		String::Utf8Value pat(args[1]->ToString());
-		wild = *pat;
-	}
-	return scope.Close(Integer::New((unsigned long)mysql_list_tables(handle, wild)));
+static JSVAL list_tables (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    const char *wild = NULL;
+    if (args.Length() > 1) {
+        String::Utf8Value pat(args[1]->ToString());
+        wild = *pat;
+    }
+    return scope.Close(Integer::New((unsigned long) mysql_list_tables(handle, wild)));
 }
 
-static JSVAL query(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	String::Utf8Value sql(args[1]->ToString());
-	return scope.Close(Integer::New((unsigned long)mysql_query(handle, *sql)));
+static JSVAL query (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    String::Utf8Value sql(args[1]->ToString());
+    return scope.Close(Integer::New((unsigned long) mysql_query(handle, *sql)));
 }
 
-static JSVAL store_result(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	MYSQL_RES *result = mysql_store_result(handle);
-	return scope.Close(Integer::New((unsigned long)result));
+static JSVAL store_result (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    MYSQL_RES *result = mysql_store_result(handle);
+    return scope.Close(Integer::New((unsigned long) result));
 }
 
-static JSVAL init(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
+static JSVAL init (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
 #ifdef EMBEDDED_MYSQL
-	if (handle) {
-		mysql_options(handle, MYSQL_READ_DEFAULT_GROUP, "libmysqld_client");
-		mysql_options(handle, MYSQL_OPT_USE_EMBEDDED_CONNECTION, NULL);
-	}
+    if (handle) {
+        mysql_options(handle, MYSQL_READ_DEFAULT_GROUP, "libmysqld_client");
+        mysql_options(handle, MYSQL_OPT_USE_EMBEDDED_CONNECTION, NULL);
+    }
 #endif
-	return scope.Close(Integer::New((unsigned long)handle));
+    return scope.Close(Integer::New((unsigned long) handle));
 }
 
-static JSVAL real_connect(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	String::Utf8Value host(args[1]->ToString());
-	String::Utf8Value user(args[2]->ToString());
-	String::Utf8Value password(args[3]->ToString());
-	String::Utf8Value db(args[4]->ToString());
+static JSVAL real_connect (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    String::Utf8Value host(args[1]->ToString());
+    String::Utf8Value user(args[2]->ToString());
+    String::Utf8Value password(args[3]->ToString());
+    String::Utf8Value db(args[4]->ToString());
 
-	
-//	mysql_options(handle, MYSQL_READ_DEFAULT_GROUP, "libmysqld_client");
-//	mysql_options(handle, MYSQL_OPT_USE_EMBEDDED_CONNECTION, NULL);
-	return scope.Close(Integer::New((unsigned long)mysql_real_connect(handle, *host, *user, *password, *db, 0,NULL,CLIENT_IGNORE_SIGPIPE | CLIENT_FOUND_ROWS)));
-//	return scope.Close(Integer::New((unsigned long)mysql_real_connect(handle, NULL, NULL, NULL, *db, 0,NULL,0)));
+
+    //	mysql_options(handle, MYSQL_READ_DEFAULT_GROUP, "libmysqld_client");
+    //	mysql_options(handle, MYSQL_OPT_USE_EMBEDDED_CONNECTION, NULL);
+    return scope.Close(Integer::New((unsigned long) mysql_real_connect(handle, *host, *user, *password, *db, 0, NULL, CLIENT_IGNORE_SIGPIPE | CLIENT_FOUND_ROWS)));
+    //	return scope.Close(Integer::New((unsigned long)mysql_real_connect(handle, NULL, NULL, NULL, *db, 0,NULL,0)));
 }
 
 //static JSVAL TEMPLATE(/JSARGS args) {
@@ -571,268 +575,269 @@ static JSVAL real_connect(JSARGS args) {
 //	return scope.Close(String::New(mysql_character_set_name(handle)));
 //}
 
-static JSVAL getDataRowsJson(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	String::Utf8Value sql(args[1]);
-	mysql_ping(handle);
-	//	printf("%d %s\n", mysql_ping(handle), mysql_error(handle));
-	int failure = mysql_query(handle, *sql);
-	if (failure) {
-		return scope.Close(False());
-	}
-	MYSQL_RES *result = mysql_store_result(handle);
-	if (!result) {
-		return scope.Close(False());
-	}
-	int num_fields = mysql_num_fields(result);
-	MYSQL_FIELD *fields = mysql_fetch_fields(result);
+static JSVAL getDataRowsJson (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    String::Utf8Value sql(args[1]);
+    mysql_ping(handle);
+    //	printf("%d %s\n", mysql_ping(handle), mysql_error(handle));
+    int failure = mysql_query(handle, *sql);
+    if (failure) {
+        return scope.Close(False());
+    }
+    MYSQL_RES *result = mysql_store_result(handle);
+    if (!result) {
+        return scope.Close(False());
+    }
+    int num_fields = mysql_num_fields(result);
+    MYSQL_FIELD *fields = mysql_fetch_fields(result);
 
-	int types[num_fields];
-	char *names[num_fields];
-	for (int n = 0; n < num_fields; n++) {
-//		names[n] = String::New(fields[n].name);
-		types[n] = fields[n].type;
-		names[n] = fields[n].name;
-	}
-	string  json = "[";;
-	unsigned long rowNdx = 0;
-	MYSQL_ROW row;
-	while ((row = mysql_fetch_row(result))) {
-		if (rowNdx++) {
-			json += ",";
-		}
-		json += "{";
-		for (int i = 0; i < num_fields; i++) {
-			if (i) {
-				json += ",";
-			}
-			if (row[i] == NULL) {
-				json += "\"";
-				json += names[i];
-				json += "\":null";
-			} 
-			else {
-				switch (types[i]) {
-					case MYSQL_TYPE_NULL:
-						json += "\""; 
-						json += names[i]; 
-						json += "\":null";
-						break;
-					case MYSQL_TYPE_TINY:
-					case MYSQL_TYPE_SHORT:
-					case MYSQL_TYPE_LONG:
-					case MYSQL_TYPE_FLOAT:
-					case MYSQL_TYPE_DOUBLE:
-					case MYSQL_TYPE_TIMESTAMP:
-					case MYSQL_TYPE_LONGLONG:
-					case MYSQL_TYPE_INT24:
-						json += "\"" ;
-						json += names[i]; 
-						json += "\":"; 
-						json += row[i];
-						break;
-					default:
-						json += "\""; 
-						json += names[i]; 
-						json += "\":\""; 
-						json += row[i]; 
-						json += "\"";
-//						break;
-				}
-			}
-		}
-		json += "}";
-//	printf("%s\n", json.c_str());
-	}
-	json += "]";
-	mysql_free_result(result);
-//	for (int i=0; i<num_fields; i++) {
-//		delete[] names[i];
-//	}
-//	printf("%s\n", json.c_str());
-//	printf("%s\n", json.GetBuffer());
-	return scope.Close(String::New(json.c_str(), json.size()));
+    int types[num_fields];
+    char *names[num_fields];
+    for (int n = 0; n < num_fields; n++) {
+        //		names[n] = String::New(fields[n].name);
+        types[n] = fields[n].type;
+        names[n] = fields[n].name;
+    }
+    string json = "[";
+    ;
+    unsigned long rowNdx = 0;
+    MYSQL_ROW row;
+    while ((row = mysql_fetch_row(result))) {
+        if (rowNdx++) {
+            json += ",";
+        }
+        json += "{";
+        for (int i = 0; i < num_fields; i++) {
+            if (i) {
+                json += ",";
+            }
+            if (row[i] == NULL) {
+                json += "\"";
+                json += names[i];
+                json += "\":null";
+            }
+            else {
+                switch (types[i]) {
+                    case MYSQL_TYPE_NULL:
+                        json += "\"";
+                        json += names[i];
+                        json += "\":null";
+                        break;
+                    case MYSQL_TYPE_TINY:
+                    case MYSQL_TYPE_SHORT:
+                    case MYSQL_TYPE_LONG:
+                    case MYSQL_TYPE_FLOAT:
+                    case MYSQL_TYPE_DOUBLE:
+                    case MYSQL_TYPE_TIMESTAMP:
+                    case MYSQL_TYPE_LONGLONG:
+                    case MYSQL_TYPE_INT24:
+                        json += "\"";
+                        json += names[i];
+                        json += "\":";
+                        json += row[i];
+                        break;
+                    default:
+                        json += "\"";
+                        json += names[i];
+                        json += "\":\"";
+                        json += row[i];
+                        json += "\"";
+                        //						break;
+                }
+            }
+        }
+        json += "}";
+        //	printf("%s\n", json.c_str());
+    }
+    json += "]";
+    mysql_free_result(result);
+    //	for (int i=0; i<num_fields; i++) {
+    //		delete[] names[i];
+    //	}
+    //	printf("%s\n", json.c_str());
+    //	printf("%s\n", json.GetBuffer());
+    return scope.Close(String::New(json.c_str(), json.size()));
 }
 
-JSVAL getDataRows(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	String::Utf8Value sql(args[1]->ToString());
-	mysql_ping(handle);
-	int failure = mysql_query(handle, *sql);
-	if (failure) {
-		return ThrowException(String::New(mysql_error(handle)));
-	}
-	MYSQL_RES *result = mysql_use_result(handle);
-	if (!result) {
-		return scope.Close(False());
-	}
-	unsigned int num_fields = mysql_num_fields(result);
-	MYSQL_FIELD *fields = mysql_fetch_fields(result);
+JSVAL getDataRows (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    String::Utf8Value sql(args[1]->ToString());
+    mysql_ping(handle);
+    int failure = mysql_query(handle, *sql);
+    if (failure) {
+        return ThrowException(String::New(mysql_error(handle)));
+    }
+    MYSQL_RES *result = mysql_use_result(handle);
+    if (!result) {
+        return scope.Close(False());
+    }
+    unsigned int num_fields = mysql_num_fields(result);
+    MYSQL_FIELD *fields = mysql_fetch_fields(result);
 
-	Handle<Array>a = Array::New(mysql_num_rows(result));
-	Local<String> names[num_fields];
-	int types[num_fields];
-	for (unsigned int n=0; n<num_fields; n++) {
-		names[n] = String::New(fields[n].name);
-		types[n] = fields[n].type;
-	}
-	unsigned long rowNdx = 0;
-	unsigned int i;
-	MYSQL_ROW row;
-	while ((row = mysql_fetch_row(result))) {
-		unsigned long *lengths = mysql_fetch_lengths(result);
-		JSOBJ o = Object::New();
-		for (i=0; i<num_fields; i++) {
-			if (row[i] == NULL) {
-				o->Set(names[i], Null());
-			}
-			else {
-				switch (types[i]) {
-				case MYSQL_TYPE_NULL:
-					o->Set(names[i], Null());
-					break;
-				case MYSQL_TYPE_TINY:
-				case MYSQL_TYPE_SHORT:
-				case MYSQL_TYPE_LONG:
-				case MYSQL_TYPE_TIMESTAMP:
-				case MYSQL_TYPE_LONGLONG:
-				case MYSQL_TYPE_INT24:
-					o->Set(names[i], Number::New(atol(row[i])));
-					break;
-				case MYSQL_TYPE_FLOAT:
-				case MYSQL_TYPE_DOUBLE:
-					o->Set(names[i], Number::New(atof(row[i])));
-					break;
-				default:
-					o->Set(names[i], String::New(row[i], lengths[i]));
-					break;
-				}
-			}
-		}
-		a->Set(rowNdx++, o);
-	}
-	mysql_free_result(result);
-	return scope.Close(a);
+    Handle<Array>a = Array::New(mysql_num_rows(result));
+    Local<String> names[num_fields];
+    int types[num_fields];
+    for (unsigned int n = 0; n < num_fields; n++) {
+        names[n] = String::New(fields[n].name);
+        types[n] = fields[n].type;
+    }
+    unsigned long rowNdx = 0;
+    unsigned int i;
+    MYSQL_ROW row;
+    while ((row = mysql_fetch_row(result))) {
+        unsigned long *lengths = mysql_fetch_lengths(result);
+        JSOBJ o = Object::New();
+        for (i = 0; i < num_fields; i++) {
+            if (row[i] == NULL) {
+                o->Set(names[i], Null());
+            }
+            else {
+                switch (types[i]) {
+                    case MYSQL_TYPE_NULL:
+                        o->Set(names[i], Null());
+                        break;
+                    case MYSQL_TYPE_TINY:
+                    case MYSQL_TYPE_SHORT:
+                    case MYSQL_TYPE_LONG:
+                    case MYSQL_TYPE_TIMESTAMP:
+                    case MYSQL_TYPE_LONGLONG:
+                    case MYSQL_TYPE_INT24:
+                        o->Set(names[i], Number::New(atol(row[i])));
+                        break;
+                    case MYSQL_TYPE_FLOAT:
+                    case MYSQL_TYPE_DOUBLE:
+                        o->Set(names[i], Number::New(atof(row[i])));
+                        break;
+                    default:
+                        o->Set(names[i], String::New(row[i], lengths[i]));
+                        break;
+                }
+            }
+        }
+        a->Set(rowNdx++, o);
+    }
+    mysql_free_result(result);
+    return scope.Close(a);
 }
 
-JSVAL getDataRow(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	String::Utf8Value sql(args[1]->ToString());
-	mysql_ping(handle);
-	int failure = mysql_query(handle, *sql);
-	if (failure) {
-		return ThrowException(String::New(mysql_error(handle)));
-	}
-	MYSQL_RES *result = mysql_store_result(handle);
-	if (!result) {
-		return scope.Close(False());
-	}
-	JSOBJ o = Object::New();
-	unsigned int num_fields = mysql_num_fields(result);
-	MYSQL_FIELD *fields = mysql_fetch_fields(result);
-	MYSQL_ROW row = mysql_fetch_row(result);
-	if (!row) {
-		return scope.Close(False());
-	}
-	unsigned long *lengths = mysql_fetch_lengths(result);
-	for (unsigned int i=0; i<num_fields; i++) {
-		if (row[i] == NULL) {
-			o->Set(String::New(fields[i].name), Null());
-		}
-		else {
-			switch (fields[i].type) {
-			case MYSQL_TYPE_TINY:
-			case MYSQL_TYPE_SHORT:
-			case MYSQL_TYPE_LONG:
-			case MYSQL_TYPE_TIMESTAMP:
-			case MYSQL_TYPE_LONGLONG:
-			case MYSQL_TYPE_INT24:
-				o->Set(String::New(fields[i].name), Number::New(atol(row[i])));
-				break;
-			case MYSQL_TYPE_FLOAT:
-				o->Set(String::New(fields[i].name), Number::New(atof(row[i])));
-				break;
-			case MYSQL_TYPE_DOUBLE:
-				o->Set(String::New(fields[i].name), Number::New(atof(row[i])));
-				break;
-			case MYSQL_TYPE_NULL:
-				o->Set(String::New(fields[i].name), Null());
-				break;
-			default:
-				o->Set(String::New(fields[i].name), String::New(row[i], lengths[i]));
-				break;
-			}
-		}
-	}
-	mysql_free_result(result);
-	return scope.Close(o);
+JSVAL getDataRow (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    String::Utf8Value sql(args[1]->ToString());
+    mysql_ping(handle);
+    int failure = mysql_query(handle, *sql);
+    if (failure) {
+        return ThrowException(String::New(mysql_error(handle)));
+    }
+    MYSQL_RES *result = mysql_store_result(handle);
+    if (!result) {
+        return scope.Close(False());
+    }
+    JSOBJ o = Object::New();
+    unsigned int num_fields = mysql_num_fields(result);
+    MYSQL_FIELD *fields = mysql_fetch_fields(result);
+    MYSQL_ROW row = mysql_fetch_row(result);
+    if (!row) {
+        return scope.Close(False());
+    }
+    unsigned long *lengths = mysql_fetch_lengths(result);
+    for (unsigned int i = 0; i < num_fields; i++) {
+        if (row[i] == NULL) {
+            o->Set(String::New(fields[i].name), Null());
+        }
+        else {
+            switch (fields[i].type) {
+                case MYSQL_TYPE_TINY:
+                case MYSQL_TYPE_SHORT:
+                case MYSQL_TYPE_LONG:
+                case MYSQL_TYPE_TIMESTAMP:
+                case MYSQL_TYPE_LONGLONG:
+                case MYSQL_TYPE_INT24:
+                    o->Set(String::New(fields[i].name), Number::New(atol(row[i])));
+                    break;
+                case MYSQL_TYPE_FLOAT:
+                    o->Set(String::New(fields[i].name), Number::New(atof(row[i])));
+                    break;
+                case MYSQL_TYPE_DOUBLE:
+                    o->Set(String::New(fields[i].name), Number::New(atof(row[i])));
+                    break;
+                case MYSQL_TYPE_NULL:
+                    o->Set(String::New(fields[i].name), Null());
+                    break;
+                default:
+                    o->Set(String::New(fields[i].name), String::New(row[i], lengths[i]));
+                    break;
+            }
+        }
+    }
+    mysql_free_result(result);
+    return scope.Close(o);
 }
 
-JSVAL getScalar(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	String::Utf8Value sql(args[1]->ToString());
+JSVAL getScalar (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    String::Utf8Value sql(args[1]->ToString());
 
-	int failure = mysql_query(handle, *sql);
-	if (failure) {
-		return ThrowException(Exception::Error(String::New(mysql_error(handle))));
-	}
-	MYSQL_RES *result = mysql_store_result(handle);
-	if (!result) {
-		return scope.Close(False());
-	}
-	unsigned long *lengths = mysql_fetch_lengths(result);
-	MYSQL_FIELD *fields = mysql_fetch_fields(result);
-	MYSQL_ROW row = mysql_fetch_row(result);
-	if (!row) {
-		return scope.Close(False());
-	}
+    int failure = mysql_query(handle, *sql);
+    if (failure) {
+        return ThrowException(Exception::Error(String::New(mysql_error(handle))));
+    }
+    MYSQL_RES *result = mysql_store_result(handle);
+    if (!result) {
+        return scope.Close(False());
+    }
+    unsigned long *lengths = mysql_fetch_lengths(result);
+    MYSQL_FIELD *fields = mysql_fetch_fields(result);
+    MYSQL_ROW row = mysql_fetch_row(result);
+    if (!row) {
+        return scope.Close(False());
+    }
 
-	if (row[0] == NULL) {
-		return Null();
-	}
-	else {
-		switch (fields[0].type) {
-		case MYSQL_TYPE_TINY:
-		case MYSQL_TYPE_SHORT:
-		case MYSQL_TYPE_LONG:
-		case MYSQL_TYPE_TIMESTAMP:
-		case MYSQL_TYPE_LONGLONG:
-		case MYSQL_TYPE_INT24:
-			return scope.Close(Number::New(atol(row[0])));
-		case MYSQL_TYPE_FLOAT:
-			return scope.Close(Number::New(atof(row[0])));
-		case MYSQL_TYPE_DOUBLE:
-			return scope.Close(Number::New(atof(row[0])));
-		case MYSQL_TYPE_NULL:
-			return Null();
-		default:
-			return scope.Close(String::New(row[0], lengths[0]));
-		}
-	}
+    if (row[0] == NULL) {
+        return Null();
+    }
+    else {
+        switch (fields[0].type) {
+            case MYSQL_TYPE_TINY:
+            case MYSQL_TYPE_SHORT:
+            case MYSQL_TYPE_LONG:
+            case MYSQL_TYPE_TIMESTAMP:
+            case MYSQL_TYPE_LONGLONG:
+            case MYSQL_TYPE_INT24:
+                return scope.Close(Number::New(atol(row[0])));
+            case MYSQL_TYPE_FLOAT:
+                return scope.Close(Number::New(atof(row[0])));
+            case MYSQL_TYPE_DOUBLE:
+                return scope.Close(Number::New(atof(row[0])));
+            case MYSQL_TYPE_NULL:
+                return Null();
+            default:
+                return scope.Close(String::New(row[0], lengths[0]));
+        }
+    }
 }
 
-JSVAL update(JSARGS args) {
-	HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
-	String::Utf8Value query(args[1]->ToString());
-	int failure = mysql_query(handle, *query);
-	if (failure) {
-		return ThrowException(Exception::Error(String::New(mysql_error(handle))));
-	}
-	return scope.Close(Integer::New(mysql_affected_rows(handle)));
+JSVAL update (JSARGS args) {
+    HandleScope scope;
+    MYSQL *handle = HANDLE(args[0]);
+    String::Utf8Value query(args[1]->ToString());
+    int failure = mysql_query(handle, *query);
+    if (failure) {
+        return ThrowException(Exception::Error(String::New(mysql_error(handle))));
+    }
+    return scope.Close(Integer::New(mysql_affected_rows(handle)));
 }
 
-JSVAL connect(JSARGS args) {
-	HandleScope scope;
+JSVAL connect (JSARGS args) {
+    HandleScope scope;
     String::AsciiValue host(args[0]->ToString());
     String::AsciiValue user(args[1]->ToString());
     String::AsciiValue passwd(args[2]->ToString());
     String::AsciiValue db(args[3]->ToString());
-    
+
     int port = 3306;
     if (args.Length() > 4) {
         port = args[4]->IntegerValue();
@@ -840,54 +845,54 @@ JSVAL connect(JSARGS args) {
     MYSQL *handle = mysql_init(NULL);
     my_bool reconnect = 1;
     mysql_options(handle, MYSQL_OPT_RECONNECT, &reconnect);
-		
-//		handle = mysql_real_connect(handle, "localhost", "mschwartz", "", "sim", 3306, NULL, 0);
+
+    //		handle = mysql_real_connect(handle, "localhost", "mschwartz", "", "sim", 3306, NULL, 0);
     handle = mysql_real_connect(handle, *host, *user, *passwd, *db, port, NULL, CLIENT_IGNORE_SIGPIPE | CLIENT_FOUND_ROWS);
     if (!handle) {
         return ThrowException(Exception::Error(String::New("MySQL connection failed")));
     }
     mysql_options(handle, MYSQL_OPT_RECONNECT, &reconnect);
-	mysql_ping(handle);
+    mysql_ping(handle);
     mstate *m = new mstate(handle, *db);
     m->host = strdup(*host);
     m->user = strdup(*user);
     m->passwd = strdup(*passwd);
-	return scope.Close(External::New(m));
-}	
+    return scope.Close(External::New(m));
+}
 
-JSVAL select_db(JSARGS args) {
+JSVAL select_db (JSARGS args) {
     HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
+    MYSQL *handle = HANDLE(args[0]);
     String::AsciiValue db(args[1]->ToString());
-	if (strcmp(*db, currentDb(args[0]))) {
-	    if (mysql_select_db(handle, *db)) {
-           return ThrowException(Exception::Error(String::New(mysql_error(handle))));
+    if (strcmp(*db, currentDb(args[0]))) {
+        if (mysql_select_db(handle, *db)) {
+            return ThrowException(Exception::Error(String::New(mysql_error(handle))));
         }
         setCurrentDb(args[0], *db);
     }
     return Undefined();
 }
 
-JSVAL close(JSARGS args) {
+JSVAL close (JSARGS args) {
     HandleScope scope;
-	MYSQL *handle = HANDLE(args[0]);
+    MYSQL *handle = HANDLE(args[0]);
     mysql_close(handle);
     deleteHandle(args[0]);
-	return Undefined();
+    return Undefined();
 }
 
-void init_mysql_object() {
-	HandleScope scope;
-	
-	JSOBJT o = ObjectTemplate::New();
-	o->Set(String::New("connect"), FunctionTemplate::New(connect));
-	o->Set(String::New("selectDb"), FunctionTemplate::New(select_db));
+void init_mysql_object () {
+    HandleScope scope;
+
+    JSOBJT o = ObjectTemplate::New();
+    o->Set(String::New("connect"), FunctionTemplate::New(connect));
+    o->Set(String::New("selectDb"), FunctionTemplate::New(select_db));
     o->Set(String::New("getDataRows"), FunctionTemplate::New(getDataRows));
     o->Set(String::New("getDataRowsJson"), FunctionTemplate::New(getDataRowsJson));
     o->Set(String::New("getDataRow"), FunctionTemplate::New(getDataRow));
     o->Set(String::New("getScalar"), FunctionTemplate::New(getScalar));
     o->Set(String::New("update"), FunctionTemplate::New(update));
-	
+
     o->Set(String::New("affected_rows"), FunctionTemplate::New(affected_rows));
     o->Set(String::New("autocommit"), FunctionTemplate::New(autocommit));
     o->Set(String::New("change_user"), FunctionTemplate::New(change_user));
@@ -924,5 +929,5 @@ void init_mysql_object() {
     o->Set(String::New("store_result"), FunctionTemplate::New(store_result));
     o->Set(String::New("real_connect"), FunctionTemplate::New(real_connect));
     o->Set(String::New("query"), FunctionTemplate::New(query));
-	builtinObject->Set(String::New("mysql"), o);
+    builtinObject->Set(String::New("mysql"), o);
 }

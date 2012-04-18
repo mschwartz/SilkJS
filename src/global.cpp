@@ -21,7 +21,7 @@ using namespace v8;
 Persistent<ObjectTemplate> globalObject;
 Persistent<ObjectTemplate> builtinObject;
 extern Persistent<Context> context;
-extern char *readFile(const char *s);
+extern char *readFile (const char *s);
 
 /**
  * @function global.log
@@ -36,7 +36,7 @@ extern char *readFile(const char *s);
  * 
  * @param {string} s - the string to write to stdout.
  */
-static Handle<Value> Log(const Arguments& args) {
+static Handle<Value> Log (const Arguments& args) {
     HandleScope handle_scope;
     String::AsciiValue str(args[0]);
     printf("%ld %s\n", (unsigned long) getpid(), *str);
@@ -56,7 +56,7 @@ static Handle<Value> Log(const Arguments& args) {
  * 
  * @param {string} s - the string to write to stdout.
  */
-static Handle<Value> Print(const Arguments& args) {
+static Handle<Value> Print (const Arguments& args) {
     HandleScope handle_scope;
     String::AsciiValue str(args[0]);
     printf("%s", *str);
@@ -76,7 +76,7 @@ static Handle<Value> Print(const Arguments& args) {
  * 
  * @param {string} s - the string to write to stdout.
  */
-static Handle<Value> Println(const Arguments& args) {
+static Handle<Value> Println (const Arguments& args) {
     HandleScope handle_scope;
     String::AsciiValue str(args[0]);
     printf("%s\n", *str);
@@ -103,7 +103,7 @@ SCRIPTNODE *scriptCache = NULL;
  * 
  * @param {string} path - the path in the file system to a file to include.
  */
-static Handle<Value> Include(const Arguments& args) {
+static Handle<Value> Include (const Arguments& args) {
     HandleScope scope;
     for (int i = 0; i < args.Length(); i++) {
         String::Utf8Value str(args[i]);
@@ -129,31 +129,31 @@ static Handle<Value> Include(const Arguments& args) {
     return Undefined();
 }
 
-extern void init_buffer_object();
-extern void init_console_object();
-extern void init_process_object();
-extern void init_v8_object();
-extern void init_net_object();
-extern void init_fs_object();
-extern void init_http_object();
-extern void init_popen_object();
+extern void init_buffer_object ();
+extern void init_console_object ();
+extern void init_process_object ();
+extern void init_v8_object ();
+extern void init_net_object ();
+extern void init_fs_object ();
+extern void init_http_object ();
+extern void init_popen_object ();
 #if !BOOTSTRAP_SILKJS
-extern void init_sem_object();
-extern void init_mysql_object();
-extern void init_sqlite3_object();
-extern void init_memcached_object();
-extern void init_gd_object();
-extern void init_ncurses_object();
-extern void init_logfile_object();
-extern void init_curl_object();
-extern void init_xhrHelper_object();
-extern void init_ssh_object();
-extern void init_sftp_object();
-extern void init_ftp_object();
-extern void init_editline_object();
+extern void init_sem_object ();
+extern void init_mysql_object ();
+extern void init_sqlite3_object ();
+extern void init_memcached_object ();
+extern void init_gd_object ();
+extern void init_ncurses_object ();
+extern void init_logfile_object ();
+extern void init_curl_object ();
+extern void init_xhrHelper_object ();
+extern void init_ssh_object ();
+extern void init_sftp_object ();
+extern void init_ftp_object ();
+extern void init_editline_object ();
 #endif
 
-void init_global_object() {
+void init_global_object () {
     HandleScope scope;
     globalObject = Persistent<ObjectTemplate>::New(ObjectTemplate::New());
     builtinObject = Persistent<ObjectTemplate>::New(ObjectTemplate::New());

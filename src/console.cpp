@@ -27,11 +27,11 @@
  * 
  * @param {string} s - the string to write to stdout
  */
-static JSVAL log(JSARGS args) {
-	HandleScope scope;
-	String::AsciiValue s(args[0]);
-	fprintf(stdout, "%s\n", *s);
-	return Undefined();
+static JSVAL log (JSARGS args) {
+    HandleScope scope;
+    String::AsciiValue s(args[0]);
+    fprintf(stdout, "%s\n", *s);
+    return Undefined();
 }
 
 /**
@@ -45,11 +45,11 @@ static JSVAL log(JSARGS args) {
  * 
  * @param {string} s - the string to write to stderr
  */
-static JSVAL error(JSARGS args) {
-	HandleScope scope;
-	String::AsciiValue s(args[0]);
-	fprintf(stderr, "%s\n", *s);
-	return Undefined();
+static JSVAL error (JSARGS args) {
+    HandleScope scope;
+    String::AsciiValue s(args[0]);
+    fprintf(stderr, "%s\n", *s);
+    return Undefined();
 }
 
 /**
@@ -64,20 +64,20 @@ static JSVAL error(JSARGS args) {
  * @param {string} prompt - prompt on the line to get the password
  * @returns {string} password - the password entered by the user
  */
-static JSVAL getPassword(JSARGS args) {
+static JSVAL getPassword (JSARGS args) {
     HandleScope scope;
-   	String::Utf8Value prompt(args[0]);
+    String::Utf8Value prompt(args[0]);
     return scope.Close(String::New(getpass(*prompt)));
 }
 
-void init_console_object() {
-	HandleScope scope;
-	
-	Handle<ObjectTemplate>console = ObjectTemplate::New();
-	console->Set(String::New("log"), FunctionTemplate::New(log));
-	console->Set(String::New("error"), FunctionTemplate::New(error));
-	console->Set(String::New("getPassword"), FunctionTemplate::New(getPassword));
-	
-	builtinObject->Set(String::New("console"), console);
+void init_console_object () {
+    HandleScope scope;
+
+    Handle<ObjectTemplate>console = ObjectTemplate::New();
+    console->Set(String::New("log"), FunctionTemplate::New(log));
+    console->Set(String::New("error"), FunctionTemplate::New(error));
+    console->Set(String::New("getPassword"), FunctionTemplate::New(getPassword));
+
+    builtinObject->Set(String::New("console"), console);
 }
 

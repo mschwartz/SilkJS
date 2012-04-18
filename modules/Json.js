@@ -10,8 +10,8 @@
  * If a global Server singleton exists, its endRequest method is called; otherwise res.stop() is called.  The Server.endRequest() method might do a bit more cleanup than res.stop allows - like writing session data to disk, unlocking semaphores, etc.
  */
 var Json = function() {
-	return {
-		/**
+    return {
+        /**
 		 * @function Json.encode
          * 
          * ### Synopsis
@@ -23,11 +23,11 @@ var Json = function() {
 		 * @param {Object} obj - Object to be encoded as a string
 		 * @returns {string} s - Object encoded as a string
 		 */
-		encode: function(o) {
-			return JSON.stringify(o);
-		},
+        encode: function(o) {
+            return JSON.stringify(o);
+        },
         
-		/**
+        /**
 		 * @function Json.decode
          * 
          * ### Synopsis
@@ -39,11 +39,11 @@ var Json = function() {
 		 * @param {string} s - String to be decoded
 		 * @returns {Object} obj - Object decoded from string
 		 */
-		decode: function(s) {
-			return JSON.parse(s);
-		},
+        decode: function(s) {
+            return JSON.parse(s);
+        },
         
-		/**
+        /**
          * @function Json.successString
          * 
          * ### Synopsis
@@ -55,10 +55,10 @@ var Json = function() {
 		 * @param {Object} obj - Object/Response to be sent to client
 		 * @returns {string} s = Wrapped Object converted to JSON with success indication
 		 */
-		successString: function(obj) {
+        successString: function(obj) {
             obj.success = true;
-			return Json.encode(obj);
-		},
+            return Json.encode(obj);
+        },
 		
         
         /**
@@ -72,34 +72,34 @@ var Json = function() {
          * 
          * @param {Object} obj - object to send to the client
          */
-		success: function(obj) {
+        success: function(obj) {
             res.reset();
-			obj = obj || {};
+            obj = obj || {};
             obj.success = true;
-			if (req.data.callback) {
-				res.contentType = 'text/javascript';
-				res.write([req.data.callback, '(', Json.encode(obj), ')'].join(''));
-			}
-			else {
-				var contentType = req.getHeader('content-type') || '';
+            if (req.data.callback) {
+                res.contentType = 'text/javascript';
+                res.write([req.data.callback, '(', Json.encode(obj), ')'].join(''));
+            }
+            else {
+                var contentType = req.getHeader('content-type') || '';
                 var ret = Json.encode(obj);
-				if (contentType.indexOf('multipart/form-data') != -1) {
+                if (contentType.indexOf('multipart/form-data') != -1) {
                     // it's something like a post through an invisible iframe, so we wrap the reponse in  textarea tags
-					res.write('<textarea>'+ret+'</textarea>');
-				}
-				else {
-					res.write(ret);
-				}
-			}
+                    res.write('<textarea>'+ret+'</textarea>');
+                }
+                else {
+                    res.write(ret);
+                }
+            }
             if (global.Server && global.Server.endRequest()) {
-    			Server.endRequest();
+                Server.endRequest();
             }
             else {
                 res.stop();
             }
-		},
+        },
         
-		/**
+        /**
          * @function  Json.send
          * 
          * ### Synopsis
@@ -110,15 +110,15 @@ var Json = function() {
 		 *
 		 * @param {string} json_string - String to be sent
 		 */
-		send: function(json) {
-			res.write(json);
+        send: function(json) {
+            res.write(json);
             if (global.Server && global.Server.endRequest()) {
-    			Server.endRequest();
+                Server.endRequest();
             }
             else {
                 res.stop();
             }
-		},
+        },
 		
         /**
         * @function Json.failure
@@ -131,12 +131,12 @@ var Json = function() {
         * 
         * @param {string} message - message to send
         */        
-		failure: function(msg) {
+        failure: function(msg) {
             if (!contentType.indexOf('multipart/form-data') != -1) {
-				res.write('<textarea>'+Json.encode({
-					success: false,
-					message: msg
-				})+'</textarea>');
+                res.write('<textarea>'+Json.encode({
+                    success: false,
+                    message: msg
+                })+'</textarea>');
             }
             else {
                 res.write(Json.encode({
@@ -145,12 +145,12 @@ var Json = function() {
                 }));
             }
             if (global.Server && global.Server.endRequest()) {
-    			Server.endRequest();
+                Server.endRequest();
             }
             else {
                 res.stop();
             }
-		},
+        },
         
         /**
          * @function Json.exception
@@ -165,21 +165,21 @@ var Json = function() {
          * 
          * @param {string} msg - text to send as exception.
          */
-		exception: function(msg) {
-			res.write(Json.encode({
-				success: false,
-				exception: msg
-			}));
+        exception: function(msg) {
+            res.write(Json.encode({
+                success: false,
+                exception: msg
+            }));
             if (global.Server && global.Server.endRequest()) {
-    			Server.endRequest();
+                Server.endRequest();
             }
             else {
                 res.stop();
             }
-		}
-	}
+        }
+    }
 }();
 
 if (exports) {
-	exports = Json;
+    exports = Json;
 }
