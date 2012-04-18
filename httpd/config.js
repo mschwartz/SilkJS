@@ -14,11 +14,12 @@ Config = {
 		'index.md',
 		'index.html'
 	],
+    // you can set up a default MySQL credentials/db here.  The HttpChild will automatically create a connection, if this is configured, as global SQL variable.
 //	mysql: {
 //		host: 'localhost',
-//		user: 'mschwartz',
-//		passwd: '',
-//		db: 'sim'
+//		user: 'xxx',
+//		passwd: 'xxx',
+//		db: 'xxx'
 //	},
 	lockFile: '/tmp/silkf.lock'
 };
