@@ -114,8 +114,10 @@ static JSVAL net_listen (JSARGS args) {
         backlog = args[1]->IntegerValue();
     }
     int listenAddress = INADDR_ANY;
+    char *listenAddressString = (char *)'0.0.0.0';
     if (args.Length() > 2) {
-        String::Utf8Value addr(args[2]);
+        String::AsciiValue addr(args[2]);
+        listenAddressString = *addr;
         listenAddress = inet_addr(*addr);
     }
     int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -130,7 +132,8 @@ static JSVAL net_listen (JSARGS args) {
     bzero(&my_addr, sizeof (my_addr));
     my_addr.sin_family = AF_INET;
     my_addr.sin_port = htons(port);
-    my_addr.sin_addr.s_addr = htonl(listenAddress);
+//    printf("listenAddress: '%s' %08x\n", listenAddressString, listenAddress);
+    my_addr.sin_addr.s_addr = listenAddress; // htonl(listenAddress);
     if (bind(sock, (struct sockaddr *) &my_addr, sizeof (my_addr))) {
         return ThrowException(String::Concat(String::New("bind()Error: "), String::New(strerror(errno))));
     }

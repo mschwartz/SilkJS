@@ -77,8 +77,14 @@ function main() {
         }
     }
 
-    console.log('Silk running with ' + Config.numChildren + ' children on port ' + Config.port);
-    logfile.write('Silk running with ' + Config.numChildren + ' children on port ' + Config.port + '\n');
+    var logMessage = 'SilkJS HTTP running with ' + Config.numChildren + ' children on port ' + Config.port;
+    if (Config.listenIp !== '0.0.0.0') {
+        logMessage += ' on IP ' + Config.listenIp;
+    }
+//    console.log('Silk running with ' + Config.numChildren + ' children on port ' + Config.port);
+//    logfile.write('Silk running with ' + Config.numChildren + ' children on port ' + Config.port + '\n');
+    console.log(logMessage);
+    logfile.writeln(logMessage);
     while (true) {
         var o = process.wait();
         if (!children[o.pid]) {
