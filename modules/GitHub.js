@@ -1025,7 +1025,7 @@ GitHub.prototype.extend({
     },
 
     /**
-     * @functino GitHub.deleteCommitComment
+     * @function GitHub.deleteCommitComment
      *
      * ### Synopsis
      *
@@ -1050,10 +1050,52 @@ GitHub.prototype.extend({
         if (this.status != 204) {
             throw Json.decode(response.responseText);
         }
-    }
+    },
 
     // downloads api
 
+    /**
+     * @function GitHub.listDownloads
+     *
+     * ### Synopsis
+     *
+     * var downloads = gh.listDownloads(repo);
+     *
+     * List downloads for a repository
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @return {array} downloads - array of objects describing each download item
+     */
+    listDownloads: function(repo) {
+        var url = this.url + '/repos/' + this.repoName(repo) + '/downloads';
+        var response = cURL({
+            url: url
+        });
+        this.status = response.status;
+        return Json.decode(response.responseText);
+    },
+
+    /**
+     * @function GitHub.getDownload
+     *
+     * ### Synopsis
+     *
+     * var download = gh.getDownload(repo, id);
+     *
+     * Get a single download
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} id - id of the download to get
+     * @return {object} downloads - object describing each download item
+     */
+    getDownload: function(repo, id) {
+        var url = this.url + '/repos/' + this.repoName(repo) + '/downloads/' + id;
+        var response = cURL({
+            url: url
+        });
+        this.status = response.status;
+        return Json.decode(response.responseText);
+    }
 });
 
 exports.GitHub = GitHub;

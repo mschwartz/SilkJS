@@ -384,7 +384,8 @@ HttpChild = (function() {
     var unlock = USE_FLOCK ? function(lockfd) { fs.flock(lockfd, fs.LOCK_UN) } : function(lockfd) { fs.lockf(lockfd, fs.F_ULOCK); }
 
 	return {
-		requestHandler: null,
+		requestHandler: null,   // called at start of each request
+        endRequest: null,       // called at end of each request
 		onStart: null,
 		getCoffeeScript: function(fn) {
 			return coffee_cache[fn];
@@ -399,6 +400,7 @@ HttpChild = (function() {
 			}
 			var REQUESTS_PER_CHILD = Config.requestsPerChild;
 			var requestHandler = HttpChild.requestHandler;
+			var endRequest = HttpChild.endRequest;
 			requestsHandled = 0;
 			var lockfd = fs.open(Config.lockFile, fs.O_RDONLY);
 			while (requestsHandled < REQUESTS_PER_CHILD) {
@@ -428,6 +430,7 @@ HttpChild = (function() {
 //							Error.exceptionHandler(e);
 						}
 					}
+                    endRequest && endRequest();
                     req.data = {};
                     res.data = {};
 					res.flush();
