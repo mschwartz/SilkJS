@@ -1,5 +1,12 @@
-/** @ignore */
-
+/**
+ * @class GitHub
+ *
+ * ### Synopsis
+ *
+ * Interface to GitHub.
+ *
+ * This class uses the GitHub v3 API, documented here: http://developer.github.com/v3/.
+ */
 var cURL = require('cURL'),
     Json = require('Json'),
     console = require('console');
@@ -499,18 +506,18 @@ GitHub.prototype.extend({
      * @param {string} repo - name of repository to get information about (e.g. mschwartz/SilkJS or SilkJS)
      *
      */
-    getRepository: function(name) {
-        var parts = name.split('/');
+    getRepository: function(repo) {
+        var parts = repo.split('/');
         var user;
         if (parts.length > 1) {
-            name = parts[1];
+            repo = parts[1];
             user = parts[0];
         }
         else {
             user = this.username;
         }
         var response = cURL({
-            url: this.url + '/repos/' + user + '/' + name
+            url: this.url + '/repos/' + user + '/' + repo
         });
         this.status = response.status;
         return Json.decode(response.responseText);
@@ -889,6 +896,20 @@ GitHub.prototype.extend({
         return Json.decode(response.responseText);
     },
 
+    /**
+     * @function GitHub.listComments
+     *
+     * ### Synopsis
+     *
+     * var comments = gh.listComments(repo);        // get comments for repository
+     * var comments = gh.listComments(repo, sha);   // get comments for a single commit
+     *
+     * List comments for a repository or a single commit
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} sha - sha string that identifies the commit
+     * @return {Object} comments - array of comments
+     */
     listComments: function(repo, sha) {
         var url = this.url + '/repos/' + this.repoName(repo);
         if (sha) {
@@ -900,7 +921,138 @@ GitHub.prototype.extend({
         });
         this.status = response.status;
         return Json.decode(response.responseText);
+    },
+
+    /**
+     * @function GitHub.createCommitComment
+     *
+     * ### Synopsis
+     *
+     * var comment = gh.createCommitComment(repo, sha, config);
+     *
+     * Create a commit comment
+     *
+     * The config parameter is an object with the following members:
+     *
+     * + {string} body - required, body of the comment
+     * + {string} commit_id - required, SHA of the commit to comment on
+     * + {number} line - required, line number in the file to comment on
+     * + {string} path - required, relative path of file to comment on
+     * + {number} position - required - line index in the diff to comment on
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} sha - sha string that identifies the commit
+     * @param {object} config - see description above.
+     * @return {object} comment - resulting comment information
+     */
+    createCommitComment: function(repo, sha, comment) {
+        var url = this.url + '/repos/' + this.repoName(repo) + '/commits/' + sha + '/comments';
+        var response = cURL({
+            method: 'POST',
+            url: url,
+            params: Json.encode(comment)
+        });
+        this.status = response.status;
+        return Json.decode(response.responseText);
+    },
+
+    /**
+     * @function GitHub.getCommitComment
+     *
+     * ### Synopsis
+     *
+     * var comment = gh.getCommitComment(repo, id);
+     *
+     * Get a single commit comment
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} id - sha string that identifies the commit comment
+     * @return {object} comment - resulting comment information
+     */
+    getCommitComment: function(repo, id) {
+        var url = this.url + '/repos/' + this.repoName(repo) + '/comments/' + id;
+        var response = cURL({
+            url: url
+        });
+        this.status = response.status;
+        return Json.decode(response.responseText);
+    },
+
+    /**
+     * @function GitHub.updateCommitComment
+     *
+     * ### Synopsis
+     *
+     * var comment = gh.updateCommitComment(repo, id, body);
+     *
+     * Get a single commit comment
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} id - sha string that identifies the commit comment
+     * @param {string} body - new text for the comment
+     * @return {object} comment - resulting comment information
+     */
+    updateCommitComment: function(repo, id, body) {
+        var url = this.url + '/repos/' + this.repoName(repo) + '/comments/' + id;
+        var response = cURL({
+            method: 'PATCH',
+            url: url,
+            params: Json.encode({ body: body })
+        });
+        this.status = response.status;
+        return Json.decode(response.responseText);
+    },
+
+    /**
+     * @function GitHub.compareCommits
+     *
+     * ### Synopsis
+     *
+     * var info = gh.compareCommits(repo, base, head);
+     *
+     * Compare two commits
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} base - SHA of base commit
+     * @param {string} head - SHA of head commit
+     * @return {object} info - comparison information about the two commits
+     */
+    compareCommits: function(repo, base, head) {
+        var url = this.url + '/repos/' + this.repoName(repo) + '/compare/' + base + '...' + head;
+        var response = cURL({
+            url: url
+        });
+        this.status = response.status;
+        return Json.decode(response.responseText);
+    },
+
+    /**
+     * @functino GitHub.deleteCommitComment
+     *
+     * ### Synopsis
+     *
+     * var success = gh.deleteCommitComment(repo, id);
+     *
+     * Delete a commit comment.
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} id - sha string that identifies the commit comment
+     * @return {boolean} success - true if comment deleted
+     *
+     * ### Notes
+     * If an error occurs, an exception is thrown.
+     */
+    deleteCommitComment: function(repo, id) {
+        var url = this.url + '/repos/' + this.repoName(repo) + '/comments/' + id;
+        var response = cURL({
+            method: 'DELETE',
+            url: url
+        });
+        this.status = response.status;
+        if (this.status != 204) {
+            throw Json.decode(response.responseText);
+        }
     }
+
+    // downloads api
 
 });
 

@@ -21,6 +21,7 @@
  */
 "use strict";
 
+/*global error */
 var gd = require('builtin/gd'),
     fs = require('builtin/fs');
 
