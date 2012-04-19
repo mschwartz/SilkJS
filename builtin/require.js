@@ -15,13 +15,35 @@
 	function locateFile(module) {
 		function tryFile(path) {
 			var tryPath = fs.realpath(path);
-            if (tryPath  && fs.isFile(tryPath)) {
-				return tryPath;
-			}
+            if (tryPath) {
+                if (fs.isFile(tryPath)) {
+                    return tryPath;
+                }
+                else if (fs.isDir(tryPath)) {
+                    if (!tryPath.endsWith('/')) {
+                        tryPath += '/';
+                    }
+                    tryPath += 'index.js';
+                }
+                if (fs.isFile(tryPath)) {
+                    return tryPath;
+                }
+            }
 			tryPath = fs.realpath(require.fsPath + path);
-			if (tryPath && fs.isFile(tryPath)) {
-				return tryPath;
-			}
+			if (tryPath) {
+                if (fs.isFile(tryPath)) {
+                    return tryPath;
+                }
+                else if (fs.isDir(tryPath)) {
+                    if (!tryPath.endsWith('/')) {
+                        tryPath += '/';
+                    }
+                    tryPath += 'index.js';
+                }
+                if (fs.isFile(tryPath)) {
+                    return tryPath;
+                }
+            }
 			return false;
 		}
 		if (module.substr(0,1) == '/' || module.substr(0,2) == './' || module.substr(0,3) == '../') {

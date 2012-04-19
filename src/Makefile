@@ -20,13 +20,13 @@ INCDIRS=    -I$(V8DIR)/include -I/usr/include/mysql
 
 LIBDIRS=    -L$(V8LIB_DIR)/ 
 
-CFLAGS = -g -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-strict-aliasing -fvisibility=hidden -Wall -W -Wno-ignored-qualifiers -Wno-unused-function -Wno-unused-parameter -Wnon-virtual-dtor -m$(ARCH) -O3 -fomit-frame-pointer -fdata-sections -ffunction-sections -ansi -fno-strict-aliasing
+CFLAGS = -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-strict-aliasing -fvisibility=hidden -Wall -W -Wno-ignored-qualifiers -Wno-unused-function -Wno-unused-parameter -Wnon-virtual-dtor -m$(ARCH) -O3 -fomit-frame-pointer -fdata-sections -ffunction-sections -ansi -fno-strict-aliasing
 
 %.o: %.cpp SilkJS.h 
 	g++ $(CFLAGS) -c $(INCDIRS) -o $*.o $*.cpp
 
 silkjs: $(V8DIR) $(V8) $(CORE) $(OBJ) SilkJS.h Makefile
-	g++ $(CFLAGS) -o silkjs $(CORE) $(OBJ) $(LIBDIRS) -lv8_base -lv8_snapshot -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lmemcached -ledit
+	g++ $(CFLAGS) -o silkjs $(CORE) $(OBJ) $(LIBDIRS) -lv8_base -lv8_snapshot -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lmemcached 
 
 	
 debug:	    CFLAGS += -g

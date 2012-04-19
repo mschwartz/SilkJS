@@ -106,7 +106,11 @@ req = (function() {
 							};
 						}
 						else {
-							data[name] = lines[3];
+                            lines.shift(); lines.shift(); lines.shift();
+                            if (lines[lines.length-1] == '') {
+                                lines.pop();
+                            }
+							data[name] = lines.join('\n');
 						}
 					});
 				}
@@ -118,6 +122,9 @@ req = (function() {
 							data[part[0]] = decodeURIComponent(part[1].replace(/\+/gm, ' '));
 						});
 					}
+                    else {
+                        req.data.post = post;
+                    }
 				}
 			}
 			req.data = data;

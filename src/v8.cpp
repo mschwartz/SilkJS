@@ -17,7 +17,7 @@
 #include <v8-debug.h>
 
 struct ScriptWrapper {
-	Persistent<Script> script;
+    Persistent<Script> script;
 };
 
 /**
@@ -29,10 +29,11 @@ struct ScriptWrapper {
  * 
  * Call v8's garbage collector.
  */
-static JSVAL gc(const Arguments& args) {
-	HandleScope scope;
-	while (!V8::IdleNotification()) {}
-	return Undefined();
+static JSVAL gc (const Arguments& args) {
+    HandleScope scope;
+    while (!V8::IdleNotification()) {
+    }
+    return Undefined();
 }
 
 /**
@@ -50,15 +51,15 @@ static JSVAL gc(const Arguments& args) {
  * You should free any scripts you compile with v8.freeScript().
  */
 
-static JSVAL compileScript(JSARGS args) {
-	HandleScope scope;
+static JSVAL compileScript (JSARGS args) {
+    HandleScope scope;
 
-//	Persistent<Context>context = Context::New(NULL, ObjectTemplate::New());
-//	Context::Scope context_scope(context);
-	ScriptWrapper *wrapper = new ScriptWrapper;
-	wrapper->script = Persistent<Script>::New(Script::New(args[0]->ToString(), args[1]->ToString()));
-//	context.Dispose();
-	return scope.Close(External::New(wrapper));
+    //	Persistent<Context>context = Context::New(NULL, ObjectTemplate::New());
+    //	Context::Scope context_scope(context);
+    ScriptWrapper *wrapper = new ScriptWrapper;
+    wrapper->script = Persistent<Script>::New(Script::New(args[0]->ToString(), args[1]->ToString()));
+    //	context.Dispose();
+    return scope.Close(External::New(wrapper));
 }
 
 
@@ -74,18 +75,19 @@ static JSVAL compileScript(JSARGS args) {
  * @return whatever the script returns.
  */
 // runScript(context, script)
-static JSVAL runScript(JSARGS args) {
-	HandleScope scope;
-	
-	Local<External>wrap = Local<External>::Cast(args[0]);
-	ScriptWrapper *wrapper = (ScriptWrapper *)wrap->Value();
 
-//	Persistent<Context>context = Context::New(NULL, ObjectTemplate::New());
-//	Context::Scope context_scope(context);
-	Handle<Value>v = wrapper->script->Run();
-//	context.Dispose();
-	JSVAL ret = scope.Close(v);
-	return ret;
+static JSVAL runScript (JSARGS args) {
+    HandleScope scope;
+
+    Local<External>wrap = Local<External>::Cast(args[0]);
+    ScriptWrapper *wrapper = (ScriptWrapper *) wrap->Value();
+
+    //	Persistent<Context>context = Context::New(NULL, ObjectTemplate::New());
+    //	Context::Scope context_scope(context);
+    Handle<Value>v = wrapper->script->Run();
+    //	context.Dispose();
+    JSVAL ret = scope.Close(v);
+    return ret;
 }
 
 /**
@@ -99,18 +101,18 @@ static JSVAL runScript(JSARGS args) {
  * 
  * @param {object} script - opaque handle to script to be freed.
  */
-static JSVAL freeScript(JSARGS args) {
-	HandleScope scope;
-	
-	Local<External>wrap = Local<External>::Cast(args[0]);
-	ScriptWrapper *wrapper = (ScriptWrapper *)wrap->Value();
-	wrapper->script.Dispose();
-	delete wrapper;
-	return Undefined();
+static JSVAL freeScript (JSARGS args) {
+    HandleScope scope;
+
+    Local<External>wrap = Local<External>::Cast(args[0]);
+    ScriptWrapper *wrapper = (ScriptWrapper *) wrap->Value();
+    wrapper->script.Dispose();
+    delete wrapper;
+    return Undefined();
 }
 
-static void debugger() {
-	extern Persistent<Context> context;
+static void debugger () {
+    extern Persistent<Context> context;
     Context::Scope scope(context);
     Debug::ProcessDebugMessages();
 }
@@ -122,25 +124,24 @@ static void debugger() {
  * 
  * This function enables the internal v8 debugger on port 5858.
  */
-static JSVAL enableDebugger(JSARGS args) {
-	HandleScope scope;
-	Debug::SetDebugMessageDispatchHandler(debugger, true);
-	Debug::EnableAgent("silkjs", 5858, true);
-	Debug::DebugBreak();
-	return Undefined();
+static JSVAL enableDebugger (JSARGS args) {
+    HandleScope scope;
+    Debug::SetDebugMessageDispatchHandler(debugger, true);
+    Debug::EnableAgent("silkjs", 5858, true);
+    Debug::DebugBreak();
+    return Undefined();
 }
 
+void init_v8_object () {
+    HandleScope scope;
 
-void init_v8_object() {
-	HandleScope scope;
+    Handle<ObjectTemplate>v8 = ObjectTemplate::New();
+    v8->Set(String::New("gc"), FunctionTemplate::New(gc));
+    v8->Set(String::New("compileScript"), FunctionTemplate::New(compileScript));
+    v8->Set(String::New("runScript"), FunctionTemplate::New(runScript));
+    v8->Set(String::New("freeScript"), FunctionTemplate::New(freeScript));
+    v8->Set(String::New("enableDebugger"), FunctionTemplate::New(enableDebugger));
 
-	Handle<ObjectTemplate>v8 = ObjectTemplate::New();
-	v8->Set(String::New("gc"), FunctionTemplate::New(gc));
-	v8->Set(String::New("compileScript"), FunctionTemplate::New(compileScript));
-	v8->Set(String::New("runScript"), FunctionTemplate::New(runScript));
-	v8->Set(String::New("freeScript"), FunctionTemplate::New(freeScript));
-	v8->Set(String::New("enableDebugger"), FunctionTemplate::New(enableDebugger));
-
-	builtinObject->Set(String::New("v8"), v8);
+    builtinObject->Set(String::New("v8"), v8);
 }
 

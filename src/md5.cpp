@@ -51,9 +51,9 @@ typedef struct {
     unsigned char digest[16]; /* actual digest after MD5Final call */
 } MD5_CTX;
 
-void MD5Init();
-void MD5Update();
-void MD5Final();
+void MD5Init ();
+void MD5Update ();
+void MD5Final ();
 
 /*
  **********************************************************************
@@ -98,7 +98,7 @@ void MD5Final();
 /* #include "md5.h" */
 
 /* forward declaration */
-static void Transform(UINT4 *buf, UINT4 *in);
+static void Transform (UINT4 *buf, UINT4 *in);
 
 static unsigned char PADDING[64] = {
     0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -143,7 +143,7 @@ static unsigned char PADDING[64] = {
    (a) += (b); \
   }
 
-void MD5Init(MD5_CTX *mdContext) {
+void MD5Init (MD5_CTX *mdContext) {
     mdContext->i[0] = mdContext->i[1] = (UINT4) 0;
 
     /* Load magic initialization constants.
@@ -154,7 +154,7 @@ void MD5Init(MD5_CTX *mdContext) {
     mdContext->buf[3] = (UINT4) 0x10325476;
 }
 
-void MD5Update(MD5_CTX *mdContext, unsigned char *inBuf, unsigned int inLen) {
+void MD5Update (MD5_CTX *mdContext, unsigned char *inBuf, unsigned int inLen) {
     UINT4 in[16];
     int mdi;
     unsigned int i, ii;
@@ -185,7 +185,7 @@ void MD5Update(MD5_CTX *mdContext, unsigned char *inBuf, unsigned int inLen) {
     }
 }
 
-void MD5Final(MD5_CTX *mdContext) {
+void MD5Final (MD5_CTX *mdContext) {
     UINT4 in[16];
     int mdi;
     unsigned int i, ii;
@@ -214,17 +214,17 @@ void MD5Final(MD5_CTX *mdContext) {
     for (i = 0, ii = 0; i < 4; i++, ii += 4) {
         mdContext->digest[ii] = (unsigned char) (mdContext->buf[i] & 0xFF);
         mdContext->digest[ii + 1] =
-                (unsigned char) ((mdContext->buf[i] >> 8) & 0xFF);
+            (unsigned char) ((mdContext->buf[i] >> 8) & 0xFF);
         mdContext->digest[ii + 2] =
-                (unsigned char) ((mdContext->buf[i] >> 16) & 0xFF);
+            (unsigned char) ((mdContext->buf[i] >> 16) & 0xFF);
         mdContext->digest[ii + 3] =
-                (unsigned char) ((mdContext->buf[i] >> 24) & 0xFF);
+            (unsigned char) ((mdContext->buf[i] >> 24) & 0xFF);
     }
 }
 
 /* Basic MD5 step. Transform buf based on in.
  */
-static void Transform(UINT4 *buf, UINT4 *in) {
+static void Transform (UINT4 *buf, UINT4 *in) {
     UINT4 a = buf[0], b = buf[1], c = buf[2], d = buf[3];
 
     /* Round 1 */
@@ -321,7 +321,7 @@ static void Transform(UINT4 *buf, UINT4 *in) {
     buf[3] += d;
 }
 
-void MD5Digest(MD5_CTX *mdContext, char *str) {
+void MD5Digest (MD5_CTX *mdContext, char *str) {
     int i;
 
     for (i = 0; i < 16; i++) {
@@ -371,7 +371,7 @@ void MD5Digest(MD5_CTX *mdContext, char *str) {
    Order is from low-order byte to high-order byte of digest.
    Each byte is printed with high-order hexadecimal digit first.
  */
-static void MDPrint(MD5_CTX *mdContext) {
+static void MDPrint (MD5_CTX *mdContext) {
     int i;
 
     for (i = 0; i < 16; i++)
@@ -391,7 +391,7 @@ static long TEST_BYTES = (long) TEST_BLOCK_SIZE * (long) TEST_BLOCKS;
    Measures wall time required to digest TEST_BLOCKS * TEST_BLOCK_SIZE
    characters.
  */
-static void MDTimeTrial() {
+static void MDTimeTrial () {
     MD5_CTX mdContext;
     time_t endTime, startTime;
     unsigned char data[TEST_BLOCK_SIZE];
@@ -416,17 +416,17 @@ static void MDTimeTrial() {
     MDPrint(&mdContext);
     printf(" is digest of test input.\n");
     printf
-            ("Seconds to process test input: %ld\n", (long) (endTime - startTime));
+        ("Seconds to process test input: %ld\n", (long) (endTime - startTime));
     printf
-            ("Characters processed per second: %ld\n",
-            TEST_BYTES / (endTime - startTime));
+        ("Characters processed per second: %ld\n",
+        TEST_BYTES / (endTime - startTime));
 }
 
 /* Computes the message digest for string inString.
    Prints out message digest, a space, the string (in quotes) and a
    carriage return.
  */
-static void MDString(char *inString) {
+static void MDString (char *inString) {
     MD5_CTX mdContext;
     unsigned int len = strlen(inString);
 
@@ -441,7 +441,7 @@ static void MDString(char *inString) {
    Prints out message digest, a space, the file name, and a carriage
    return.
  */
-static void MDFile(char *filename) {
+static void MDFile (char *filename) {
     FILE *inFile = fopen(filename, "rb");
     MD5_CTX mdContext;
     int bytes;
@@ -464,7 +464,7 @@ static void MDFile(char *filename) {
 /* Writes the message digest of the data from stdin onto stdout,
    followed by a carriage return.
  */
-static void MDFilter() {
+static void MDFilter () {
     MD5_CTX mdContext;
     int bytes;
     unsigned char data[16];
@@ -479,7 +479,7 @@ static void MDFilter() {
 
 /* Runs a standard suite of test data.
  */
-static void MDTestSuite() {
+static void MDTestSuite () {
     printf("MD5 test suite results:\n\n");
     MDString("");
     MDString("a");
@@ -487,15 +487,15 @@ static void MDTestSuite() {
     MDString("message digest");
     MDString("abcdefghijklmnopqrstuvwxyz");
     MDString
-            ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
+        ("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789");
     MDString
-            ("1234567890123456789012345678901234567890\
+        ("1234567890123456789012345678901234567890\
 1234567890123456789012345678901234567890");
     /* Contents of file foo are "abc" */
     MDFile("foo");
 }
 
-void main(argc, argv)
+void main (argc, argv)
 int argc;
 char *argv[];
 {

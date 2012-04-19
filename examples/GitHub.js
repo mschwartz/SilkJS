@@ -29,15 +29,15 @@ var commands = {
             try {
                 ['name', 'email', 'blog', 'company', 'location', 'hireable', 'bio'].each(function(s) {
                     stdin.prompt(s + ' (' + gh.user[s] + '): ');
-                    var inp = stdin.gets();
-                    if (!inp) {
+                    var inp = stdin.gets(false);
+                    if (inp === '') {
+                        inp = gh.user[s];
+                    }
+                    else if (!inp) {
                         alive = false;
                         return false;
                     }
-                    o[s] = inp.trim();
-                    if (!o[s].length) {
-                        o[s] = gh.user[s];
-                    }
+                    o[s] = inp;
                 });
             }
             catch (e) {
@@ -166,10 +166,200 @@ var commands = {
             });
         }
     },
+    listOrgRepos: {
+        help: 'listOrgRepos org - list an organization\'s repos; you must be a member of the organization.',
+        fn: function(args) {
+            gh.listOrgRepos(args).each(function(repo) {
+                console.log(new Date(repo.updated_at).toString('MM/dd/yyyy HH:mm:ss') + ' ' + args + '/' + repo.name);
+            });
+        }
+    },
+    createRepo: {
+        help: 'createRepo name - create a repository',
+        fn: function(args) {
+            var o = {
+                name: args,
+                description: '',
+                homepage: '',
+                private: false,
+                has_issues: true,
+                has_wiki: true,
+                has_downloads: true
+            };
+            console.log('Enter repository information below.  Hit ^C to abort.');
+            try {
+                ['description', 'homepage', 'private', 'has_issues', 'has_wiki', 'has_downloads'].each(function (s) {
+                    stdin.prompt(s + ' ('+ o[s] + '): ');
+                    var inp = stdin.gets(false);
+                    if (inp === '') {
+                        inp = o[s];
+                    }
+                    else if (!inp) {
+                        alive = false;
+                        return false;
+                    }
+                    o[s] = inp;
+                });
+            }
+            catch (e) {
+                defaultPrompt();
+                console.log('*** Aborted');
+                return;
+            }
+            defaultPrompt();
+            console.dir(gh.createRepository(o));
+        }
+    },
+    repo: {
+        help: 'repo repository - get info about specified repository',
+        fn: function(args) {
+            console.dir(gh.getRepository(args));
+            console.log('status: ' + gh.status);
+        }
+    },
+    editRepo: {
+        help: 'editRepo name - edit a repository',
+        fn: function (args) {
+            var fields = ['description', 'homepage', 'private', 'has_issues', 'has_wiki', 'has_downloads'];
+            var repo = gh.getRepository(args);
+            if (gh.status == 404) {
+                console.log('*** Repository ' + args + ' not found');
+                return;
+            }
+            var o = {};
+            fields.each(function(field) {
+                o[field] = repo[field];
+            });
+            o.name = args;
+            console.log('Enter repository information below.  Hit ^C to abort.');
+            try {
+                fields.each(function (s) {
+                    stdin.prompt(s + ' (' + o[s] + '): ');
+                    var inp = stdin.gets(false);
+                    if (inp === '') {
+                        inp = o[s];
+                    }
+                    else if (!inp) {
+                        alive = false;
+                        return false;
+                    }
+                    o[s] = inp;
+                });
+            }
+            catch (e) {
+                defaultPrompt();
+                console.log('*** Aborted');
+                return;
+            }
+            defaultPrompt();
+            console.dir(gh.editRepository(args, o));
+        }
+    },
+    listContributors: {
+        help: 'listContributors [user/]repo - list a repository\'s contributors.',
+        fn: function(args) {
+            console.dir(gh.listContributors(args));
+        }
+    },
+    listLanguages: {
+        help: 'listLanguages [user/]repo - list a repository\'s languages.',
+        fn: function(args) {
+            console.dir(gh.listLanguages(args));
+        }
+    },
+    listTeams: {
+        help: 'listTeams [user/]repo - list a repository\'s teams.',
+        fn: function(args) {
+            console.dir(gh.listTeams(args));
+        }
+    },
+    listTags: {
+        help: 'listTags [user/]repo - list a repository\'s tags.',
+        fn: function(args) {
+            console.dir(gh.listTags(args));
+        }
+    },
+    listBranches: {
+        help: 'listBranches[user/]repo - list a repository\'s branches.',
+        fn: function(args) {
+            console.dir(gh.listBranches(args));
+        }
+    },
     listCollaborators: {
-        help: 'listCollaborators user/repo - list a repository\'s collaborators.',
+        help: 'listCollaborators [user/]repo - list a repository\'s collaborators.',
         fn: function(args) {
             console.dir(gh.listCollaborators(args));
+        }
+    },
+    isCollaborator: {
+        help: 'isCollaborator [user/]repo user - determine if a user is a repo\'s collaborator',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var user = parts.join(' ');
+            console.dir(gh.isCollaborator(repo, user));
+        }
+    },
+    addCollaborator: {
+        help: 'addCollaborator [user/]repo user - add a user as a repo\'s collaborator',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var user = parts.join(' ');
+            console.dir(gh.addCollaborator(repo, user));
+        }
+    },
+    removeCollaborator: {
+        help: 'removeCollaborator [user/]repo user - remove a user as a repo\'s collaborator',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var user = parts.join(' ');
+            console.dir(gh.removeCollaborator(repo, user));
+        }
+    },
+    listCommits: {
+        help: 'listCommits [user/]repo - list commits for a repository',
+        fn: function(args) {
+            gh.listCommits(args).reverse().each(function(commit) {
+                delete commit.patch;
+                console.log('commit  ' + commit.sha);
+                console.log('Author: ' + commit.commit.author.name + ' <' + commit.commit.author.email + '>');
+                console.log('Date:   ' + commit.commit.author.date);
+//                console.log(commit.commit.author.date + ' ' + commit.commit.author.email);
+                var message = '     ' + commit.commit.message.split('\n').join('\n     ');
+                console.log(message);
+                console.log('');
+            });
+        }
+    },
+    getCommit: {
+        help: 'getCommit [user/]repo sha - get a single commit for a repository',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var sha = parts.join(' ');
+            var commit = gh.getCommit(repo, sha);
+            console.log('');
+            console.log(commit.commit.committer.date + ' ' + commit.commit.committer.email);
+            console.log(commit.sha);
+            console.log(commit.commit.message);
+            console.log('FILES: ');
+            commit.files.each(function(file) {
+                console.log(' + ' + file.filename + ' (' + file.changes + ' changes)');
+                delete file.patch;
+            });
+            console.log('');
+//            console.dir(commit);
+        }
+    },
+    listComments: {
+        help: 'listComments [user/]repo [sha] - list comments for a repo or a commit',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var sha = parts.join(' ');
+            console.dir(gh.listComments(repo, sha));
         }
     },
     cd: {
@@ -199,7 +389,7 @@ var commands = {
         help: 'help - show this list.',
         fn: function() {
             commands.each(function(cmd) {
-                console.log(cmd.help);
+                console.log('    ' + cmd.help);
             });
         }
     }
@@ -236,15 +426,26 @@ function main(username, password) {
             break;
         }
         line = line.trim();
+        if (!line.length) {
+            continue;
+        }
         if (line[0] === '!') {
             console.log(process.exec(line.substr(1).trim()));
             continue;
+        }
+        if (line === '?') {
+            line = 'help';
         }
         var parts = line.split(/\s+/);
         var cmd = parts.shift();
         var args = parts.join(' ');
         if (commands[cmd]) {
-            commands[cmd].fn(args);
+            try {
+                commands[cmd].fn(args);
+            }
+            catch (e) {
+                console.log('Exception: ' + e);
+            }
         }
         else {
             console.log('*** Invalid command.  Type help for command list.');

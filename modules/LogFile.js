@@ -65,6 +65,22 @@ LogFile.prototype.extend({
     write: function(s, len) {
         return len ? logfile.write(this.handle, s, len) : logfile.write(this.handle, s);
     },
+    
+    /**
+     * @function LogFile.writeln
+     * 
+     * ### Synopsis:
+     * 
+     * logfile.writeln(s);
+     * 
+     * Write a string to the log file with an appended newline.
+     * 
+     * @param {string} s - string to write.
+     */
+    writeln: function(s, len) {
+        return logfile.write(this.handle, s + '\n');
+    },
+    
     /**
      * @function LogFile.flush
      * 
@@ -77,6 +93,7 @@ LogFile.prototype.extend({
     flush: function() {
         return logfile.flush(this.handle);
     },
+    
     /**
      * @function LogFile.destroy
      * 

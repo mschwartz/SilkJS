@@ -24,10 +24,10 @@
     }
 
     global.SQLException = function(msg, query) {
-        var save = Error.prepareStackTrace;
-        Error.prepareStackTrace = prepareStackTrace;
+//        var save = Error.prepareStackTrace;
+//        Error.prepareStackTrace = prepareStackTrace;
         Error.captureStackTrace(this, SQLException);
-        Error.prepareStackTrace = save;
+//        Error.prepareStackTrace = save;
         this.name = 'SQL Error';
         this.message = msg;
         this.query = query;
@@ -37,10 +37,10 @@
     }
 
     global.SilkException = function(msg) {
-        var save = Error.prepareStackTrace;
-        Error.prepareStackTrace = prepareStackTrace;
+//        var save = Error.prepareStackTrace;
+//        Error.prepareStackTrace = prepareStackTrace;
         Error.captureStackTrace(this, SilkException);
-        Error.prepareStackTrace = save;
+//        Error.prepareStackTrace = save;
         this.message = msg;
     };
     SilkException.prototype.toString = function() {
@@ -52,7 +52,7 @@
             throw new SilkException(s);
         }
         catch (e) {
-            e.stack.shift();
+//            e.stack.shift();
             throw e;
         }
     }

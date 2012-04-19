@@ -1,10 +1,20 @@
 *.o
 .idea
+*DS_Store
 CMakeLists.txt.user
 build/
 /nbproject/private/
 nbproject
 silkjs
-src/silkjs
-src/v8-read-only/
+v8-read-only/
+strap-silkjs
+bootstrap-silkjs
+curl-7.21.6/
+jpeg-8b/
+libgd2_2.0.36~rc1~dfsg.orig/
+libmemcached-0.44/
+libssh2-1.2.8/
+mm-1.4.2/
+mysql-5.1.58/
+osx_dependencies/
 

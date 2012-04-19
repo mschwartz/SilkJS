@@ -5,6 +5,108 @@ HttpChild = (function() {
     
     var mimeTypes = require('MimeTypes');
 
+    function errorHandler(e) {
+        var spaces = '                 ';
+        function lineNumber(n) {
+            n = '' + n;
+            return spaces.substr(0, 8 - n.length) + n;
+        }
+        res.reset();
+        if (global.error_action) {
+            global.error_action(e);
+            return;
+        }
+        res.status = 500;
+        res.write([
+            '<html>',
+            '<head>',
+            '<title>Software Exception</title>',
+            '<style>',
+            '.source {',
+            '   padding: 5px;',
+            '   border: 1px solid black;',
+            '}',
+            '.highlight {',
+            '   background: red;',
+            '   color: white;',
+            '   font-weight: bold;',
+            '}',
+            '.lineNumber {',
+            '   padding-right: 5px;',
+            '   text-align: right;',
+            '}',
+            '.line {',
+            '   padding-left: 5px;',
+            '}',
+            '</style>',
+            '</head>',
+            '</html>'
+        ].join('\n'));
+        res.write('<h1>Software Exception</h1>');
+        res.write('<h3>' + e + '</h3>');
+        var stack = e.stack;
+        if (stack) {
+            stack = stack.split('\n');
+            stack.shift();
+
+            var newStack = [];
+            stack.each(function(line) {
+                var parsed = line.replace(/^\s*at\s*/, '');
+                var file = parsed.replace(/.*\s+\(/, '').replace(/\).*$/, '');
+                var method = parsed.replace(/\s*\(.*$/, '');
+                if (method === file) {
+                    method = 'anonymous';
+                }
+                file = file.split(':');
+                var lineNo = file[1];
+                var column = file[2];
+                file = file[0];
+                if (require.isRequiredFile(file)) {
+                    lineNo -= 6;
+                }
+                newStack.push('    at ' + method + ' ' + file + ':' + lineNo + ':' + column);
+            });
+
+            var line = stack[0];
+            var parsed = line.replace(/^\s*at\s*/, '');
+            var file = parsed.replace(/.*\s+\(/, '').replace(/\).*$/, '');
+            file = file.split(':');
+            var lineNo = file[1];
+            var column = file[2];
+            file = file[0];
+            var method = parsed.replace(/\s*\(.*$/, '');
+            res.write('<h2>Stack Trace</h2>');
+            res.write('<pre>' + newStack.join('\n') + '</pre>');
+
+            var content = fs.readFile(file);
+            res.write('<h2>' + file + '</h2>');
+            var lines = content.split('\n');
+            if (require.isRequiredFile(file)) {
+                lineNo -= 6;
+            }
+            var startLine = lineNo - 10;
+            if (startLine < 0) {
+                startLine = 0;
+            }
+            var endLine = startLine + 10;
+            if (endLine > lines.length) {
+                endLine = lines.length;
+            }
+            lineNo--;
+            res.write('<pre class="source">');
+            for (var i=startLine; i<endLine; i++) {
+                if (i == lineNo) {
+                    res.write('<div class="highlight"><span class="lineNumber">' + lineNumber(i+1) + '</span><span class="line">' + lines[i] + '</span></div>');
+                }
+                else {
+                    res.writeln('<span class="lineNumber">' + lineNumber(i+1) + '</span><span class="line">' + lines[i] + '</span>');
+                }
+            }
+            res.write('</pre>');
+//            res.write('<pre>' + content + '</pre>');
+        }
+    }
+
 	function notFound() {
         res.reset();
         global.notFound_action && global.notFound_action();
@@ -15,6 +117,9 @@ HttpChild = (function() {
 
 	var jst_cache = {};
 	function getCachedJst(fn) {
+        if (!fs.exists(fn)) {
+            throw 'Cannot find included .jst file ' + fn;
+        }
 		var jst = jst_cache[fn];
 		if (!jst || fs.stat(fn).mtime < jst.mtime) {
 			var source = fs.readFile(fn);
@@ -205,7 +310,7 @@ HttpChild = (function() {
         var action = parts[0] + '_action';
         if (global[action]) {
             global[action]();
-//            res.stop();
+            res.stop();
         }
 
 		var fnPath = Config.documentRoot + req.uri;
@@ -279,7 +384,8 @@ HttpChild = (function() {
     var unlock = USE_FLOCK ? function(lockfd) { fs.flock(lockfd, fs.LOCK_UN) } : function(lockfd) { fs.lockf(lockfd, fs.F_ULOCK); }
 
 	return {
-		requestHandler: null,
+		requestHandler: null,   // called at start of each request
+        endRequest: null,       // called at end of each request
 		onStart: null,
 		getCoffeeScript: function(fn) {
 			return coffee_cache[fn];
@@ -294,6 +400,7 @@ HttpChild = (function() {
 			}
 			var REQUESTS_PER_CHILD = Config.requestsPerChild;
 			var requestHandler = HttpChild.requestHandler;
+			var endRequest = HttpChild.endRequest;
 			requestsHandled = 0;
 			var lockfd = fs.open(Config.lockFile, fs.O_RDONLY);
 			while (requestsHandled < REQUESTS_PER_CHILD) {
@@ -319,9 +426,11 @@ HttpChild = (function() {
 					}
 					catch (e) {
 						if (e !== 'RES.STOP') {
-							Error.exceptionHandler(e);
+                            errorHandler(e);
+//							Error.exceptionHandler(e);
 						}
 					}
+                    endRequest && endRequest();
                     req.data = {};
                     res.data = {};
 					res.flush();

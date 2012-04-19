@@ -41,11 +41,11 @@ static char remote_addr[16];
  * @param {int} port - port number to connect to
  * @return {int} sock - file descriptor or false if error occurred.
  */
-static JSVAL net_connect(JSARGS args) {
-	HandleScope scope;
-	String::Utf8Value host(args[0]);
-	int port = args[1]->IntegerValue();
-	struct hostent *h = gethostbyname(*host);
+static JSVAL net_connect (JSARGS args) {
+    HandleScope scope;
+    String::Utf8Value host(args[0]);
+    int port = args[1]->IntegerValue();
+    struct hostent *h = gethostbyname(*host);
     if (h == NULL) {
         /* gethostbyname returns NULL on error */
         herror("gethostbyname failed");
@@ -78,7 +78,7 @@ static JSVAL net_connect(JSARGS args) {
         close(fd);
         return False();
     }
-	return scope.Close(Integer::New(fd));
+    return scope.Close(Integer::New(fd));
 }
 
 /**
@@ -88,6 +88,7 @@ static JSVAL net_connect(JSARGS args) {
  * 
  * var sock = net.listen(port);
  * var sock = net.listen(port, backlog);
+ * var sock = net.listen(port, backlog, ip);
  * 
  * This function creates a TCP SOCK_STREAM socket, binds it to the specified port, and does a listen(2) on the socket.
  * 
@@ -95,40 +96,51 @@ static JSVAL net_connect(JSARGS args) {
  * 
  * The backlog argument specifies the maximum length for the queue of pending connections.  If the queue fills and another connection attempt is made, the client will likely receive a "connection refused" error.
  * 
+ * The ip argument specifies what IP address to listen on.  By default, it will be 0.0.0.0 for "listen on any IP."  If you set this to a different value, only that IP will be listened on, and the socket will not be reachable via localhost (for example).
+ * 
  * @param {int} port - port number to listen on
  * @param {int} backlog - length of pending connection queue
+ * @param {string} ip - ip address to listen on
  * @return {int} sock - file descriptor of socket in listen mode
  * 
  * ### Exceptions
  * This function throws an exception of the socket(), bind(), or listen() OS calls fail.
  */
-static JSVAL net_listen(JSARGS args) {
+static JSVAL net_listen (JSARGS args) {
     HandleScope scope;
-	int port = args[0]->IntegerValue();
-	int backlog = 30;
-	if (args.Length() > 1) {
-		backlog = args[1]->IntegerValue();
-	}
-	int sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (sock < 0) {
-		return ThrowException(String::Concat(String::New("socket() Error: "), String::New(strerror(errno))));
-	}
-	{
-		int on = 1;
-		setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof (on));
-	}
-	struct sockaddr_in my_addr;
-	bzero(&my_addr, sizeof (my_addr));
-	my_addr.sin_family = AF_INET;
-	my_addr.sin_port = htons(port);
-	my_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	if (bind(sock, (struct sockaddr *) &my_addr, sizeof (my_addr))) {
-		return ThrowException(String::Concat(String::New("bind()Error: "), String::New(strerror(errno))));
-	}
-	if (listen(sock, backlog)) {
-		return ThrowException(String::Concat(String::New("listen() Error: "), String::New(strerror(errno))));
-	}
-	return scope.Close(Integer::New(sock));
+    int port = args[0]->IntegerValue();
+    int backlog = 30;
+    if (args.Length() > 1) {
+        backlog = args[1]->IntegerValue();
+    }
+    int listenAddress = INADDR_ANY;
+    char *listenAddressString = (char *)'0.0.0.0';
+    if (args.Length() > 2) {
+        String::AsciiValue addr(args[2]);
+        listenAddressString = *addr;
+        listenAddress = inet_addr(*addr);
+    }
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) {
+        return ThrowException(String::Concat(String::New("socket() Error: "), String::New(strerror(errno))));
+    }
+    {
+        int on = 1;
+        setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *) &on, sizeof (on));
+    }
+    struct sockaddr_in my_addr;
+    bzero(&my_addr, sizeof (my_addr));
+    my_addr.sin_family = AF_INET;
+    my_addr.sin_port = htons(port);
+//    printf("listenAddress: '%s' %08x\n", listenAddressString, listenAddress);
+    my_addr.sin_addr.s_addr = listenAddress; // htonl(listenAddress);
+    if (bind(sock, (struct sockaddr *) &my_addr, sizeof (my_addr))) {
+        return ThrowException(String::Concat(String::New("bind()Error: "), String::New(strerror(errno))));
+    }
+    if (listen(sock, backlog)) {
+        return ThrowException(String::Concat(String::New("listen() Error: "), String::New(strerror(errno))));
+    }
+    return scope.Close(Integer::New(sock));
 }
 
 /**
@@ -152,53 +164,53 @@ static JSVAL net_listen(JSARGS args) {
  * 
  * See http://en.wikipedia.org/wiki/Thundering_herd_problem for a brief description of the problem.
  */
-static JSVAL net_accept(JSARGS args) {
+static JSVAL net_accept (JSARGS args) {
     HandleScope scope;
-	struct sockaddr_in their_addr;
-	
-	int sock = args[0]->IntegerValue();
-	
-	socklen_t sock_size = sizeof (struct sockaddr_in);
-	bzero(&their_addr, sizeof (their_addr));
+    struct sockaddr_in their_addr;
 
-	fd_set fds;
-	FD_ZERO(&fds);
-	FD_SET(sock, &fds);
-//	struct timeval timeout;
-//	timeout.tv_sec = 5;
-//	timeout.tv_usec = 0;
-	switch (select(sock+1, &fds, NULL, NULL, NULL)) {
-		case -1:
-			perror("select");
-			return ThrowException(String::Concat(String::New("Read Error: "), String::New(strerror(errno))));
-		case 0:
-			printf("select timed out\n");
-			return Null();
-	}
+    int sock = args[0]->IntegerValue();
 
-	while (1) {
-		sock = accept(sock, (struct sockaddr *) &their_addr, &sock_size);
-		if (sock > 0) {
-			break;
-		}
-		else {
-			perror("accept");
-		}
-	}
-//	int yes = 1;
-//#ifdef USE_CORK
-//	setsockopt( sock, IPPROTO_TCP, TCP_CORK, (char *)&yes, sizeof(yes) );
-//#else
-//	setsockopt( sock, IPPROTO_TCP, TCP_NODELAY, (char *)&yes, sizeof(yes) );
-//#endif
-//	{
-//		int x;
-//		x = fcntl(sock, F_GETFL, 0);
-//		fcntl(sock, F_SETFL, x | O_NONBLOCK);
-//	}
-	strcpy(remote_addr, inet_ntoa(their_addr.sin_addr));
+    socklen_t sock_size = sizeof (struct sockaddr_in);
+    bzero(&their_addr, sizeof (their_addr));
 
-	return scope.Close(Integer::New(sock));
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(sock, &fds);
+    //	struct timeval timeout;
+    //	timeout.tv_sec = 5;
+    //	timeout.tv_usec = 0;
+    switch (select(sock + 1, &fds, NULL, NULL, NULL)) {
+        case -1:
+            perror("select");
+            return ThrowException(String::Concat(String::New("Read Error: "), String::New(strerror(errno))));
+        case 0:
+            printf("select timed out\n");
+            return Null();
+    }
+
+    while (1) {
+        sock = accept(sock, (struct sockaddr *) &their_addr, &sock_size);
+        if (sock > 0) {
+            break;
+        }
+        else {
+            perror("accept");
+        }
+    }
+    //	int yes = 1;
+    //#ifdef USE_CORK
+    //	setsockopt( sock, IPPROTO_TCP, TCP_CORK, (char *)&yes, sizeof(yes) );
+    //#else
+    //	setsockopt( sock, IPPROTO_TCP, TCP_NODELAY, (char *)&yes, sizeof(yes) );
+    //#endif
+    //	{
+    //		int x;
+    //		x = fcntl(sock, F_GETFL, 0);
+    //		fcntl(sock, F_SETFL, x | O_NONBLOCK);
+    //	}
+    strcpy(remote_addr, inet_ntoa(their_addr.sin_addr));
+
+    return scope.Close(Integer::New(sock));
 }
 
 /**
@@ -212,9 +224,9 @@ static JSVAL net_accept(JSARGS args) {
  * 
  * @return {string} remote_ip - ip address of client
  */
-static JSVAL net_remote_addr(JSARGS args) {
-	HandleScope scope;
-	return scope.Close(String::New(remote_addr));
+static JSVAL net_remote_addr (JSARGS args) {
+    HandleScope scope;
+    return scope.Close(String::New(remote_addr));
 }
 
 /**
@@ -241,12 +253,12 @@ static JSVAL net_remote_addr(JSARGS args) {
  * @param {int} sock - socket to perform TCP_CORK on
  * @param {boolean} flag - true to turn on TCP_CORK, false to turn it off
  */
-static JSVAL net_cork(JSARGS args) {
+static JSVAL net_cork (JSARGS args) {
     HandleScope scope;
-	int fd = args[0]->IntegerValue();
-	int flag = args[1]->IntegerValue();
-	setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof(flag));
-	return Undefined();
+    int fd = args[0]->IntegerValue();
+    int flag = args[1]->IntegerValue();
+    setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof (flag));
+    return Undefined();
 }
 
 /**
@@ -259,11 +271,11 @@ static JSVAL net_cork(JSARGS args) {
  * This function closes a network socket and frees any memory it uses.  You should call this when done with your sockets, or you may suffer a memory leak.
  * @param {int} socket to close
  */
-static JSVAL net_close(JSARGS args) {
+static JSVAL net_close (JSARGS args) {
     HandleScope scope;
-	int fd = args[0]->IntegerValue();
-	close(fd);
-	return Undefined();
+    int fd = args[0]->IntegerValue();
+    close(fd);
+    return Undefined();
 }
 
 /**
@@ -284,36 +296,36 @@ static JSVAL net_close(JSARGS args) {
  * ### Exceptions
  * This function throws an exception if there is a read error with the error message.
  */
-static JSVAL net_read(JSARGS args) {
+static JSVAL net_read (JSARGS args) {
     HandleScope scope;
-	int fd = args[0]->IntegerValue();
-	long size = args[1]->IntegerValue();
-	
-	fd_set fds;
-	FD_ZERO(&fds);
-	FD_SET(fd, &fds);
-	struct timeval timeout;
-	timeout.tv_sec = 5;
-	timeout.tv_usec = 0;
-	switch (select(fd+1, &fds, NULL, NULL, &timeout)) {
-		case -1:
-			perror("select");
-			return ThrowException(String::Concat(String::New("Read Error: "), String::New(strerror(errno))));
-		case 0:
-			printf("Read timed out\n");
-			return Null();
-	}
+    int fd = args[0]->IntegerValue();
+    long size = args[1]->IntegerValue();
 
-	char buf[size];
-	long count = read(fd, buf, size);
-	if (count < 0) {
-		return ThrowException(String::Concat(String::New("Read Error: "), String::New(strerror(errno))));
-	}
-	else if (count == 0) {
-		return Null();
-	}
-	Handle<String>s = String::New(buf, count);
-	return scope.Close(s);
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(fd, &fds);
+    struct timeval timeout;
+    timeout.tv_sec = 5;
+    timeout.tv_usec = 0;
+    switch (select(fd + 1, &fds, NULL, NULL, &timeout)) {
+        case -1:
+            perror("select");
+            return ThrowException(String::Concat(String::New("Read Error: "), String::New(strerror(errno))));
+        case 0:
+            printf("Read timed out\n");
+            return Null();
+    }
+
+    char buf[size];
+    long count = read(fd, buf, size);
+    if (count < 0) {
+        return ThrowException(String::Concat(String::New("Read Error: "), String::New(strerror(errno))));
+    }
+    else if (count == 0) {
+        return Null();
+    }
+    Handle<String>s = String::New(buf, count);
+    return scope.Close(s);
 }
 
 /**
@@ -333,23 +345,24 @@ static JSVAL net_read(JSARGS args) {
  * ### Exceptions
  * This function throws an exception with a string describing any write errors.
  */
-static JSVAL net_write(JSARGS args) {
+static JSVAL net_write (JSARGS args) {
     HandleScope scope;
-	int fd = args[0]->IntegerValue();
-	String::Utf8Value buf(args[1]);
-	long size = args[2]->IntegerValue();
-	long written = 0;
-	char *s = *buf;
-	while (size > 0) {
-		long count = write(fd, s, size);
-		if (count < 0) {
-			return ThrowException(String::Concat(String::New("Write Error: "), String::New(strerror(errno))));
-		}
-		size -= count;
-		s += count;
-		written += count;;
-	}
-	return scope.Close(Integer::New(written));
+    int fd = args[0]->IntegerValue();
+    String::Utf8Value buf(args[1]);
+    long size = args[2]->IntegerValue();
+    long written = 0;
+    char *s = *buf;
+    while (size > 0) {
+        long count = write(fd, s, size);
+        if (count < 0) {
+            return ThrowException(String::Concat(String::New("Write Error: "), String::New(strerror(errno))));
+        }
+        size -= count;
+        s += count;
+        written += count;
+        ;
+    }
+    return scope.Close(Integer::New(written));
 }
 
 /**
@@ -381,30 +394,32 @@ static JSVAL net_write(JSARGS args) {
  * builtin/buffer
  * 
  */
-static JSVAL net_writebuffer(JSARGS args) {
-	HandleScope scope;
-	int fd = args[0]->IntegerValue();
-	Local<External>wrap = Local<External>::Cast(args[1]);
-	Buffer *buf = (Buffer *)wrap->Value();
-	
-	long size = buf->length();
-	long written = 0;
-	unsigned char *s = buf->data();
-	while (size > 0) {
-		long count = write(fd, s, size);
-		if (count < 0) {
-			return ThrowException(String::Concat(String::New("Write Error: "), String::New(strerror(errno))));
-		}
-		size -= count;
-		s += count;
-		written += count;;
-	}
-	int flag = 0;
-	setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof(flag));
-	flag = 1;
-    setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof(flag));
-	return scope.Close(Integer::New(written));
+static JSVAL net_writebuffer (JSARGS args) {
+    HandleScope scope;
+    int fd = args[0]->IntegerValue();
+    Local<External>wrap = Local<External>::Cast(args[1]);
+    Buffer *buf = (Buffer *) wrap->Value();
+
+    long size = buf->length();
+    long written = 0;
+    unsigned char *s = buf->data();
+    while (size > 0) {
+        long count = write(fd, s, size);
+        if (count < 0) {
+            return ThrowException(String::Concat(String::New("Write Error: "), String::New(strerror(errno))));
+        }
+        size -= count;
+        s += count;
+        written += count;
+        ;
+    }
+    int flag = 0;
+    setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof (flag));
+    flag = 1;
+    setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof (flag));
+    return scope.Close(Integer::New(written));
 }
+
 /**
  * @function net.sendfile
  * 
@@ -424,73 +439,72 @@ static JSVAL net_writebuffer(JSARGS args) {
  * ### Exceptions
  * An exception is thrown if the file cannot be opened or if there is a sendfile(2) OS call error.
  */
-static JSVAL net_sendfile(JSARGS args) {
+static JSVAL net_sendfile (JSARGS args) {
     HandleScope handle_scope;
-	int sock = args[0]->IntegerValue();
+    int sock = args[0]->IntegerValue();
     String::AsciiValue filename(args[1]);
-	off_t offset = 0;
-	if (args.Length() > 2) {
-		offset = args[2]->IntegerValue();
-	}
-	size_t size;
-	if (args.Length() > 3) {
-		size = args[3]->IntegerValue();
-	}
-	else {
-		struct stat buf;
-		if (stat(*filename, &buf)) {
-			printf("%s\n", *filename);
-			perror("SendFile stat");
-			return handle_scope.Close(False());
-		}
-		size = buf.st_size - offset;
-	}
-	int fd = open(*filename, O_RDONLY);
-	if (fd < 0) {
-		return ThrowException(String::Concat(String::New("sendFile open Error: "), String::New(strerror(errno))));
-	}
+    off_t offset = 0;
+    if (args.Length() > 2) {
+        offset = args[2]->IntegerValue();
+    }
+    size_t size;
+    if (args.Length() > 3) {
+        size = args[3]->IntegerValue();
+    }
+    else {
+        struct stat buf;
+        if (stat(*filename, &buf)) {
+            printf("%s\n", *filename);
+            perror("SendFile stat");
+            return handle_scope.Close(False());
+        }
+        size = buf.st_size - offset;
+    }
+    int fd = open(*filename, O_RDONLY);
+    if (fd < 0) {
+        return ThrowException(String::Concat(String::New("sendFile open Error: "), String::New(strerror(errno))));
+    }
 
-	while (size > 0) {
+    while (size > 0) {
 #ifdef __APPLE__
-		off_t count = size;
-		if (sendfile(fd, sock, offset, &count, NULL, 0) == -1) {
-			close(fd);
-			return ThrowException(String::Concat(String::New("sendFile Error: "), String::New(strerror(errno))));
-		}
+        off_t count = size;
+        if (sendfile(fd, sock, offset, &count, NULL, 0) == -1) {
+            close(fd);
+            return ThrowException(String::Concat(String::New("sendFile Error: "), String::New(strerror(errno))));
+        }
 #else
-		ssize_t count = sendfile(sock, fd, &offset, size);
-		if (count == -1) {
-			close(fd);
-			return ThrowException(String::Concat(String::New("sendFile Error: "), String::New(strerror(errno))));
-		}
+        ssize_t count = sendfile(sock, fd, &offset, size);
+        if (count == -1) {
+            close(fd);
+            return ThrowException(String::Concat(String::New("sendFile Error: "), String::New(strerror(errno))));
+        }
 #endif
-		size -= count;
-		offset += count;
-	}
-	close(fd);
-	int flag = 0;
-	setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof(flag));
-	flag = 1;
-    setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof(flag));
+        size -= count;
+        offset += count;
+    }
+    close(fd);
+    int flag = 0;
+    setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof (flag));
+    flag = 1;
+    setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof (flag));
 
     return Undefined();
 }
 
+void init_net_object () {
+    HandleScope scope;
 
-void init_net_object() {
-	HandleScope scope;
-	
-	Handle<ObjectTemplate>net = ObjectTemplate::New();
-	net->Set(String::New("connect"), FunctionTemplate::New(net_connect));
-	net->Set(String::New("listen"), FunctionTemplate::New(net_listen));
-	net->Set(String::New("accept"), FunctionTemplate::New(net_accept));
-	net->Set(String::New("remote_addr"), FunctionTemplate::New(net_remote_addr));
-	net->Set(String::New("cork"), FunctionTemplate::New(net_cork));
-	net->Set(String::New("close"), FunctionTemplate::New(net_close));
-	net->Set(String::New("read"), FunctionTemplate::New(net_read));
-	net->Set(String::New("write"), FunctionTemplate::New(net_write));
-	net->Set(String::New("writeBuffer"), FunctionTemplate::New(net_writebuffer));
-	net->Set(String::New("sendFile"), FunctionTemplate::New(net_sendfile));
+    Handle<ObjectTemplate>net = ObjectTemplate::New();
+    net->Set(String::New("connect"), FunctionTemplate::New(net_connect));
+    net->Set(String::New("listen"), FunctionTemplate::New(net_listen));
+    net->Set(String::New("accept"), FunctionTemplate::New(net_accept));
+    net->Set(String::New("remote_addr"), FunctionTemplate::New(net_remote_addr));
+    net->Set(String::New("cork"), FunctionTemplate::New(net_cork));
+    net->Set(String::New("close"), FunctionTemplate::New(net_close));
+    net->Set(String::New("read"), FunctionTemplate::New(net_read));
+    net->Set(String::New("write"), FunctionTemplate::New(net_write));
+    net->Set(String::New("writeBuffer"), FunctionTemplate::New(net_writebuffer));
+    net->Set(String::New("sendFile"), FunctionTemplate::New(net_sendfile));
 
-	builtinObject->Set(String::New("net"), net);
+    builtinObject->Set(String::New("net"), net);
 }

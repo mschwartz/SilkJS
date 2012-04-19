@@ -65,12 +65,12 @@
 extern "C" {
 #endif
 
-typedef struct NetBuf netbuf;
-typedef int (*FtpCallback)(netbuf *nControl, int xfered, void *arg);
+    typedef struct NetBuf netbuf;
+    typedef int (*FtpCallback)(netbuf *nControl, int xfered, void *arg);
 
-/* v1 compatibility stuff */
+    /* v1 compatibility stuff */
 #if !defined(_FTPLIB_NO_COMPAT)
-netbuf *DefaultNetbuf;
+    netbuf *DefaultNetbuf;
 
 #define ftplib_lastresp FtpLastResponse(DefaultNetbuf)
 #define ftpInit FtpInit
@@ -88,37 +88,37 @@ netbuf *DefaultNetbuf;
 #define ftpDelete(x) FtpDelete(x, DefaultNetbuf)
 #define ftpQuit() FtpQuit(DefaultNetbuf)
 #endif /* (_FTPLIB_NO_COMPAT) */
-/* end v1 compatibility stuff */
+    /* end v1 compatibility stuff */
 
-GLOBALREF int ftplib_debug;
-GLOBALREF void FtpInit(void);
-GLOBALREF char *FtpLastResponse(netbuf *nControl);
-GLOBALREF int FtpConnect(const char *host, netbuf **nControl);
-GLOBALREF int FtpOptions(int opt, long val, netbuf *nControl);
-GLOBALREF int FtpLogin(const char *user, const char *pass, netbuf *nControl);
-GLOBALREF int FtpAccess(const char *path, int typ, int mode, netbuf *nControl,
-    netbuf **nData);
-GLOBALREF int FtpRead(void *buf, int max, netbuf *nData);
-GLOBALREF int FtpWrite(void *buf, int len, netbuf *nData);
-GLOBALREF int FtpClose(netbuf *nData);
-GLOBALREF int FtpSite(const char *cmd, netbuf *nControl);
-GLOBALREF int FtpSysType(char *buf, int max, netbuf *nControl);
-GLOBALREF int FtpMkdir(const char *path, netbuf *nControl);
-GLOBALREF int FtpChdir(const char *path, netbuf *nControl);
-GLOBALREF int FtpCDUp(netbuf *nControl);
-GLOBALREF int FtpRmdir(const char *path, netbuf *nControl);
-GLOBALREF int FtpPwd(char *path, int max, netbuf *nControl);
-GLOBALREF int FtpNlst(const char *output, const char *path, netbuf *nControl);
-GLOBALREF int FtpDir(const char *output, const char *path, netbuf *nControl);
-GLOBALREF int FtpSize(const char *path, int *size, char mode, netbuf *nControl);
-GLOBALREF int FtpModDate(const char *path, char *dt, int max, netbuf *nControl);
-GLOBALREF int FtpGet(const char *output, const char *path, char mode,
-	netbuf *nControl);
-GLOBALREF int FtpPut(const char *input, const char *path, char mode,
-	netbuf *nControl);
-GLOBALREF int FtpRename(const char *src, const char *dst, netbuf *nControl);
-GLOBALREF int FtpDelete(const char *fnm, netbuf *nControl);
-GLOBALREF void FtpQuit(netbuf *nControl);
+    GLOBALREF int ftplib_debug;
+    GLOBALREF void FtpInit(void);
+    GLOBALREF char *FtpLastResponse(netbuf *nControl);
+    GLOBALREF int FtpConnect(const char *host, netbuf **nControl);
+    GLOBALREF int FtpOptions(int opt, long val, netbuf *nControl);
+    GLOBALREF int FtpLogin(const char *user, const char *pass, netbuf *nControl);
+    GLOBALREF int FtpAccess(const char *path, int typ, int mode, netbuf *nControl,
+        netbuf **nData);
+    GLOBALREF int FtpRead(void *buf, int max, netbuf *nData);
+    GLOBALREF int FtpWrite(void *buf, int len, netbuf *nData);
+    GLOBALREF int FtpClose(netbuf *nData);
+    GLOBALREF int FtpSite(const char *cmd, netbuf *nControl);
+    GLOBALREF int FtpSysType(char *buf, int max, netbuf *nControl);
+    GLOBALREF int FtpMkdir(const char *path, netbuf *nControl);
+    GLOBALREF int FtpChdir(const char *path, netbuf *nControl);
+    GLOBALREF int FtpCDUp(netbuf *nControl);
+    GLOBALREF int FtpRmdir(const char *path, netbuf *nControl);
+    GLOBALREF int FtpPwd(char *path, int max, netbuf *nControl);
+    GLOBALREF int FtpNlst(const char *output, const char *path, netbuf *nControl);
+    GLOBALREF int FtpDir(const char *output, const char *path, netbuf *nControl);
+    GLOBALREF int FtpSize(const char *path, int *size, char mode, netbuf *nControl);
+    GLOBALREF int FtpModDate(const char *path, char *dt, int max, netbuf *nControl);
+    GLOBALREF int FtpGet(const char *output, const char *path, char mode,
+        netbuf *nControl);
+    GLOBALREF int FtpPut(const char *input, const char *path, char mode,
+        netbuf *nControl);
+    GLOBALREF int FtpRename(const char *src, const char *dst, netbuf *nControl);
+    GLOBALREF int FtpDelete(const char *fnm, netbuf *nControl);
+    GLOBALREF void FtpQuit(netbuf *nControl);
 
 #ifdef __cplusplus
 };

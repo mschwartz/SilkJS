@@ -8,10 +8,10 @@
 
 #include "SilkJS.h"
 
-static JSVAL popen_open(JSARGS args) {
+static JSVAL popen_open (JSARGS args) {
     HandleScope scope;
-	String::Utf8Value path(args[0]->ToString());
-	String::Utf8Value type(args[1]->ToString());
+    String::Utf8Value path(args[0]->ToString());
+    String::Utf8Value type(args[1]->ToString());
     FILE *fp = fopen(*path, *type);
     if (!fp) {
         return scope.Close(String::New(strerror(errno)));
@@ -19,9 +19,9 @@ static JSVAL popen_open(JSARGS args) {
     return scope.Close(External::New(fp));
 }
 
-static JSVAL popen_gets(JSARGS args) {
+static JSVAL popen_gets (JSARGS args) {
     HandleScope scope;
-    FILE *fp = (FILE *)JSEXTERN(args[0]);
+    FILE *fp = (FILE *) JSEXTERN(args[0]);
     int size = 4096;
     if (args.Length() > 1) {
         size = args[1]->IntegerValue();
@@ -37,28 +37,28 @@ static JSVAL popen_gets(JSARGS args) {
     return scope.Close(s);
 }
 
-static JSVAL popen_puts(JSARGS args) {
+static JSVAL popen_puts (JSARGS args) {
     HandleScope scope;
-    FILE *fp = (FILE *)JSEXTERN(args[0]);
-	String::Utf8Value s(args[1]->ToString());
+    FILE *fp = (FILE *) JSEXTERN(args[0]);
+    String::Utf8Value s(args[1]->ToString());
     if (fputs(*s, fp) == EOF) {
-            return scope.Close(False());
+        return scope.Close(False());
     }
     return scope.Close(True());
 }
 
-static JSVAL popen_close(JSARGS args) {
+static JSVAL popen_close (JSARGS args) {
     HandleScope scope;
-    FILE *fp = (FILE *)JSEXTERN(args[0]);
+    FILE *fp = (FILE *) JSEXTERN(args[0]);
     pclose(fp);
     return Undefined();
 }
 
-void init_popen_object() {
-	HandleScope scope;
+void init_popen_object () {
+    HandleScope scope;
 
-	JSOBJT popenObject = ObjectTemplate::New();
-    
+    JSOBJT popenObject = ObjectTemplate::New();
+
     popenObject->Set(String::New("open"), FunctionTemplate::New(popen_open));
     popenObject->Set(String::New("gets"), FunctionTemplate::New(popen_gets));
     popenObject->Set(String::New("puts"), FunctionTemplate::New(popen_puts));
