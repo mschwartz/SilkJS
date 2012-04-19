@@ -1,4 +1,19 @@
 // httpd/config.js
+
+/*
+ * This is the default Config object for the HTTP server.  You would override these values in your WWW App's bootstrap.js file.
+ * 
+ * For example (bootstrap.js):
+ * 
+ * Config.port = 8080; // listen on 8080 instead of 9090
+ * Config.numChildren = 50; // start and maintain 50 HttpChild processes.
+ * Or:
+ * 
+ * Config.extend({
+ *      port: 8080, // listen on 8080 instead of 9090
+ *      numChildren: 50 // start and maintain 50 HttpChild processes
+ * });
+ */
 var fs = require('builtin/fs');
 Config = {
 	port: 9090,
