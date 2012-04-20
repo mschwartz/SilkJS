@@ -105,6 +105,9 @@ HttpChild = (function() {
                 }
                 res.write('</pre>');
             }
+            else {
+                res.writeln('<div>Could not open ' + file + '</div>');
+            }
 //            res.write('<pre>' + content + '</pre>');
         }
     }
