@@ -79,30 +79,32 @@ HttpChild = (function() {
             res.write('<pre>' + newStack.join('\n') + '</pre>');
 
             var content = fs.readFile(file);
-            res.write('<h2>' + file + '</h2>');
-            var lines = content.split('\n');
-            if (require.isRequiredFile(file)) {
-                lineNo -= 6;
-            }
-            var startLine = lineNo - 10;
-            if (startLine < 0) {
-                startLine = 0;
-            }
-            var endLine = startLine + 10;
-            if (endLine > lines.length) {
-                endLine = lines.length;
-            }
-            lineNo--;
-            res.write('<pre class="source">');
-            for (var i=startLine; i<endLine; i++) {
-                if (i == lineNo) {
-                    res.write('<div class="highlight"><span class="lineNumber">' + lineNumber(i+1) + '</span><span class="line">' + lines[i] + '</span></div>');
+            if (content) {
+                res.write('<h2>' + file + '</h2>');
+                var lines = content.split('\n');
+                if (require.isRequiredFile(file)) {
+                    lineNo -= 6;
                 }
-                else {
-                    res.writeln('<span class="lineNumber">' + lineNumber(i+1) + '</span><span class="line">' + lines[i] + '</span>');
+                var startLine = lineNo - 10;
+                if (startLine < 0) {
+                    startLine = 0;
                 }
+                var endLine = startLine + 10;
+                if (endLine > lines.length) {
+                    endLine = lines.length;
+                }
+                lineNo--;
+                res.write('<pre class="source">');
+                for (var i=startLine; i<endLine; i++) {
+                    if (i == lineNo) {
+                        res.write('<div class="highlight"><span class="lineNumber">' + lineNumber(i+1) + '</span><span class="line">' + lines[i] + '</span></div>');
+                    }
+                    else {
+                        res.writeln('<span class="lineNumber">' + lineNumber(i+1) + '</span><span class="line">' + lines[i] + '</span>');
+                    }
+                }
+                res.write('</pre>');
             }
-            res.write('</pre>');
 //            res.write('<pre>' + content + '</pre>');
         }
     }
