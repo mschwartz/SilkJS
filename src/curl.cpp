@@ -22,6 +22,8 @@ struct CHANDLE {
     char *memory;
     size_t size;
     curl_slist *slist;
+    curl_httppost *post;
+    curl_httppost *last;
 };
 
 static inline CHANDLE *HANDLE (Handle<Value>v) {
@@ -90,6 +92,8 @@ static JSVAL init (JSARGS args) {
     w->memory = (char *) malloc(1);
     w->size = 0;
     w->slist = NULL;
+    w->post = NULL;
+    w->last = NULL;
     curl_easy_setopt(curl, CURLOPT_URL, *url);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) w);
@@ -188,7 +192,6 @@ static JSVAL setCookie (JSARGS args) {
  * @return {int} status - 0 for success, otherwise an error code.
  */
 static JSVAL setHeader (JSARGS args) {
-    HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
     String::Utf8Value header_string(args[1]->ToString());
     h->slist = curl_slist_append(h->slist, *header_string);
@@ -196,11 +199,95 @@ static JSVAL setHeader (JSARGS args) {
 }
 
 /**
+ * @function curl.addFormField
+ * 
+ * ### Synopsis
+ * 
+ * var status = curl.addFormField(handle, name, value);
+ * var status = curl.addFormField(handle, name, value, contentType);
+ * 
+ * Add a section to a multipart/formdata HTTP POST.
+ * 
+ * ### Description
+ * 
+ * curl.addFormField() is used to append sections when building a multipart/formdata HTTP POST.  Append one section at a time until you've added all the sections you want included.
+ * 
+ * If you call this function, or addPostFile(), at least once, a POST will automatically occur when you call curl.perform().
+ * 
+ * Each part of a multipart/formdata post consists of at least a NAME and a CONTENTS part.  The second form of the call to this function allows you to set a content-type header for the part.
+ * 
+ * If you want to perform a file upload, you may add that part by calling curl.addPostFile().
+ * 
+ * @param {object} handle - CURL handle
+ * @param {string} name - field name
+ * @param {string} value - field value
+ * @param {string} contentType - optional content-type for the field value.
+ * @return {int} status - 0 for success, otherwise an error code.
+ */
+static JSVAL addFormField(JSARGS args) {
+    CHANDLE *h = HANDLE(args[0]);
+    String::Utf8Value name(args[1]->ToString());
+    String::Utf8Value value(args[2]->ToString());
+    char *contentType = NULL;
+    if (args.Length() > 3) {
+        String::Utf8Value type(args[3]->ToString());
+        contentType = *type;
+    }
+    if (contentType) {
+        return Integer::New(curl_formadd(&h->post, &h->last, CURLFORM_COPYNAME, *name, CURLFORM_COPYCONTENTS, *value, CURLFORM_CONTENTTYPE, contentType, CURLFORM_END));
+    }
+    else {
+        return Integer::New(curl_formadd(&h->post, &h->last, CURLFORM_COPYNAME, *name, CURLFORM_COPYCONTENTS, *value, CURLFORM_END));
+    }
+}
+
+/**
+ * @function curl.addFormFile
+ * 
+ * ### Synopsis
+ * 
+ * var status = curl.addFormFile(name, filename);
+ * var status = curl.addFormFile(name, filename, contentType);
+ * 
+ * Add a file upload section to a multipart/formdata HTTP POST.
+ * 
+ * ### Description
+ * 
+ * curl.addFormFile() is used to append file upload sections when building a multipart/formdata HTTP POST.
+ * 
+ * If you call this function, or addPostField(), at least once, a POST will automatically occur when you call curl.perform().
+ * 
+ * The second form of the call to this function allows you to set a content-type header for the part.
+ * 
+ * @param {object} handle - CURL handle
+ * @param {string} name - field name
+ * @param {string} filename - path to existing file to upload
+ * @param {string} contentType - optional content-type for the field value.
+ * @return {int} status - 0 for success, otherwise an error code.
+ */
+static JSVAL addFormFile(JSARGS args) {
+    CHANDLE *h = HANDLE(args[0]);
+    String::Utf8Value name(args[1]->ToString());
+    String::Utf8Value filename(args[2]->ToString());
+    char *contentType = NULL;
+    if (args.Length() > 3) {
+        String::Utf8Value type(args[3]->ToString());
+        contentType = *type;
+    }
+    if (contentType) {
+        return Integer::New(curl_formadd(&h->post, &h->last, CURLFORM_COPYNAME, *name, CURLFORM_FILE, *filename, CURLFORM_CONTENTTYPE, contentType, CURLFORM_END));
+    }
+    else {
+        return Integer::New(curl_formadd(&h->post, &h->last, CURLFORM_COPYNAME, *name, CURLFORM_FILE, *filename, CURLFORM_END));
+    }
+}
+
+/**
  * @function curl.setPostFields
  * 
  * ### Synopsis
  * 
- * var status - curl.setPostFields(handle, post_fields);
+ * var status = curl.setPostFields(handle, post_fields);
  * 
  * Set the post fields for the CURL request.
  * 
@@ -214,12 +301,11 @@ static JSVAL setHeader (JSARGS args) {
  * @return {int} status - 0 for success, otherwise an error code.
  */
 static JSVAL setPostFields (JSARGS args) {
-    HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
     String::Utf8Value post_fields(args[1]->ToString());
     //    printf("%d %s\n", strlen(*post_fields), *post_fields);
     curl_easy_setopt(h->curl, CURLOPT_POSTFIELDSIZE, strlen(*post_fields));
-    return scope.Close(Integer::New(curl_easy_setopt(h->curl, CURLOPT_COPYPOSTFIELDS, *post_fields)));
+    return Integer::New(curl_easy_setopt(h->curl, CURLOPT_COPYPOSTFIELDS, *post_fields));
 }
 
 /**
@@ -239,15 +325,17 @@ static JSVAL setPostFields (JSARGS args) {
  * @return {int} status - 0 for success, otherwise an error code.
  */
 static JSVAL perform (JSARGS args) {
-    HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
     if (h->slist) {
         curl_easy_setopt(h->curl, CURLOPT_HTTPHEADER, h->slist);
     }
+    if (h->post) {
+        curl_easy_setopt(h->curl, CURLOPT_HTTPPOST, h->post);
+    }
     if (args.Length() > 1) {
         curl_easy_setopt(h->curl, CURLOPT_VERBOSE, args[1]->IntegerValue());
     }
-    return scope.Close(Integer::New(curl_easy_perform(h->curl)));
+    return Integer::New(curl_easy_perform(h->curl));
 }
 
 /**
@@ -330,6 +418,9 @@ static JSVAL destroy (JSARGS args) {
         curl_slist_free_all(h->slist);
         h->slist = NULL;
     }
+    if (h->post) {
+        curl_formfree(h->post);
+    }
     curl_easy_cleanup(h->curl);
     free(h->memory);
     free(h);
@@ -346,6 +437,8 @@ void init_curl_object () {
     curlObject->Set(String::New("followRedirects"), FunctionTemplate::New(followRedirects));
     curlObject->Set(String::New("setCookie"), FunctionTemplate::New(setCookie));
     curlObject->Set(String::New("setHeader"), FunctionTemplate::New(setHeader));
+    curlObject->Set(String::New("addFormField"), FunctionTemplate::New(addFormField));
+    curlObject->Set(String::New("addFormFile"), FunctionTemplate::New(addFormFile));
     curlObject->Set(String::New("setPostFields"), FunctionTemplate::New(setPostFields));
     curlObject->Set(String::New("perform"), FunctionTemplate::New(perform));
     curlObject->Set(String::New("getResponseCode"), FunctionTemplate::New(getResponseCode));

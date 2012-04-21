@@ -42,7 +42,17 @@ function isString(v) {
  * + cookies: (optional) Object, Array, or String representation of cookie header to send
  * + headers: (optional) Object, Array, or String representation of HTTP headers to add to the request.
  * + params: POST variables to send to server
+ * + form: FORM to send to server (see below)
  * + verbose: set to > 0 to have cURL library log debugging info to console
+ * 
+ * NOTE: only one of form or params may be provided.
+ * 
+ * If you wish to submit a multipart/form style form to the remote server, set the form config parameter, which is an array of objects of the following format:
+ * 
+ * + name: (required) name of form field
+ * + value: (required) value of form field
+ * + fileUpload: (optional) if true, value is the name of a file to upload
+ * + contentType: (optional) content-type header to set for this field
  * 
  * The result returned is an object of the form:
  * 
@@ -61,6 +71,10 @@ function cURL(config) {
         error('url required');
     }
     var method = 'GET';
+    
+    if (config.params && config.form) {
+        error('Only one of params and form may be supplied');
+    }
     
     var handle = c.init(config.url);
     if (config.method) {
@@ -119,6 +133,26 @@ function cURL(config) {
             c.setPostFields(handle, paramString);
         }
     }
+    if (config.form) {
+        config.form.each(function(field) {
+            if (field.fileUpload) {
+                if (field.contentType) {
+                    c.addFormFile(handle, field.name, field.value, field.contentType);
+                }
+                else {
+                    c.addFormFile(handle, field.name, field.value);
+                }
+            }
+            else {
+                if (field.contentType) {
+                    c.addFormField(handle, field.name, field.value, field.contentType);
+                }
+                else {
+                    c.addFormField(handle, field.name, field.value);
+                }
+            }
+        });
+    }
     
     if (config.headers) {
         if (isObject(config.headers)) {
@@ -153,7 +187,7 @@ function cURL(config) {
     };
     c.destroy(handle);
     return ret;
-};
+}
 
 if (exports) {
     exports = cURL;

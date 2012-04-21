@@ -362,6 +362,40 @@ var commands = {
             console.dir(gh.listComments(repo, sha));
         }
     },
+    listDownloads: {
+        help: 'listDownloads [user/]repo - list downloads for a repo',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var sha = parts.join(' ');
+            console.dir(gh.listDownloads(repo, sha));
+        }
+    },
+    createDownload: {
+        help: 'createDownload [user/]repo filename - create a download for a repo',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var filename = parts.join(' ');
+            stdin.prompt('Description: ');
+            var description = stdin.gets(false);
+            defaultPrompt();
+            if (!description && description !== '') {
+                console.log('*** aborted');
+                return;
+            }
+            console.dir(gh.createDownload(repo, filename, description));
+        }
+    },
+    deleteDownload: {
+        help: 'deleteDownload [user/]repo id - delete a download for a repo',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var id = parts.join(' ');
+            console.dir(gh.deleteDownload(repo, id));
+        }
+    },
     cd: {
         help: 'cd path - change working directory to path.',
         fn: function(args) {
@@ -444,7 +478,8 @@ function main(username, password) {
                 commands[cmd].fn(args);
             }
             catch (e) {
-                console.log('Exception: ' + e);
+                console.log('Exception:');
+                console.dir(e);
             }
         }
         else {

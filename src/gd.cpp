@@ -26,6 +26,23 @@
 // gd2 file format functions
 // animated gif functions
 
+/**
+ * @function gd.imageCreate
+ * 
+ * ### Synopsis
+ * 
+ * var handle = gd.imageCreate(sx, sy);
+ * 
+ * gd.imageCreate is called to create palette-based images, with no more than 256 colors. 
+ * 
+ * Invoke gdImageCreate with the x and y dimensions of the desired image. gdImageCreate returns an opaque handle to the new image, or NULL if unable to allocate the image. 
+ * 
+ * The image must eventually be destroyed using gd.imageDestroy().
+ * 
+ * @param {int} sx - width of new image
+ * @param {int} sy - height of new image
+ * @return {object} handle - opaque handle to image, or null if the image could not be created.
+ */
 static JSVAL gd_imageCreate (JSARGS args) {
     HandleScope scope;
     int sx = args[0]->IntegerValue();
@@ -37,6 +54,23 @@ static JSVAL gd_imageCreate (JSARGS args) {
     return scope.Close(External::New(im));
 }
 
+/**
+ * @function gd.imageCreateTrueColor
+ * 
+ * ### Synopsis
+ * 
+ * var handle = gd.imageCreateTrueColor(sx, sy);
+ * 
+ * gd.imageCreateTrueColor is called to create truecolor images, with an essentially unlimited number of colors. Invoke gd.imageCreateTrueColor with the x and y dimensions of the desired image. gdImageCreateTrueColor returns an opaque handle to the new image, or NULL if unable to allocate the image. 
+ * 
+ * The image must eventually be destroyed using gd.imageDestroy().
+ * 
+ * Truecolor images are always filled with black at creation time. There is no concept of a "background" color index.
+ * 
+ * @param {int} sx - width of new image
+ * @param {int} sy - height of new image
+ * @return {object} handle - opaque handle to image, or null if the image could not be created.
+ */
 static JSVAL gd_imageCreateTrueColor (JSARGS args) {
     HandleScope scope;
     int sx = args[0]->IntegerValue();
@@ -48,6 +82,22 @@ static JSVAL gd_imageCreateTrueColor (JSARGS args) {
     return scope.Close(External::New(im));
 }
 
+/**
+ * @function gd.imageCreateFromJpeg
+ * 
+ * ### Synopsis
+ * 
+ * var handle = gd.imageCreateFromJpeg(filename);
+ * 
+ * Load a JPEG image from a file.
+ * 
+ * ### Description
+ * 
+ * This function examines the first 12 bytes of the file to assure it is truly a JPEG format file.
+ * 
+ * @param {string} filename - name of file to load.
+ * @return {object} handle - opaque handle to image, or null if the image could not be created.
+ */
 static JSVAL gd_ImageCreateFromJpeg (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
@@ -60,7 +110,7 @@ static JSVAL gd_ImageCreateFromJpeg (JSARGS args) {
         unsigned char buf[12];
         ssize_t size;
         if ((size = fread((char *) buf, 1, 12, in)) != 12) {
-            printf("gd_ImageCreateFromJpeg: could not read 12 bytes %d\n", size);
+//            printf("gd_ImageCreateFromJpeg: could not read 12 bytes %d\n", size);
             fclose(in);
             return Null();
         }
@@ -82,10 +132,16 @@ static JSVAL gd_ImageCreateFromJpeg (JSARGS args) {
 }
 
 /**
- * Create image from base64 encoded string
+ * @function gd.imageCreateFromJpeg64
  * 
- * @param args
- * @return 
+ * ### Synopsis
+ * 
+ * var handle = gd.imageCreateFromJpeg64(s);
+ * 
+ * Create image from base64 encoded string.
+ * 
+ * @param {string} s - base64 encoded string, when decoded it is binary data of a JPEG image.
+ * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromJpeg64 (JSARGS args) {
     HandleScope scope;
@@ -101,6 +157,18 @@ static JSVAL gd_imageCreateFromJpeg64 (JSARGS args) {
     return scope.Close(External::New(im));
 }
 
+/**
+ * @function gd.imageCreateFromPng
+ * 
+ * ### Synopsis
+ * 
+ * var handle = gd.imageCreateFromPng(filename);
+ * 
+ * Load a PNG image from a file.
+ * 
+ * @param {string} filename - name of file to load.
+ * @return {object} handle - opaque handle to image, or null if the image could not be created.
+ */
 static JSVAL gd_imageCreateFromPng (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
@@ -117,10 +185,16 @@ static JSVAL gd_imageCreateFromPng (JSARGS args) {
 }
 
 /**
- * Create image from base64 encoded string
+ * @function gd.imageCreateFromPng64
  * 
- * @param args
- * @return 
+ * ### Synopsis
+ * 
+ * var handle = gd.imageCreateFromPng64(s);
+ * 
+ * Create image from base64 encoded string.
+ * 
+ * @param {string} s - base64 encoded string, when decoded it is binary data of a PNG image.
+ * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromPng64 (JSARGS args) {
     HandleScope scope;
@@ -137,6 +211,18 @@ static JSVAL gd_imageCreateFromPng64 (JSARGS args) {
     return scope.Close(External::New(im));
 }
 
+/**
+ * @function gd.imageCreateFromGif
+ * 
+ * ### Synopsis
+ * 
+ * var handle = gd.imageCreateFromGif(filename);
+ * 
+ * Load a GIF image from a file.
+ * 
+ * @param {string} filename - name of file to load.
+ * @return {object} handle - opaque handle to image, or null if the image could not be created.
+ */
 static JSVAL gd_imageCreateFromGif (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
@@ -153,10 +239,16 @@ static JSVAL gd_imageCreateFromGif (JSARGS args) {
 }
 
 /**
- * Create image from base64 encoded string
+ * @function gd.imageCreateFromGif64
  * 
- * @param args
- * @return 
+ * ### Synopsis
+ * 
+ * var handle = gd.imageCreateFromGif64(s);
+ * 
+ * Create image from base64 encoded string.
+ * 
+ * @param {string} s - base64 encoded string, when decoded it is binary data of a GIF image.
+ * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromGif64 (JSARGS args) {
     HandleScope scope;
@@ -174,6 +266,18 @@ static JSVAL gd_imageCreateFromGif64 (JSARGS args) {
     return scope.Close(External::New(im));
 }
 
+/**
+ * @function gd.imageCreateFromGd
+ * 
+ * ### Synopsis
+ * 
+ * var handle = gd.imageCreateFromGd(filename);
+ * 
+ * Load a GD image from a file.
+ * 
+ * @param {string} filename - name of file to load.
+ * @return {object} handle - opaque handle to image, or null if the image could not be created.
+ */
 static JSVAL gd_imageCreateFromGd (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
@@ -190,10 +294,16 @@ static JSVAL gd_imageCreateFromGd (JSARGS args) {
 }
 
 /**
- * Create image from base64 encoded string
+ * @function gd.imageCreateFromGd64
  * 
- * @param args
- * @return 
+ * ### Synopsis
+ * 
+ * var handle = gd.imageCreateFromGd64(s);
+ * 
+ * Create image from base64 encoded string.
+ * 
+ * @param {string} s - base64 encoded string, when decoded it is binary data of a GD image.
+ * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromGd64 (JSARGS args) {
     HandleScope scope;
@@ -209,6 +319,18 @@ static JSVAL gd_imageCreateFromGd64 (JSARGS args) {
     return scope.Close(External::New(im));
 }
 
+/**
+ * @function gd.imageCreateFromWBMP
+ * 
+ * ### Synopsis
+ * 
+ * var handle = gd.imageCreateFromWBMP(filename);
+ * 
+ * Load a WBMP image from a file.
+ * 
+ * @param {string} filename - name of file to load.
+ * @return {object} handle - opaque handle to image, or null if the image could not be created.
+ */
 static JSVAL gd_imageCreateFromWBMP (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
@@ -225,10 +347,16 @@ static JSVAL gd_imageCreateFromWBMP (JSARGS args) {
 }
 
 /**
- * Create image from base64 encoded string
+ * @function gd.imageCreateFromWBMP64
  * 
- * @param args
- * @return 
+ * ### Synopsis
+ * 
+ * var handle = gd.imageCreateFromWBMP64(s);
+ * 
+ * Create image from base64 encoded string.
+ * 
+ * @param {string} s - base64 encoded string, when decoded it is binary data of a WBMP image.
+ * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromWBMP64 (JSARGS args) {
     HandleScope scope;
@@ -244,6 +372,18 @@ static JSVAL gd_imageCreateFromWBMP64 (JSARGS args) {
     return scope.Close(External::New(im));
 }
 
+/**
+ * @function gd.imageCreateFromXpm
+ * 
+ * ### Synopsis
+ * 
+ * var handle = gd.imageCreateFromXpm(filename);
+ * 
+ * Load a XPM image from a file.
+ * 
+ * @param {string} filename - name of file to load.
+ * @return {object} handle - opaque handle to image, or null if the image could not be created.
+ */
 static JSVAL gd_imageCreateFromXpm (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
@@ -251,6 +391,18 @@ static JSVAL gd_imageCreateFromXpm (JSARGS args) {
     return scope.Close(External::New(im));
 }
 
+/**
+ * @function gd.imageCreateFromXbm
+ * 
+ * ### Synopsis
+ * 
+ * var handle = gd.imageCreateFromXbm(filename);
+ * 
+ * Load a Xbm image from a file.
+ * 
+ * @param {string} filename - name of file to load.
+ * @return {object} handle - opaque handle to image, or null if the image could not be created.
+ */
 static JSVAL gd_imageCreateFromXbm (JSARGS args) {
     HandleScope scope;
     String::Utf8Value data(args[0]);
@@ -266,6 +418,19 @@ static JSVAL gd_imageCreateFromXbm (JSARGS args) {
     return scope.Close(External::New(im));
 }
 
+/**
+ * @function gd.imageDestroy
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageDestroy(handle);
+ * 
+ * gd.imageDestroy is used to free the memory associated with an image. 
+ * 
+ * It is important to invoke gd.imageDestroy before exiting your program or allowing the handle handle to be garbage collected.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ */
 static JSVAL gd_imageDestroy (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -287,7 +452,7 @@ static JSVAL gd_imageDestroy (JSARGS args) {
  *
  * If you have set image interlacing using gd.imageInterlace(), this function will interpret that to mean you wish to output a progressive JPEG. Some programs (e.g., Web browsers) can display progressive JPEGs incrementally; this can be useful when browsing over a relatively slow communications link, for example. Progressive JPEGs can also be slightly smaller than sequential (non-progressive) JPEGs.
  * 
- * @param {object} handle - handle to image to write
+ * @param {object} handle - opaque handle to a GD image.
  * @param {string} filename - file to write
  * @param {int} quality - see note above
  * @return {boolean} success - true if the file was written, false if there was an error.
@@ -308,6 +473,21 @@ static JSVAL gd_imageJpeg (JSARGS args) {
     return True();
 }
 
+/**
+ * @function gd.imageJpeg64
+ * 
+ * ### Synopsis
+ * 
+ * var base64String = gd.imageJpeg64(handle, quality);
+ * 
+ * Returns image as a base64 encoded string.
+ * 
+ * If quality is negative, the default IJG JPEG quality value (which should yield a good general quality / size tradeoff for most situations) is used. Otherwise, for practical purposes, quality should be a value in the range 0-95, higher quality values usually implying both higher quality and larger image sizes.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} quality - see note above
+ * @return {string} base64String - image as a base64 encoded string.
+ */
 static JSVAL gd_imageJpeg64 (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -331,7 +511,7 @@ static JSVAL gd_imageJpeg64 (JSARGS args) {
  * 
  * GIF does not support true color; GIF images can contain a maximum of 256 colors. If the image to be written is a truecolor image, such as those created with gd.imageCreateTrueColor() or loaded from a JPEG or a truecolor PNG image file, a palette-based temporary image will automatically be created internally using the gd.imageCreatePaletteFromTrueColor() function. The original image pixels are not modified. This conversion produces high quality palettes but does require some CPU time. If you are regularly converting truecolor to palette in this way, you should consider creating your image as a palette-based image in the first place.
  * 
- * @param {object} handle - handle to image to write.
+ * @param {object} handle - opaque handle to a GD image.
  * @param {string} filename - file to write.
  * @return {boolean} success - true if the file was written, false if there was an error..
  */
@@ -350,6 +530,20 @@ static JSVAL gd_imageGif (JSARGS args) {
     return True();
 }
 
+/**
+ * @function gd.imageGif64
+ * 
+ * ### Synopsis
+ * 
+ * var base64String = gd.imageGif64(handle);
+ * 
+ * Returns image as a base64 encoded string.
+ * 
+ * GIF does not support true color; GIF images can contain a maximum of 256 colors. If the image to be written is a truecolor image, such as those created with gd.imageCreateTrueColor() or loaded from a JPEG or a truecolor PNG image file, a palette-based temporary image will automatically be created internally using the gd.imageCreatePaletteFromTrueColor() function. The original image pixels are not modified. This conversion produces high quality palettes but does require some CPU time. If you are regularly converting truecolor to palette in this way, you should consider creating your image as a palette-based image in the first place.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @return {string} base64String - image as a base64 encoded string.
+ */
 static JSVAL gd_imageGif64 (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -372,7 +566,7 @@ static JSVAL gd_imageGif64 (JSARGS args) {
  * 
  * Outputs the specified image to the specified file in PNG format.
  * 
- * @param {object} handle - handle to image to write.
+ * @param {object} handle - opaque handle to a GD image.
  * @param {string} filename - file to write.
  * @return {boolean} success - true if the file was written, false if there was an error..
  */
@@ -391,6 +585,18 @@ static JSVAL gd_imagePng (JSARGS args) {
     return True();
 }
 
+/**
+ * @function gd.imagePng64
+ * 
+ * ### Synopsis
+ * 
+ * var base64String = gd.imagePng64(handle);
+ * 
+ * Returns image as a base64 encoded string.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @return {string} base64String - image as a base64 encoded string.
+ */
 static JSVAL gd_imagePng64 (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -411,9 +617,15 @@ static JSVAL gd_imagePng64 (JSARGS args) {
  * 
  * Outputs the specified image to the specified file in PNG format.
  * 
- * This function allows the level of compression to be specified. A compression level of 0 means "no compression." A compression level of 1 means "compressed, but as quickly as possible." A compression level of 9 means "compressed as much as possible to produce the smallest possible file." A compression level of -1 will use the default compression level at the time zlib was compiled on your system.
+ * This function allows the level of compression to be specified. 
  * 
- * @param {object} handle - handle to image to write.
+ * A compression level of 0 means "no compression." A compression level of 1 means "compressed, but as quickly as possible." 
+ * 
+ * A compression level of 9 means "compressed as much as possible to produce the smallest possible file." 
+ * 
+ * A compression level of -1 will use the default compression level at the time zlib was compiled on your system.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
  * @param {string} filename - file to write.
  * @param {int} level - compression level, see notes above.
  * @return {boolean} success - true if the file was written, false if there was an error.
@@ -434,6 +646,27 @@ static JSVAL gd_imagePngEx (JSARGS args) {
     return True();
 }
 
+/**
+ * @function gd.imagePng64Ex
+ * 
+ * ### Synopsis
+ * 
+ * var base64String = gd.imagePng64Ex(handle, level);
+ * 
+ * Returns image as a base64 encoded string.
+ * 
+ * This function allows the level of compression to be specified. 
+ * 
+ * A compression level of 0 means "no compression." A compression level of 1 means "compressed, but as quickly as possible." 
+ * 
+ * A compression level of 9 means "compressed as much as possible to produce the smallest possible file." 
+ * 
+ * A compression level of -1 will use the default compression level at the time zlib was compiled on your system.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} level - compression level, see notes above.
+ * @return {string} base64String - image as a base64 encoded string.
+ */
 static JSVAL gd_imagePng64Ex (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -446,12 +679,30 @@ static JSVAL gd_imagePng64Ex (JSARGS args) {
     return String::New(out.c_str(), out.size());
 }
 
+/**
+ * @function gd.imageWBMP
+ * 
+ * ### Synopsis
+ * 
+ * var success = gd.imageWBMP(handle, filename, fg);
+ * 
+ * Outputs the specified image to the specified file in WBMP format.
+ * 
+ * _WBMP file support is black and white only._
+ * 
+ * The color index specified by the fg argument is the "foreground," and only pixels of this color will be set in the WBMP file. All other pixels will be considered "background."
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {string} filename - file to write.
+ * @param {int} fg - foreground color index.
+ * @return {boolean} success - true if the file was written, false if there was an error..
+ */
 static JSVAL gd_imageWBMP (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
-    int fg = args[1]->IntegerValue();
-    String::Utf8Value data(args[2]);
+    String::Utf8Value data(args[1]);
+    int fg = args[2]->IntegerValue();
 
     FILE *out = fopen(*data, "wb");
     if (!out) {
@@ -462,6 +713,23 @@ static JSVAL gd_imageWBMP (JSARGS args) {
     return True();
 }
 
+/**
+ * @function gd.imageWBMP64
+ * 
+ * ### Synopsis
+ * 
+ * var base64String = gd.imageWBMP64(handle, fg);
+ * 
+ * Returns image as a base64 encoded string.
+ * 
+ * _WBMP file support is black and white only._
+ * 
+ * The color index specified by the fg argument is the "foreground," and only pixels of this color will be set in the WBMP file. All other pixels will be considered "background."
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} fg - foreground color index.
+ * @return {string} base64String - image as a base64 encoded string.
+ */
 static JSVAL gd_imageWBMP64 (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -474,6 +742,19 @@ static JSVAL gd_imageWBMP64 (JSARGS args) {
     return String::New(out.c_str(), out.size());
 }
 
+/**
+ * @function gd.imageGd
+ * 
+ * ### Synopsis
+ * 
+ * var success = gd.imageGd(handle, filename);
+ * 
+ * Outputs the specified image to the specified file in GD format.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {string} filename - file to write.
+ * @return {boolean} success - true if the file was written, false if there was an error..
+ */
 static JSVAL gd_imageGd (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -489,6 +770,18 @@ static JSVAL gd_imageGd (JSARGS args) {
     return True();
 }
 
+/**
+ * @function gd.imageGD64
+ * 
+ * ### Synopsis
+ * 
+ * var base64String = gd.imageGd64(handle);
+ * 
+ * Returns image as a base64 encoded string.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @return {string} base64String - image as a base64 encoded string.
+ */
 static JSVAL gd_imageGd64 (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -502,6 +795,29 @@ static JSVAL gd_imageGd64 (JSARGS args) {
 
 // true color / palette functions
 
+/**
+ * @function gd.imageTrueColorToPalette
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageTrueColorToPalette(handle, ditherFlag, colorsWanted);
+ * 
+ * The function converts a truecolor image to a palette-based image, using a high-quality two-pass quantization routine. 
+ * 
+ * If ditherFlag is set, the image will be dithered to approximate colors better, at the expense of some obvious "speckling." 
+ * 
+ * colorsWanted can be anything up to 256. 
+ * 
+ * If the original source image includes photographic information or anything that came out of a JPEG, 256 is strongly recommended. 100% transparency of a single transparent color in the original truecolor image will be preserved. There is no other support for preservation of alpha channel or transparency in the destination image.
+ * 
+ * For best results, don't use this function -- write real truecolor PNGs and JPEGs. The disk space gain of conversion to palette is not great (for small images it can be negative) and the quality loss is ugly. 
+ * 
+ * However, the version of this function included in version 2.0.12 and later does do a better job than the version included prior to 2.0.12.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {boolean} ditherFlag - see note above.
+ * @param {int} colorsWanted - see note above.
+ */
 static JSVAL gd_imageTrueColorToPalette (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -512,6 +828,30 @@ static JSVAL gd_imageTrueColorToPalette (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageCreatePaletteFromTrueColor
+ * 
+ * ### Synopsis
+ * 
+ * var newHandle = gd.imageTrueColorToPalette(handle, ditherFlag, colorsWanted);
+ * 
+ * The function converts a truecolor image to a palette-based image, using a high-quality two-pass quantization routine. This is identical to gd.imageTrueColorToPallete(), except this version returns a handle to a new image, and the old image is unaltered.
+ * 
+ * If ditherFlag is set, the image will be dithered to approximate colors better, at the expense of some obvious "speckling." 
+ * 
+ * colorsWanted can be anything up to 256. 
+ * 
+ * If the original source image includes photographic information or anything that came out of a JPEG, 256 is strongly recommended. 100% transparency of a single transparent color in the original truecolor image will be preserved. There is no other support for preservation of alpha channel or transparency in the destination image.
+ * 
+ * For best results, don't use this function -- write real truecolor PNGs and JPEGs. The disk space gain of conversion to palette is not great (for small images it can be negative) and the quality loss is ugly. 
+ * 
+ * However, the version of this function included in version 2.0.12 and later does do a better job than the version included prior to 2.0.12.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {boolean} ditherFlag - see note above.
+ * @param {int} colorsWanted - see note above.
+ * @returns {object} newHandle - handle to a new palettized image.
+ */
 static JSVAL gd_imageCreatePaletteFromTrueColor (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -522,6 +862,20 @@ static JSVAL gd_imageCreatePaletteFromTrueColor (JSARGS args) {
     return scope.Close(External::New(newImage));
 }
 
+/**
+ * @function gd.imageSetPixel
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageSetPixel(x,y, color);
+ * 
+ * Sets a pixel to a particular color index.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} x - x coordinate of pixel
+ * @param {int} y - y coordinate of pixel
+ * @param {int} color - color index to set pixel
+ */
 static JSVAL gd_imageSetPixel (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -533,6 +887,24 @@ static JSVAL gd_imageSetPixel (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageLine
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageLine(x1,y1, x2,y2, color);
+ * 
+ * Draws a line between two endpoints (x1,y1) and (x2,y2).  The line is drawn using the color index specified.
+ * 
+ * Note that the color index can be an actual color returned by gd.imageColorAllocate() or one of gd.Styled, gd.Brushed or gd.StyledBrushed.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} x1 - x coordinate of first endpoint
+ * @param {int} y1 - y coordinate of first endpoint
+ * @param {int} x2 - x coordinate of second endpoint
+ * @param {int} y2 - y coordinate of second endpoint
+ * @param {int} color - color index to draw line.
+ */
 static JSVAL gd_imageLine (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -547,17 +919,27 @@ static JSVAL gd_imageLine (JSARGS args) {
 }
 
 /**
+ * @function gd.imagePolygon
+ * 
  * gd.imagePolygon(image, points, color);
  * 
+ * Draw a _closed_ polygon with the given vertices (at least 3) using the specified color index.
+ * 
+ * This function will draw the last line to close the polygon, if required.
+ * 
  * points is something like:
+ * ```
  * [
  *		{ x: xVal, y: yVal },
  *		{ x: xVal, y: yVal },
  *		{ x: xVal, y: yVal },
  *		...
  * } 
- * @param args
- * @return 
+ * ```
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {array} points - see note above.
+ * @param {int} color - color index to draw polygon.
  */
 static JSVAL gd_imagePolygon (JSARGS args) {
     HandleScope scope;
@@ -580,17 +962,27 @@ static JSVAL gd_imagePolygon (JSARGS args) {
 }
 
 /**
- * gd.imagePolygon(image, points, color);
+ * @function gd.imageOpenPolygon
+ * 
+ * gd.imageOpenPolygon(image, points, color);
+ * 
+ * Draw a sequence of lines with the vertices (at least 3) specified, using the color index specified. 
+ * 
+ * Unlike gdImagePolygon, the enpoints of the line sequence are not connected to a closed polygon.
  * 
  * points is something like:
+ * ```
  * [
  *		{ x: xVal, y: yVal },
  *		{ x: xVal, y: yVal },
  *		{ x: xVal, y: yVal },
  *		...
  * } 
- * @param args
- * @return 
+ * ```
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {array} points - see note above.
+ * @param {int} color - color index to draw polygon.
  */
 static JSVAL gd_imageOpenPolygon (JSARGS args) {
     HandleScope scope;
@@ -612,6 +1004,22 @@ static JSVAL gd_imageOpenPolygon (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageRectangle
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageRectangle(x1,y1, x2,y2, color);
+ * 
+ * Draws a rectangle given the upper left (x1,y1) and lower right (x2,y2) coordinates.  The rectangle is drawn using the color index specified.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} x1 - x coordinate of upper left corner.
+ * @param {int} y1 - y coordinate of upper left corner.
+ * @param {int} x2 - x coordinate of lower right corner.
+ * @param {int} y2 - y coordinate of lower right corner.
+ * @param {int} color - color index to draw rectangle.
+ */
 static JSVAL gd_imageRectangle (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -626,17 +1034,27 @@ static JSVAL gd_imageRectangle (JSARGS args) {
 }
 
 /**
- * gd.imagePolygon(image, points, color);
+ * @function gd.imageFilledPolygon
+ * 
+ * gd.imageFilledPolygon(image, points, color);
+ * 
+ * Draw a _filled_ polygon with the given vertices (at least 3) using the specified color index.
+ * 
+ * This function will draw the last line to close the polygon, if required.
  * 
  * points is something like:
+ * ```
  * [
  *		{ x: xVal, y: yVal },
  *		{ x: xVal, y: yVal },
  *		{ x: xVal, y: yVal },
  *		...
  * } 
- * @param args
- * @return 
+ * ```
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {array} points - see note above.
+ * @param {int} color - color index to fill the polygon.
  */
 static JSVAL gd_imageFilledPolygon (JSARGS args) {
     HandleScope scope;
@@ -658,6 +1076,22 @@ static JSVAL gd_imageFilledPolygon (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageFilledRectangle
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageFilledRectangle(x1,y1, x2,y2, color);
+ * 
+ * Draws a filled rectangle given the upper left (x1,y1) and lower right (x2,y2) coordinates.  The rectangle is filled using the color index specified.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} x1 - x coordinate of upper left corner.
+ * @param {int} y1 - y coordinate of upper left corner.
+ * @param {int} x2 - x coordinate of lower right corner.
+ * @param {int} y2 - y coordinate of lower right corner.
+ * @param {int} color - color index to fill rectangle.
+ */
 static JSVAL gd_imageFilledRectangle (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -671,6 +1105,32 @@ static JSVAL gd_imageFilledRectangle (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageArc
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageArc(handle, cx, cy, w, h, s, e, color);
+ * 
+ * Draw a partial ellipse centered at the given point, with the specified width and height in pixels. 
+ * 
+ * The arc begins at the position in degrees specified by s and ends at the position specified by e. 
+ * 
+ * The arc is drawn in the color specified by the last argument. A circle can be drawn by beginning from 0 degrees and ending at 360 degrees, with width and height being equal. 
+ * 
+ * e must be greater than s. 
+ * 
+ * Values greater than 360 are interpreted modulo 360.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} cx - x coordinate of center of arc.
+ * @param {int} cy - y coordinate of center of arc.
+ * @param {int} w - width of arc in pixels.
+ * @param {int} h - height of arc in pixels.
+ * @param {int} s - start position in degrees.
+ * @param {int} e - end position in degrees.
+ * @param {int} color - color index to render arc.
+ */
 static JSVAL gd_imageArc (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -686,6 +1146,49 @@ static JSVAL gd_imageArc (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageFilledArc
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageFilledArc(handle, cx, cy, w, h, s, e, color, style);
+ * 
+ * Draw a partial ellipse centered at the given point, with the specified width and height in pixels. 
+ * 
+ * The arc begins at the position in degrees specified by s and ends at the position specified by e. 
+ * 
+ * The arc is filled in the color specified by the color argument. 
+ * 
+ * A circle can be drawn by beginning from 0 degrees and ending at 360 degrees, with width and height being equal. e must be greater than s. 
+ * 
+ * Values greater than 360 are interpreted modulo 360. 
+ * 
+ * The style argument is a bitwise OR of the following possibilities:
+ * 
+ * + gd.Arc
+ * + gd.Chord
+ * + gd.Pie (synonym for gd.Chord)
+ * + gd.NoFill
+ * + gd.Edged
+ * 
+ * gd.Arc and gd.Chord are mutually exclusive; gd.Chord just connects the starting and ending angles with a straight line, while gd.Arc produces a rounded edge. 
+ * 
+ * gd.Pie is a synonym for gd.Arc. 
+ * 
+ * gd.NoFill indicates that the arc or chord should be outlined, not filled. 
+ * 
+ * gd.Edged, used together with gd.NoFill, indicates that the beginning and ending angles should be connected to the center; this is a good way to outline (rather than fill) a 'pie slice'.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} cx - x coordinate of center of arc.
+ * @param {int} cy - y coordinate of center of arc.
+ * @param {int} w - width of arc in pixels.
+ * @param {int} h - height of arc in pixels.
+ * @param {int} s - start position in degrees.
+ * @param {int} e - end position in degrees.
+ * @param {int} color - color index to render arc.
+ * @param {int} style - color index to fill arc.
+ */
 static JSVAL gd_imageFilledArc (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -702,6 +1205,22 @@ static JSVAL gd_imageFilledArc (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageFilledEllipse
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageFilledEllipse(handle, cx, cy, w, h, color);
+ * 
+ * Draw an ellipse centered at the given point, with the specified width and height in pixels. The ellipse is filled in the color specified by the color argument.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} cx - x coordinate of center of arc.
+ * @param {int} cy - y coordinate of center of arc.
+ * @param {int} w - width of arc in pixels.
+ * @param {int} h - height of arc in pixels.
+ * @param {int} color - color index to render arc.
+ */
 static JSVAL gd_imageFilledEllipse (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -715,6 +1234,27 @@ static JSVAL gd_imageFilledEllipse (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageFillToBorder
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageFillToBorder(handle, x, y, border, color);
+ * 
+ * Floods a portion of the image with the specified color, beginning at the specified point and stopping at the specified border color. 
+ * 
+ * For a way of flooding an area defined by the color of the starting point, see gd.ImageFill().
+ * 
+ * The border color cannot be a special color such as gdTiled; it must be a proper solid color. The fill color can be, however.
+ * 
+ * Note that gdImageFillToBorder is recursive. It is not the most naive implementation possible, and the implementation is expected to improve, but there will always be degenerate cases in which the stack can become very deep.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} x - x coordinate to start fill.
+ * @param {int} y - y coordinate to start fill.
+ * @param {int} border - color index of border.
+ * @param {int} color - color index to fill with.
+ */
 static JSVAL gd_imageFillToBorder (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -727,6 +1267,26 @@ static JSVAL gd_imageFillToBorder (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageFill
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageFill(handle, x, y, color);
+ * 
+ * Floods a portion of the image with the specified color, beginning at the specified point and flooding the surrounding region of the same color as the starting point. 
+ * 
+ * For a way of flooding a region defined by a specific border color rather than by its interior color, see gd.ImageFillToBorder().
+ * 
+ * The fill color can be gd.Tiled, resulting in a tile fill using another image as the tile. However, the tile image cannot be transparent. If the image you wish to fill with has a transparent color index, call gd.ImageTransparent() on the tile image and set the transparent color index to -1 to turn off its transparency.
+ * 
+ * Note that gdImageFill is recursive. It is not the most naive implementation possible, and the implementation is expected to improve, but there will always be degenerate cases in which the stack can become very deep.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} x - x coordinate to start fill.
+ * @param {int} y - y coordinate to start fill.
+ * @param {int} color - color index to fill with.
+ */
 static JSVAL gd_imageFill (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -738,6 +1298,26 @@ static JSVAL gd_imageFill (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageSetAntiAliased
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageSetAntiAliased(handle, c);
+ * 
+ * This function is used to specify the actual foreground color to be used when drawing antialiased lines. You may set any color to be the foreground, however as of GD version 2.0.12 an alpha channel component is not supported.
+ * 
+ * "Antialiasing" is a process by which jagged edges associated with line drawing can be reduced by blending the foreground color with an appropriate percentage of the background, depending on how much of the pixel in question is actually within the boundaries of the line being drawn. 
+ * 
+ * All line-drawing functions, such as gd.imageLine(), gd.imageOpenPolygon() and gd.imagePolygon(), will draw antialiased lines if the special "color" gd.AntiAliased is used when calling them.
+ * 
+ * Antialiased lines can be drawn on both truecolor and palette-based images. However, attempts to draw antialiased lines on highly complex palette-based backgrounds may not give satisfactory results, due to the limited number of colors available in the palette. Antialiased line-drawing on simple backgrounds should work well with palette-based images; otherwise create or fetch a truecolor image instead.
+ * 
+ * You need not take any special action when you are finished with antialised line drawing.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} color - Actual color of the foreground to be used when drawing antialised lines.
+ */
 static JSVAL gd_imageSetAntiAliased (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -747,6 +1327,18 @@ static JSVAL gd_imageSetAntiAliased (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageSetAntiAliasedDontBlend
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageSetAntiAliasedDontBlend(handle, c);
+ * 
+ * Normally, when drawing lines with the special gd.AntiAliased "color," blending with the background to reduce jagged edges is the desired behavior. However, when it is desired that lines not be blended with one particular color when it is encountered in the background, the gd.ImageSetAntiAliasedDontBlend() function can be used to indicate the special color that the foreground should stand out more clearly against.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} color - special color that the foreground should stand out mroe clearly against.
+ */
 static JSVAL gd_imageSetAntiAliasedDontBlend (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -756,6 +1348,30 @@ static JSVAL gd_imageSetAntiAliasedDontBlend (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageSetBrush
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageSetBrush(handle, brushHandle);
+ * 
+ * gd.imageSetBrush() is used to specify the brush to be used in a particular image. 
+ * 
+ * A "brush" is an image used to draw wide, shaped strokes in another image. Just as a paintbrush is not a single point, a brush image need not be a single pixel. 
+ * 
+ * Any gd image can be used as a brush, and by setting the transparent color index of the brush image with gd.imageColorTransparent(), a brush of any shape can be created. 
+ * 
+ * All line-drawing functions, such as gd.imageLine(), gd.imageOpenPolygon() and gd.imagePolygon(), will use the current brush if the special "color" gd.Brushed or gd.StyledBrushed is used when calling them.
+ * 
+ * You can set any image to be the brush. If the brush image does not have the same color map as the first image, any colors missing from the first image will be allocated. If not enough colors can be allocated, the closest colors already available will be used. This allows arbitrary PNGs to be used as brush images. It also means, however, that you should not set a brush unless you will actually use it; if you set a rapid succession of different brush images, you can quickly fill your color map, and the results will not be optimal.
+ * 
+ * You need not take any special action when you are finished with a brush. As for any other image, if you will not be using the brush image for any further purpose, you should call gd.imageDestroy(). 
+ * 
+ * You must not use the color gd.Brushed if the current brush has been destroyed; you can of course set a new brush to replace it.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {object} brushHandle - opaque handle to a GD image to be used as the brush.
+ */
 static JSVAL gd_imageSetBrush (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -766,6 +1382,24 @@ static JSVAL gd_imageSetBrush (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageSetTile
+ * 
+ * gd.imageSetTile(handle, tileHandle);
+ * 
+ * gd.imageSetTile() is used to specify the tile to be used in a particular image.
+ * 
+ * A "tile" is an image used to fill an area with a repeated pattern. Any gd image can be used as a tile, and by setting the transparent color index of the tile image with gd.imageColorTransparent(), a tile that allows certain parts of the underlying area to shine through can be created. 
+ * 
+ * All region-filling functions, such as gd.imageFill() and gd.imageFilledPolygon(), will use the current tile if the special "color" gd.Tiled is used when calling them.
+ * 
+ * You can set any image to be the tile. If the tile image does not have the same color map as the first image, any colors missing from the first image will be allocated. If not enough colors can be allocated, the closest colors already available will be used. This allows arbitrary PNGs to be used as tile images. It also means, however, that you should not set a tile unless you will actually use it; if you set a rapid succession of different tile images, you can quickly fill your color map, and the results will not be optimal.
+ * 
+ * You need not take any special action when you are finished with a tile. As for any other image, if you will not be using the tile image for any further purpose, you should call gd.imageDestroy(). You must not use the color gd.Tiled if the current tile has been destroyed; you can of course set a new tile to replace it.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {object} tileHandle - opaque handle to a GD image to be used as the tile.
+ */
 static JSVAL gd_imageSetTile (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -776,6 +1410,24 @@ static JSVAL gd_imageSetTile (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageSetStyle
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageSetStyle(handle, style);
+ * 
+ * It is often desirable to draw dashed lines, dotted lines, and other variations on a broken line. gd.imageSetStyle() can be used to set any desired series of colors, including a special color that leaves the background intact, to be repeated during the drawing of a line.
+ * 
+ * To use gd.imageSetStyle(), create an array of integers and assign them the desired series of color values to be repeated. You can assign the special color value gd.Transparent to indicate that the existing color should be left unchanged for that particular pixel (allowing a dashed line to be attractively drawn over an existing image).
+ * 
+ * Then, to draw a line using the style, use the normal gd.imageLine() function with the special color value gd.Styled.
+ * 
+ * You can also combine styles and brushes to draw the brush image at intervals instead of in a continuous stroke. When creating a style for use with a brush, the style values are interpreted differently: zero (0) indicates pixels at which the brush should not be drawn, while one (1) indicates pixels at which the brush should be drawn. To draw a styled, brushed line, you must use the special color value gd.StyledBrushed.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {array} style - array of integers as described above.
+ */
 static JSVAL gd_imageSetStyle (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -790,6 +1442,18 @@ static JSVAL gd_imageSetStyle (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageSetThickness
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageSetThickness(handle, thickness);
+ * 
+ * Set the width of lines drawn by the gd.imageLine(), gd.imagePolygon() and related functions, in pixels.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} thickness - thickness of lines to be drawn, in pixels.
+ */
 static JSVAL gd_imageSetThickness (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -799,6 +1463,24 @@ static JSVAL gd_imageSetThickness (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageAlphaBlending
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageAlphaBlending(handle, mode);
+ * 
+ * The gd.imageAlphaBlending() function allows for two different modes of drawing on truecolor images. 
+ * 
+ * In blending mode, which is on by default (gd 2.0.2 and above), the alpha channel component of the color supplied to all drawing functions, such as gd.imageSetPixel(), determines how much of the underlying color should be allowed to shine through. As a result, gd automatically blends the existing color at that point with the drawing color, and stores the result in the image. The resulting pixel is opaque. 
+ * 
+ * In non-blending mode, the drawing color is copied literally with its alpha channel information, replacing the destination pixel. 
+ * 
+ * _Blending mode is not available when drawing on palette images._
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} mode - 1 to enable blending mode, 0 to enable non-blending mode..
+ */
 static JSVAL gd_imageAlphaBlending (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -808,6 +1490,23 @@ static JSVAL gd_imageAlphaBlending (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageSaveAlpha
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageSaveAlpha(handle, saveFlag);
+ * 
+ * By default, gd 2.0.2 and above do not attempt to save full alpha channel information (as opposed to single-color transparency) when saving PNG images. (PNG is currently the only output format supported by gd which can accommodate alpa channel information.) 
+ * 
+ * This saves space in the output file. 
+ * 
+ * If you wish to create an image with alpha channel information for use with tools that support it, call gd.imageSaveAlpha(handle, 1) to turn on saving of such information, and call gd.imageAlphaBlending(handle, 0) to turn off alpha blending within the library so that alpha channel information is actually stored in the image rather than being composited immediately at the time that drawing functions are invoked.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param args
+ * @return 
+ */
 static JSVAL gd_imageSaveAlpha (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1407,7 +2106,11 @@ void init_gd_object () {
     gd->Set(String::New("DashSize"), Integer::New(gdDashSize));
     gd->Set(String::New("Tiled"), Integer::New(gdTiled));
     gd->Set(String::New("Transparent"), Integer::New(gdTransparent));
-
+    gd->Set(String::New("Arc"), Integer::New(gdArc));
+    gd->Set(String::New("Chord"), Integer::New(gdChord));
+    gd->Set(String::New("Pie"), Integer::New(gdPie));
+    gd->Set(String::New("NoFill"), Integer::New(gdNoFill));
+    gd->Set(String::New("Edged"), Integer::New(gdEdged));
 
     // fonts
     gd->Set(String::New("fontGetSmall"), FunctionTemplate::New(gd_fontGetSmall));
