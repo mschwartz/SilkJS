@@ -7,7 +7,8 @@ process = require('builtin/process');
 
 var examples = [
 	'systat.js',
-	'ftpclient.js'
+	'ftpclient.js',
+	'GitHub.js'
 ];
 
 function exec(cmd) {
