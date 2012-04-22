@@ -306,6 +306,10 @@ function PrintVirtualMemory() {
 	lastswpin = swpin;
 	var swpout = vmstat.pgswpout;
 	deltaOut = swpout - lastswpout;
+    if (isNaN(swpout)) {
+        swpout = 0;
+        deltaOut = 0;
+    }
 	lastswpout = swpout;
 	printw(sprintf('%4d  %4d  %8d  %8d', deltaIn, deltaOut, swpin, swpout));
 	clearEol();
