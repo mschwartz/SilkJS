@@ -1504,7 +1504,7 @@ static JSVAL gd_imageAlphaBlending (JSARGS args) {
  * If you wish to create an image with alpha channel information for use with tools that support it, call gd.imageSaveAlpha(handle, 1) to turn on saving of such information, and call gd.imageAlphaBlending(handle, 0) to turn off alpha blending within the library so that alpha channel information is actually stored in the image rather than being composited immediately at the time that drawing functions are invoked.
  * 
  * @param {object} handle - opaque handle to a GD image.
- * @param args
+ * @param {int} saveFlag - set to save alpha information
  * @return 
  */
 static JSVAL gd_imageSaveAlpha (JSARGS args) {
@@ -1516,6 +1516,27 @@ static JSVAL gd_imageSaveAlpha (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageSetClip
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageSetClip(handle, x1,y1, x2,y2);
+ * 
+ * Establishes a clipping rectangle. Once gd.imageSetClip() has been called, all future drawing operations will remain within the specified clipping area, until a new gdImageSetClip call takes place. 
+ * 
+ * For instance, if a clipping rectangle of 25, 25, 75, 75 has been set within a 100x100 image, a diagonal line from 0,0 to 99,99 will appear only between 25,25 and 75,75.
+ * 
+ * If gd.imageSetClip() is never called, the clipping area will be the entire image.
+ * 
+ * The parameters passed to gd.imageSetClip() are checked against the dimensions of the image and limited to "safe" values.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} x1 - x coordinate of upper left corner.
+ * @param {int} y1 - y coordinate of upper left corner.
+ * @param {int} x2 - x coordinate of lower right corner.
+ * @param {int} y2 - y coordinate of lower right corner.
+ */
 static JSVAL gd_imageSetClip (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1528,6 +1549,25 @@ static JSVAL gd_imageSetClip (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageGetClip
+ * 
+ * ### Synopsis
+ * 
+ * var clipInfo = gd.imageGetClip(handle);
+ * 
+ * Fetches the boundaries of the current clipping rectangle.
+ * 
+ * The returned clipInfo object has the form:
+ * 
+ * x1: x coordinate of upper left corner.
+ * y1: y coordinate of upper left corner.
+ * x2: x coordinate of lower right corner.
+ * y2: y coordinate of lower right corner.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @return {object} clipInfo - object with coordinates of upper left/lower right of clip rectangle.
+ */
 static JSVAL gd_imageGetClip (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1544,6 +1584,21 @@ static JSVAL gd_imageGetClip (JSARGS args) {
 
 // Query Functions
 
+/**
+ * @function gd.imageAlpha
+ * 
+ * ### Synopsis
+ * 
+ * var alpha = gd.imageAlpha(handle, color);
+ * 
+ * Returns the alpha channel component of the specified color index. 
+ * 
+ * Alpha channel values vary between 0 (gd.AlphaOpaque), which does not blend at all with the background, through 127 (gd.AlphaTransparent), which allows the background to shine through 100%. 
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} color - color index.
+ * @return {int} alpha - alpha value
+ */
 static JSVAL gd_imageAlpha (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1553,6 +1608,20 @@ static JSVAL gd_imageAlpha (JSARGS args) {
     return scope.Close(Integer::New(alpha));
 }
 
+/**
+ * @function gd.imageGetPixel
+ * 
+ * ### Synopsis
+ * 
+ * var color = gd.imageGetPixel(handle, x, y);
+ * 
+ * Retreive the color index of a particular pixel.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} x - x coordinate of pixel to retrieve;
+ * @param {int} y - y coordinate of pixel to retrieve;
+ * @return {int} color - color of pixel at specified location.
+ */
 static JSVAL gd_imageGetPixel (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1563,8 +1632,21 @@ static JSVAL gd_imageGetPixel (JSARGS args) {
     return scope.Close(Integer::New(color));
 }
 
+/**
+ * @function gd.imageBoundsSafe
+ * 
+ * ### Synopsis
+ * 
+ * var isSafe = gd.imageBoundsSafe(handle, x, y);
+ * 
+ * Determine if a point is within the clipping rectangle of the specified image.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} x - x coordinate of pixel to test;
+ * @param {int} y - y coordinate of pixel to test;
+ * @return {boolean} isSafe - true if the specified point is within the current clipping rectangle.
+ */
 static JSVAL gd_imageBoundsSafe (JSARGS args) {
-    HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr im = (gdImagePtr) wrap->Value();
     int x = args[1]->IntegerValue();
@@ -1572,6 +1654,19 @@ static JSVAL gd_imageBoundsSafe (JSARGS args) {
     return gdImageBoundsSafe(im, x, y) ? True() : False();
 }
 
+/**
+ * @function gd.imageBlue
+ * 
+ * ### Synopsis
+ * 
+ * var blue = gd.imageBlue(handle, color);
+ * 
+ * Get the blue component of the specified color index.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} color - color index to get blue component of.
+ * @return {int} blue - blue component.
+ */
 static JSVAL gd_imageBlue (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1581,6 +1676,19 @@ static JSVAL gd_imageBlue (JSARGS args) {
     return scope.Close(Integer::New(blue));
 }
 
+/**
+ * @function gd.imageGreen
+ * 
+ * ### Synopsis
+ * 
+ * var green = gd.imageGreen(handle, color);
+ * 
+ * Get the green component of the specified color index.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} color - color index to get green component of.
+ * @return {int} green - green component.
+ */
 static JSVAL gd_imageGreen (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1590,6 +1698,19 @@ static JSVAL gd_imageGreen (JSARGS args) {
     return scope.Close(Integer::New(green));
 }
 
+/**
+ * @function gd.imageRed
+ * 
+ * ### Synopsis
+ * 
+ * var red = gd.imageRed(handle, color);
+ * 
+ * Get the red component of the specified color index.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} color - color index to get red component of.
+ * @return {int} red - red component.
+ */
 static JSVAL gd_imageRed (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1599,6 +1720,18 @@ static JSVAL gd_imageRed (JSARGS args) {
     return scope.Close(Integer::New(red));
 }
 
+/**
+ * @function gd.imageSX
+ * 
+ * ### Synopsis
+ * 
+ * var width = gd.imageSX(handle);
+ * 
+ * Get width of image.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @return {int} width - width of the image.
+ */
 static JSVAL gd_imageSX (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1606,6 +1739,18 @@ static JSVAL gd_imageSX (JSARGS args) {
     return scope.Close(Integer::New(gdImageSX(im)));
 }
 
+/**
+ * @function gd.imageSY
+ * 
+ * ### Synopsis
+ * 
+ * var height = gd.imageSY(handle);
+ * 
+ * Get height of image.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @return {int} height - height of the image.
+ */
 static JSVAL gd_imageSY (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1615,31 +1760,102 @@ static JSVAL gd_imageSY (JSARGS args) {
 
 // Fonts and text-handling functions
 
+/**
+ * @function gd.fontGetSmall
+ * 
+ * ### Synopsis
+ * 
+ * var fontHandle = gd.fontGetSmall();
+ * 
+ * Get a font handle for the "small" gd font.  The returned handle is used as an argument to the gd text rendering functions.
+ * 
+ * @return {object} fontHandle - opaque handle to the font.
+ */
 static JSVAL gd_fontGetSmall (JSARGS args) {
     HandleScope scope;
     return scope.Close(External::New(gdFontGetSmall()));
 }
 
+/**
+ * @function gd.fontGetLarge
+ * 
+ * ### Synopsis
+ * 
+ * var fontHandle = gd.fontGetLarge();
+ * 
+ * Get a font handle for the "large" gd font.  The returned handle is used as an argument to the gd text rendering functions.
+ * 
+ * @return {object} fontHandle - opaque handle to the font.
+ */
 static JSVAL gd_fontGetLarge (JSARGS args) {
     HandleScope scope;
     return scope.Close(External::New(gdFontGetLarge()));
 }
 
+/**
+ * @function gd.fontGetMediumBold
+ * 
+ * ### Synopsis
+ * 
+ * var fontHandle = gd.fontGetMediumBold();
+ * 
+ * Get a font handle for the "medium bold" gd font.  The returned handle is used as an argument to the gd text rendering functions.
+ * 
+ * @return {object} fontHandle - opaque handle to the font.
+ */
 static JSVAL gd_fontGetMediumBold (JSARGS args) {
     HandleScope scope;
     return scope.Close(External::New(gdFontGetMediumBold()));
 }
 
+/**
+ * @function gd.fontGetGiant
+ * 
+ * ### Synopsis
+ * 
+ * var fontHandle = gd.fontGetGiant();
+ * 
+ * Get a font handle for the "giant" gd font.  The returned handle is used as an argument to the gd text rendering functions.
+ * 
+ * @return {object} fontHandle - opaque handle to the font.
+ */
 static JSVAL gd_fontGetGiant (JSARGS args) {
     HandleScope scope;
     return scope.Close(External::New(gdFontGetGiant()));
 }
 
+/**
+ * @function gd.fontGetTiny
+ * 
+ * ### Synopsis
+ * 
+ * var fontHandle = gd.fontGetTiny();
+ * 
+ * Get a font handle for the "tiny" gd font.  The returned handle is used as an argument to the gd text rendering functions.
+ * 
+ * @return {object} fontHandle - opaque handle to the font.
+ */
 static JSVAL gd_fontGetTiny (JSARGS args) {
     HandleScope scope;
     return scope.Close(External::New(gdFontGetTiny()));
 }
 
+/**
+ * @function gd.imageChar
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageChar(handle, fontHandle, x, y, c, color);
+ * 
+ * Draws a single character on the image.  The chracter is rendered left to right.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {object} fontHandle - opaque handle to a GD font
+ * @param {int} x - x coordinate to render character.
+ * @param {int} y - y coordinate to render character.
+ * @param {int} c - the character to render.
+ * @param {int} color - the color to render the character.
+ */
 static JSVAL gd_imageChar (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1654,6 +1870,22 @@ static JSVAL gd_imageChar (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageCharUp
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageCharUp(handle, fontHandle, x, y, c, color);
+ * 
+ * Draws a single character on the image, rotated 90 degrees.  The chracter is rendered bottom to top.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {object} fontHandle - opaque handle to a GD font
+ * @param {int} x - x coordinate to render character.
+ * @param {int} y - y coordinate to render character.
+ * @param {int} c - the character to render.
+ * @param {int} color - the color to render the character.
+ */
 static JSVAL gd_imageCharUp (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1668,6 +1900,22 @@ static JSVAL gd_imageCharUp (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageString
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageString(handle, fontHandle, x, y, s, color);
+ * 
+ * Draws a string on the image.  The string is rendered left to right.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {object} fontHandle - opaque handle to a GD font
+ * @param {int} x - x coordinate to render string.
+ * @param {int} y - y coordinate to render string.
+ * @param {string} s - the string to render.
+ * @param {int} color - the color to render the string.
+ */
 static JSVAL gd_imageString (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1682,6 +1930,22 @@ static JSVAL gd_imageString (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageString16
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageString16(handle, fontHandle, x, y, s, color);
+ * 
+ * Draws a string of 16-bit characters on the image.  The string is rendered left to right.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {object} fontHandle - opaque handle to a GD font
+ * @param {int} x - x coordinate to render string.
+ * @param {int} y - y coordinate to render string.
+ * @param {string} s - the string to render.
+ * @param {int} color - the color to render the string.
+ */
 static JSVAL gd_imageString16 (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1696,6 +1960,22 @@ static JSVAL gd_imageString16 (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageStringUp
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageStringUp(handle, fontHandle, x, y, s, color);
+ * 
+ * Draws a string on the image, rotated 90 degrees.  The string is rendered bottom to top.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {object} fontHandle - opaque handle to a GD font
+ * @param {int} x - x coordinate to render string.
+ * @param {int} y - y coordinate to render string.
+ * @param {string} s - the string to render.
+ * @param {int} color - the color to render the string.
+ */
 static JSVAL gd_imageStringUp (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1710,6 +1990,22 @@ static JSVAL gd_imageStringUp (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageStringUp16
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageStringUp16(handle, fontHandle, x, y, s, color);
+ * 
+ * Draws a string of 16-bit characters on the image, rotated 90 degrees.  The string is rendered bottom to top.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {object} fontHandle - opaque handle to a GD font
+ * @param {int} x - x coordinate to render string.
+ * @param {int} y - y coordinate to render string.
+ * @param {string} s - the string to render.
+ * @param {int} color - the color to render the string.
+ */
 static JSVAL gd_imageStringUp16 (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1736,6 +2032,25 @@ static JSVAL gd_FTUseFontConfig (JSARGS args) {
 
 // Color handling functions
 
+/**
+ * @function gd.imageColorAllocate
+ * 
+ * ### Synopsis
+ * 
+ * var color = gd.imageColorAllocate(handle, r, g, b);
+ * 
+ * gd.imageColorAllocate() finds the first available color index in the image specified, sets its RGB values to those requested (255 is the maximum for each), and returns the index of the new color table entry, or an RGBA value in the case of a truecolor image; in either case you can then use the returned value as a parameter to drawing functions. When creating a new palette-based image, the first time you invoke this function, you are setting the background color for that image.
+ * 
+ * In the event that all gdMaxColors colors (256) have already been allocated, gd.imageColorAllocate() will return -1 to indicate failure. (This is not uncommon when working with existing PNG files that already use 256 colors.) 
+ * 
+ * Note that gdImageColorAllocate does not check for existing colors that match your request; see gd.imageColorExact(), gd.imageColorClosest() and gd.imageColorClosestHWB() for ways to locate existing colors that approximate the color desired in situations where a new color is not available. Also see gd.imageColorResolve(), new in gd-1.6.2.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} r - red component of desired color.
+ * @param {int} g - green component of desired color.
+ * @param {int} b - blue component of desired color.
+ * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
+ */
 static JSVAL gd_imageColorAllocate (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1746,6 +2061,26 @@ static JSVAL gd_imageColorAllocate (JSARGS args) {
     return scope.Close(Integer::New(gdImageColorAllocate(im, red, green, blue)));
 }
 
+/**
+ * @function gd.imageColorAllocateAlpha
+ * 
+ * ### Synopsis
+ * 
+ * var color = gd.imageColorAllocateAlpha(handle, r, g, b, a);
+ * 
+ * gd.imageColorAllocateAlpha() finds the first available color index in the image specified, sets its RGBA values to those requested (255 is the maximum for red, green, and blue, and 127 represents full transparency for alpha), and returns the index of the new color table entry, or an RGBA value in the case of a truecolor image; in either case you can then use the returned value as a parameter to drawing functions. When creating a new palette-based image, the first time you invoke this function, you are setting the background color for that image.
+ * 
+ * In the event that all gdMaxColors colors (256) have already been allocated, gd.imageColorAllocate() will return -1 to indicate failure. (This is not uncommon when working with existing PNG files that already use 256 colors.) 
+ * 
+ * Note that gd.imageColorAllocateAlpha() does not check for existing colors that match your request; see gd.imageColorExactAlpha() and gd.imageColorClosestAlpha() for ways to locate existing colors that approximate the color desired in situations where a new color is not available. Also see gd.imageColorResolveAlpha().
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} r - red component of desired color.
+ * @param {int} g - green component of desired color.
+ * @param {int} b - blue component of desired color.
+ * @param {int} a - alpha component of desired color.
+ * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
+ */
 static JSVAL gd_imageColorAllocateAlpha (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1757,6 +2092,29 @@ static JSVAL gd_imageColorAllocateAlpha (JSARGS args) {
     return scope.Close(Integer::New(gdImageColorAllocateAlpha(im, red, green, blue, alpha)));
 }
 
+/**
+ * @function gd.imageColorClosest
+ * 
+ * ### Synopsis
+ * 
+ * var color = gd.imageColorClosest(handle, r, g, b);
+ * 
+ * gd.imageColorClosest() searches the colors which have been defined thus far in the image specified and returns the index of the color with RGB values closest to those of the request. (Closeness is determined by Euclidian distance, which is used to determine the distance in three-dimensional color space between colors.)
+ * 
+ * If no colors have yet been allocated in the image, gd.imageColorClosest() returns -1.
+ * 
+ * When applied to a truecolor image, this function always succeeds in returning the desired color.
+ * 
+ * This function is most useful as a backup method for choosing a drawing color when an image already contains gd.MaxColors (256) colors and no more can be allocated. (This is not uncommon when working with existing PNG files that already use many colors.) 
+ * 
+ * See gd.imageColorExact() for a method of locating exact matches only.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} r - red component of desired color.
+ * @param {int} g - green component of desired color.
+ * @param {int} b - blue component of desired color.
+ * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
+ */
 static JSVAL gd_imageColorClosest (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1767,6 +2125,30 @@ static JSVAL gd_imageColorClosest (JSARGS args) {
     return scope.Close(Integer::New(gdImageColorClosest(im, red, green, blue)));
 }
 
+/**
+ * @function gd.imageColorClosestAlpha
+ * 
+ * ### Synopsis
+ * 
+ * var color = gd.imageColorClosestAlpha(handle, r, g, b, a);
+ * 
+ * gd.imageColorClosestAlpha searches the colors which have been defined thus far in the image specified and returns the index of the color with RGBA values closest to those of the request. (Closeness is determined by Euclidian distance, which is used to determine the distance in four-dimensional color/alpha space between colors.)
+ * 
+ * If no colors have yet been allocated in the image, gd.imageColorClosestAlpha() returns -1.
+ * 
+ * When applied to a truecolor image, this function always succeeds in returning the desired color.
+ * 
+ * This function is most useful as a backup method for choosing a drawing color when a palette-based image already contains gd.MaxColors (256) colors and no more can be allocated. (This is not uncommon when working with existing palette-based PNG files that already use many colors.) 
+ * 
+ * See gd.imageColorExactAlpha() for a method of locating exact matches only.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} r - red component of desired color.
+ * @param {int} g - green component of desired color.
+ * @param {int} b - blue component of desired color.
+ * @param {int} a - alpha component of desired color.
+ * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
+ */
 static JSVAL gd_imageColorClosestAlpha (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1778,6 +2160,29 @@ static JSVAL gd_imageColorClosestAlpha (JSARGS args) {
     return scope.Close(Integer::New(gdImageColorClosestAlpha(im, red, green, blue, alpha)));
 }
 
+/**
+ * @function gd.imageColorClosestHWB
+ * 
+ * ### Synopsis
+ * 
+ * var color = gd.imageColorClosestHWB(handle, r, g, b);
+ * 
+ * gd.imageColorClosestHWB() searches the colors which have been defined thus far in the image specified and returns the index of the color with hue, whiteness and blackness closest to the requested color. This scheme is typically superior to the Euclidian distance scheme used by gd.imageColorClosest().
+ * 
+ * If no colors have yet been allocated in the image, gd.imageColorClosestHWB() returns -1.
+ * 
+ * When applied to a truecolor image, this function always succeeds in returning the desired color.
+ * 
+ * This function is most useful as a backup method for choosing a drawing color when an image already contains gdMaxColors (256) colors and no more can be allocated. (This is not uncommon when working with existing PNG files that already use many colors.) 
+ * 
+ * See gd.imageColorExact() for a method of locating exact matches only.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} r - red component of desired color.
+ * @param {int} g - green component of desired color.
+ * @param {int} b - blue component of desired color.
+ * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
+ */
 static JSVAL gd_imageColorClosestHWB (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1788,6 +2193,27 @@ static JSVAL gd_imageColorClosestHWB (JSARGS args) {
     return scope.Close(Integer::New(gdImageColorClosestHWB(im, red, green, blue)));
 }
 
+/**
+ * @function gd.imageColorExact
+ * 
+ * ### Synopsis
+ * 
+ * var color = gd.imageColorExact(handle, r, g, b);
+ * 
+ * gd.imageColorExact() searches the colors which have been defined thus far in the image specified and returns the index of the first color with RGB values which exactly match those of the request. 
+ * 
+ * If no allocated color matches the request precisely, gd.imageColorExact() returns -1. 
+ * 
+ * See gd.imageColorClosest() for a way to find the color closest to the color requested.
+ * 
+ * When applied to a truecolor image, this function always succeeds in returning the desired color.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} r - red component of desired color.
+ * @param {int} g - green component of desired color.
+ * @param {int} b - blue component of desired color.
+ * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
+ */
 static JSVAL gd_imageColorExact (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1798,6 +2224,29 @@ static JSVAL gd_imageColorExact (JSARGS args) {
     return scope.Close(Integer::New(gdImageColorExact(im, red, green, blue)));
 }
 
+/**
+ * @function gd.imageColorResolve
+ * 
+ * ### Synopsis
+ * 
+ * var color = gd.imageColorResolve(handle, r, g, b);
+ * 
+ * gd.imageColorResolve() searches the colors which have been defined thus far in the image specified and returns the index of the first color with RGB values which exactly match those of the request. 
+ * 
+ * If no allocated color matches the request precisely, then gd.imageColorResolve() tries to allocate the exact color. 
+ * 
+ * If there is no space left in the color table then gd.imageColorResolve() returns the closest color (as in gd.imageColorClosest()). 
+ * 
+ * This function always returns an index of a color.
+ * 
+ * When applied to a truecolor image, this function always succeeds in returning the desired color.
+ *  
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} r - red component of desired color.
+ * @param {int} g - green component of desired color.
+ * @param {int} b - blue component of desired color.
+ * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
+ */
 static JSVAL gd_imageColorResolve (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1808,6 +2257,30 @@ static JSVAL gd_imageColorResolve (JSARGS args) {
     return scope.Close(Integer::New(gdImageColorResolve(im, red, green, blue)));
 }
 
+/**
+ * @function gd.imageColorResolveAlpha
+ * 
+ * ### Synopsis
+ * 
+ * var color = gd.imageColorResolveAlpha(handle, r, g, b, a);
+ * 
+ * gd.imageColorResolveAlpha() searches the colors which have been defined thus far in the image specified and returns the index of the first color with RGBA values which exactly match those of the request. 
+ * 
+ * If no allocated color matches the request precisely, then gd.imageColorResolveAlpha() tries to allocate the exact color. 
+ * 
+ * If there is no space left in the color table then gdImageColorResolveAlpha returns the closest color (as in gdImageColorClosestAlpha()). 
+ * 
+ * This function always returns an index of a color. * 
+ * 
+ * When applied to a truecolor image, this function always succeeds in returning the desired color.
+ *  
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} r - red component of desired color.
+ * @param {int} g - green component of desired color.
+ * @param {int} b - blue component of desired color.
+ * @param {int} a - alpha component of desired color.
+ * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
+ */
 static JSVAL gd_imageColorResolveAlpha (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1819,6 +2292,18 @@ static JSVAL gd_imageColorResolveAlpha (JSARGS args) {
     return scope.Close(Integer::New(gdImageColorResolveAlpha(im, red, green, blue, alpha)));
 }
 
+/**
+ * @function gd.imageColorsTotal
+ * 
+ * ### Synopsis
+ * 
+ * var colors = gd.imageColorsTotal(handle);
+ * 
+ * Returns the total number of colors currently allocated in a palette image.  For truecolor images, the result of this function is undefined and should not be used.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @return {int} colors - number of colors used.
+ */
 static JSVAL gd_imageColorsTotal (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1826,6 +2311,18 @@ static JSVAL gd_imageColorsTotal (JSARGS args) {
     return scope.Close(Integer::New(gdImageColorsTotal(im)));
 }
 
+/**
+ * @function gd.imageGetInterlaced
+ * 
+ * ### Synopsis
+ * 
+ * var isInterlaced = gd.imageGetInterlaced(handle);
+ * 
+ * Determine if the the image is interlaced.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @return {boolean} isInterlaced - true if image is interlaced.
+ */
 static JSVAL gd_imageGetInterlaced (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1833,6 +2330,18 @@ static JSVAL gd_imageGetInterlaced (JSARGS args) {
     return scope.Close(Integer::New(gdImageGetInterlaced(im)));
 }
 
+/**
+ * @function gd.imageGetTransparent
+ * 
+ * ### Synopsis
+ * 
+ * var color = gd.imageGetTransparent(handle);
+ * 
+ * Get the current transparent color index in the image.  If there is no transparent color, this function returns -1.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @return {int} color - color index of transparent color or -1.
+ */
 static JSVAL gd_imageGetTransparent (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1840,6 +2349,22 @@ static JSVAL gd_imageGetTransparent (JSARGS args) {
     return scope.Close(Integer::New(gdImageGetTransparent(im)));
 }
 
+/**
+ * @function gd.imageColorDeallocate
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageColorDeallocate(handle, color);
+ * 
+ * Marks the specified color as being available for reuse. It does not attempt to determine whether the color index is still in use in the image. 
+ * 
+ * After a call to this function, the next call to gdImageColorAllocate for the same image will set new RGB values for that color index, changing the color of any pixels which have that index as a result. 
+ * 
+ * If multiple calls to gd.imageColorDeallocate() are made consecutively, the lowest-numbered index among them will be reused by the next gd.imageColorAllocate() call.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} color - color index to deallocate.
+ */
 static JSVAL gd_imageColorDeallocate (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1849,6 +2374,26 @@ static JSVAL gd_imageColorDeallocate (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageColorTransparent
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageColorTransparent(handle, color);
+ * 
+ * Sets the transparent color index for the specified image to the specified index. 
+ * 
+ * To indicate that there should be no transparent color, invoke gd.imageColorTransparent() with a color index of -1. 
+ * 
+ * Note that JPEG images do not support transparency, so this setting has no effect when writing JPEG images.
+ * 
+ * The color index used should be an index allocated by gd.imageColorAllocate(), whether explicitly invoked by your code or implicitly invoked by loading an image. 
+ * 
+ * In order to ensure that your image has a reasonable appearance when viewed by users who do not have transparent background capabilities (or when you are writing a JPEG-format file, which does not support transparency), be sure to give reasonable RGB values to the color you allocate for use as a transparent color, even though it will be transparent on systems that support PNG transparency.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} color - color index to set as the transparent color.
+ */
 static JSVAL gd_imageColorTransparent (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -1858,6 +2403,25 @@ static JSVAL gd_imageColorTransparent (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageTrueColor
+ * 
+ * ### Synopsis
+ * 
+ * var color = gd.imageTrueColor(red, green, blue);
+ * 
+ * Returns an RGBA color value for use when drawing on a truecolor image. Red, green, and blue are all in the range between 0 (off) and 255 (maximum). 
+ * 
+ * This function should not be used with palette-based images. 
+ * 
+ * If you need to write code which is compatible with both palette-based and truecolor images, use gd.imageColorResolve().
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} red - red component of desired color.
+ * @param {int} green - green component of desired color.
+ * @param {int} blue - blue component of desired color.
+ * @return {int} color - rgba color value for use with drawing functions.
+ */
 static JSVAL gd_TrueColor (JSARGS args) {
     HandleScope scope;
     int red = args[0]->IntegerValue();
@@ -1866,6 +2430,28 @@ static JSVAL gd_TrueColor (JSARGS args) {
     return Integer::New(gdTrueColor(red, green, blue));
 }
 
+/**
+ * @function gd.imageTrueColorAlpha
+ * 
+ * ### Synopsis
+ * 
+ * var color = gd.imageTrueColorAlpha(red, green, blue, alpha);
+ * 
+ * Returns an RGBA color value for use when drawing on a truecolor image with alpha channel transparency. 
+ * 
+ * Red, green, and blue are all in the range between 0 (off) and 255 (maximum). Alpha is in the range between 0 (opaque) and 127 (fully transparent). 
+ * 
+ * This function should not be used with palette-based images. 
+ * 
+ * If you need to write code which is compatible with both palette-based and truecolor images, use gd.imageColorResolveAlpha().
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} red - red component of desired color.
+ * @param {int} green - green component of desired color.
+ * @param {int} blue - blue component of desired color.
+ * @param {int} alpha - alpha component of desired color.
+ * @return {int} color - rgba color value for use with drawing functions.
+ */
 static JSVAL gd_TrueColorAlpha (JSARGS args) {
     HandleScope scope;
     int red = args[0]->IntegerValue();
@@ -1894,7 +2480,6 @@ static JSVAL gd_TrueColorAlpha (JSARGS args) {
  * @param {int} srcY - Y coordinate of the upper left corner of the source region
  * @param {int} w - width of the region
  * @param {int} h - height of the region
- * @return 
  */
 static JSVAL gd_imageCopy (JSARGS args) {
     HandleScope scope;
@@ -1931,7 +2516,6 @@ static JSVAL gd_imageCopy (JSARGS args) {
  * @param {int} dstH - height of the destination region
  * @param {int} srcW - width of the source region
  * @param {int} srcH - height of the source region
- * @return 
  */
 static JSVAL gd_imageCopyResized (JSARGS args) {
     HandleScope scope;
@@ -1958,7 +2542,9 @@ static JSVAL gd_imageCopyResized (JSARGS args) {
  * 
  * gd.imageCopyResampled(dstImage, srcImage, dstX, dstY, srcX, srcY, dstW, dstH, srcW, srcH);
  * 
- * Copy a rectangular portion of one image to another image, smoothly interpolating pixel values so that, in particular, reducing the size of an image still retains a great deal of clarity. The X and Y dimensions of the original region and the destination region can vary, resulting in stretching or shrinking of the region as appropriate.
+ * Copy a rectangular portion of one image to another image, smoothly interpolating pixel values so that, in particular, reducing the size of an image still retains a great deal of clarity. 
+ * 
+ * The X and Y dimensions of the original region and the destination region can vary, resulting in stretching or shrinking of the region as appropriate.
  * 
  * @param {object} dstImage - destination for resized image
  * @param {object} srcImage - source for resized image
@@ -1970,7 +2556,6 @@ static JSVAL gd_imageCopyResized (JSARGS args) {
  * @param {int} dstH - height of the destination region
  * @param {int} srcW - width of the source region
  * @param {int} srcH - height of the source region
- * @return 
  */
 static JSVAL gd_imageCopyResampled (JSARGS args) {
     HandleScope scope;
@@ -1990,6 +2575,35 @@ static JSVAL gd_imageCopyResampled (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageCopyRotated
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageCopyRotated(dstImage, srcImage, dstX, dstY, srcX, srcY, srcW, srcH, angle);
+ * 
+ * Copy a rectangular portion of one image to another image, or to another region of the same image. 
+ * 
+ * The srcX and srcY coordinates specify the upper left corner of the source area; however, the dstX and dstY coordinates specify the CENTER of the destination area. This important distinction is made because the rotated rectangle may may or may not be parallel to the X and Y axes. 
+ * 
+ * The destination coordinates may be floating point, as the center of the desired destination area may lie at the center of a pixel (0.5 pixels) rather than its upper left corner. 
+ * 
+ * The angle specified is an integer number of degrees, between 0 and 360, with 0 degrees causing no change, and counterclockwise rotation as the angle increases.
+ * 
+ * When you copy a region from one location in an image to another location in the same image, gd.imageCopyRotated() will perform as expected unless the regions overlap, in which case the result is unpredictable. If this presents a problem, create a scratch image in which to keep intermediate results.
+ * 
+ * Important note on copying between images: since palette-based images do not necessarily have the same color tables, pixels are not simply set to the same color index values to copy them. If the destination image is not a truecolor image, gd.imageColorResolveAlpha() is used to choose the destination pixel.
+ * 
+ * @param {object} dstImage - destination for resized image
+ * @param {object} srcImage - source for resized image
+ * @param {number} dstX - X coordinate of the upper left corner of the destination region
+ * @param {number} dstY - Y coordinate of the upper left corner of the destination region
+ * @param {int} srcX - X coordinate of the upper left corner of the source region
+ * @param {int} srcY - Y coordinate of the upper left corner of the source region
+ * @param {int} srcW - width of the source region
+ * @param {int} srcH - height of the source region
+ * @param {int} angle - angle to rotate image.
+ */
 static JSVAL gd_imageCopyRotated (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -2007,6 +2621,32 @@ static JSVAL gd_imageCopyRotated (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageCopyMerge
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageCopyMerge(dstImage, srcImage, dstX, dstY, srcX, srcY, w, h, pct);
+ * 
+ * gd.imageCopyMerge() is almost identical to gdImageCopy, except that it 'merges' the two images by an amount specified in the last parameter. 
+ * 
+ * If the last parameter is 100, then it will function identically to gdImageCopy - the source image replaces the pixels in the destination.
+ * 
+ * If, however, the pct parameter is less than 100, then the two images are merged. With pct = 0, no action is taken.
+ * 
+ * This feature is most useful to 'highlight' sections of an image by merging a solid color with pct = 50:
+ * 
+ * @param {object} dstImage - destination for resized image
+ * @param {object} srcImage - source for resized image
+ * @param {int} dstX - X coordinate of the upper left corner of the destination region
+ * @param {int} dstY - Y coordinate of the upper left corner of the destination region
+ * @param {int} srcX - X coordinate of the upper left corner of the source region
+ * @param {int} srcY - Y coordinate of the upper left corner of the source region
+ * @param {int} w - width of the region
+ * @param {int} h - height of the region
+ * @param {int} h - height of the region
+ * @param {int} pct - pct weight to merge pixels.
+ */
 static JSVAL gd_imageCopyMerge (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -2024,6 +2664,26 @@ static JSVAL gd_imageCopyMerge (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageCopyMergeGray
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageCopyMergeGray(dstImage, srcImage, dstX, dstY, srcX, srcY, w, h, pct);
+ * 
+ * gd.imageCopyMergeGray() is almost identical to gd.imageCopyMerge(), except that when merging images it preserves the hue of the source by converting the destination pixels to grey scale before the copy operation.
+ * 
+ * @param {object} dstImage - destination for resized image
+ * @param {object} srcImage - source for resized image
+ * @param {int} dstX - X coordinate of the upper left corner of the destination region
+ * @param {int} dstY - Y coordinate of the upper left corner of the destination region
+ * @param {int} srcX - X coordinate of the upper left corner of the source region
+ * @param {int} srcY - Y coordinate of the upper left corner of the source region
+ * @param {int} w - width of the region
+ * @param {int} h - height of the region
+ * @param {int} h - height of the region
+ * @param {int} pct - pct weight to merge pixels.
+ */
 static JSVAL gd_imageCopyMergeGray (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -2041,6 +2701,18 @@ static JSVAL gd_imageCopyMergeGray (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imagePaletteCopy
+ * 
+ * ### Synopsis
+ * 
+ * gd.imagePaletteCopy(dstImage, srcImage);
+ * 
+ * Copies a palette from one image to another, attempting to match the colors in the target image to the colors in the source palette.
+ * 
+ * @param {object} dstImage - destination for resized image
+ * @param {object} srcImage - source for resized image
+ */
 static JSVAL gd_imagePaletteCopy (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -2051,15 +2723,44 @@ static JSVAL gd_imagePaletteCopy (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imageSquareToCircle
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageSquareToCircule(handle, radius);
+ * 
+ * Returns a new image of width and height radius * 2, in which the X axis of the original has been remapped to theta (angle) and the Y axis of the original has been remapped to rho (distance from center). This is known as a "polar coordinate transform."
+ * 
+ * The source image must be square, but can have any size.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} radius - radious of circls.
+ * @return {object} newHandle - handle to a new image.
+ */
 static JSVAL gd_imageSquareToCircle (JSARGS args) {
-    HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     gdImagePtr dst = (gdImagePtr) wrap->Value();
     int radius = args[1]->IntegerValue();
-    gdImageSquareToCircle(dst, radius);
-    return Undefined();
+    return External::New(gdImageSquareToCircle(dst, radius));
 }
 
+/**
+ * @function gd.imageSharpen
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageSharpen(handle, pct);
+ * 
+ * Sharpens the specified image. The pct parameter is a sharpening percentage, and can be greater than 100. 
+ * 
+ * Silently does nothing to non-truecolor images. 
+ * 
+ * Silently does nothing for pct less than 0. Transparency/alpha channel are not altered.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} pct - sharpening percentage
+ */
 static JSVAL gd_imageSharpen (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -2069,6 +2770,35 @@ static JSVAL gd_imageSharpen (JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function gd.imagePaletteCompare
+ * 
+ * ### Synopsis
+ * 
+ * var mask = gd.imagePaletteCompare(dstImage, srcImage);
+ * 
+ * Returns a bitmap indicating if the two images are different. 
+ * 
+ * The members of the bitmap are defined in gd.h, but the most important is GD_CMP_IMAGE, which indicated that the images will actually appear different when displayed. 
+ * 
+ * Other, less important, differences relate to pallette entries. Any difference in the transparent colour is assumed to make images display differently, even if the transparent colour is not used.
+ * 
+ * The mask bits are:
+ * 
+ * + gd.CMP_IMAGE               1	Actual image IS different
+ * + gd.CMP_NUM_COLORS          2   Number of Colours in pallette differ
+ * + gd.CMP_COLOR               4   Image colours differ
+ * + gd.CMP_SIZE_X              8   Image width differs
+ * + gd.CMP_SIZE_Y              16  Image heights differ
+ * + gd.CMP_TRANSPARENT         32  Transparent colour
+ * + gd.CMP_BACKGROUND          64  Background colour
+ * + gd.CMP_INTERLACE           128 Interlaced setting
+ * + gd.CMP_TRUECOLOR           256 Truecolor vs palette differs
+ * 
+ * @param {object} dstImage - destination for resized image
+ * @param {object} srcImage - source for resized image
+ * @return {int} mask - see bits defined above.
+ */
 static JSVAL gd_imageCompare (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -2078,6 +2808,26 @@ static JSVAL gd_imageCompare (JSARGS args) {
     return scope.Close(Integer::New(gdImageCompare(im1, im2)));
 }
 
+/**
+ * @function gd.imageInterlace
+ * 
+ * ### Synopsis
+ * 
+ * gd.imageInterlace(handle, interlace);
+ * 
+ * gd.imageInterlace() is used to determine whether an image should be stored in a linear fashion, in which lines will appear on the display from first to last, or in an interlaced fashion, in which the image will "fade in" over several passes. 
+ * 
+ * By default, images are not interlaced. (When writing JPEG images, interlacing implies generating progressive JPEG files, which are represented as a series of scans of increasing quality. Noninterlaced gd images result in regular [sequential] JPEG data streams.)
+ * 
+ * A nonzero value for the interlace argument turns on interlace; a zero value turns it off. Note that interlace has no effect on other functions, and has no meaning unless you save the image in PNG or JPEG format; the gd and xbm formats do not support interlace.
+ * 
+ * When a PNG is loaded with gd.imageCreateFromPng() or a JPEG is loaded with gd.imageCreateFromJpeg(), interlace will be set according to the setting in the PNG or JPEG file.
+ * 
+ * Note that many PNG and JPEG viewers and web browsers do not support interlace or the incremental display of progressive JPEGs. However, the interlaced PNG or progressive JPEG should still display; it will simply appear all at once, just as other images do.
+ * 
+ * @param {object} handle - opaque handle to a GD image.
+ * @param {int} interlace - set to 1 to enable interlace for the image, 0 to disable it.
+ */
 static JSVAL gd_imageInterlace (JSARGS args) {
     HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
@@ -2111,6 +2861,19 @@ void init_gd_object () {
     gd->Set(String::New("Pie"), Integer::New(gdPie));
     gd->Set(String::New("NoFill"), Integer::New(gdNoFill));
     gd->Set(String::New("Edged"), Integer::New(gdEdged));
+    gd->Set(String::New("AplhaOpaque"), Integer::New(gdAlphaOpaque));
+    gd->Set(String::New("AplhaTransparent"), Integer::New(gdAlphaTransparent));
+    
+    gd->Set(String::New("CMP_IMAGE"), Integer::New(GD_CMP_IMAGE));               // 1: Actual image IS different
+    gd->Set(String::New("CMP_NUM_COLORS"), Integer::New(GD_CMP_NUM_COLORS));     // 2: Number of Colours in pallette differ
+    gd->Set(String::New("CMP_COLOR"), Integer::New(GD_CMP_COLOR));               // 4: Image colours differ 
+    gd->Set(String::New("CMP_SIZE_X"), Integer::New(GD_CMP_SIZE_X));             // 8: Image width differs
+    gd->Set(String::New("CMP_SIZE_Y"), Integer::New(GD_CMP_SIZE_Y));             // 16: Image heights differ
+    gd->Set(String::New("CMP_TRANSPARENT"), Integer::New(GD_CMP_TRANSPARENT));   // 32: Transparent colour
+    gd->Set(String::New("CMP_BACKGROUND"), Integer::New(GD_CMP_BACKGROUND));     // 64: Background colour
+    gd->Set(String::New("CMP_INTERLACE"), Integer::New(GD_CMP_INTERLACE));       // 128: Interlaced setting
+    gd->Set(String::New("CMP_TRUECOLOR"), Integer::New(GD_CMP_TRUECOLOR));       // 256: Truecolor vs palette differs
+    
 
     // fonts
     gd->Set(String::New("fontGetSmall"), FunctionTemplate::New(gd_fontGetSmall));
