@@ -46,7 +46,7 @@ function GitHub(username, password) {
     var result = Json.decode(response.responseText);
 
     if (response.status !== 200) {
-        throw result.message;
+        throw result;
     }
     this.status = response.status;
     this.user = result;
@@ -366,7 +366,7 @@ GitHub.prototype.extend({
     },
 
     /**
-     * @function gh.updateKey
+     * @function GitHub.updateKey
      * 
      * ### Synopsis
      * 
@@ -390,7 +390,7 @@ GitHub.prototype.extend({
     },
 
     /**
-     * @function gh.deleteKey
+     * @function GitHub.deleteKey
      * 
      * ### Synopsis
      * 
@@ -816,7 +816,7 @@ GitHub.prototype.extend({
             return true;
         }
         if (response.responseText.length) {
-            throw Json.decode(response.responseText).message;
+            throw Json.decode(response.responseText);
         }
     },
 
@@ -842,7 +842,7 @@ GitHub.prototype.extend({
             return true;
         }
         if (response.responseText.length) {
-            throw Json.decode(response.responseText).message;
+            throw Json.decode(response.responseText);
         }
     },
 
@@ -1095,6 +1095,99 @@ GitHub.prototype.extend({
         });
         this.status = response.status;
         return Json.decode(response.responseText);
+    },
+    
+    /**
+     * @function GitHub.createDownload
+     * 
+     * ### Synopsis
+     * 
+     * var success = gh.createDownload(repo, path);
+     * var success = gh.createDownload(repo, path, description);
+     * var success = gh.createDownload(repo, path, description, contentType);
+     * 
+     * Create a download for a repo.
+     * 
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} path - path to file to upload (e.g. the download file to create).
+     * @param {string} description - description of the download.
+     * @param {string} contentType - content-type of file (MIME type)
+     * @return {boolean} success - true if download was created
+     */
+    createDownload: function(repo, path, description, contentType) {
+        var url = this.url + '/repos/' + this.repoName(repo) + '/downloads';
+        // create the resource
+        if (!fs.exists(path)) {
+            throw 'File ' + path + ' does not exist';
+        }
+        var params = {
+            name:  path.split('/').pop(),
+            size: fs.fileSize(path)
+        };
+        if (description) {
+            params.description = description;
+        }
+        if (contentType) {
+            params.content_type = contentType;
+        }
+        console.log('Creating GitHub resource...')
+        var response = cURL({
+            method: 'POST',
+            url: url,
+            params: Json.encode(params)
+        });
+        var o = Json.decode(response.responseText);
+        if (response.status != 201) {
+            throw o;
+        }
+        // upload to S3
+        console.log('Uploading to S3...');
+        var config = {
+            method: 'POST',
+            url: o.s3_url,
+            form: [
+                { name: 'key', value: o.path },
+                { name: 'acl', value: o.acl },
+                { name: 'success_action_status', value: 201 },
+                { name: 'Filename', value: o.name },
+                { name: 'AWSAccessKeyId', value: o.accesskeyid },
+                { name: 'Policy', value: o.policy },
+                { name: 'Signature', value: o.signature },
+                { name: 'Content-Type', value: o.mime_type },
+                { name: 'file', value: path, fileUpload: true }
+            ]
+        };
+        response = cURL(config);
+        this.status = response.status;
+        return response.status == 201;
+    },
+    
+    /**
+     * @function GitHub.deleteDownload
+     * 
+     * ### Synopsis
+     * 
+     * var success = gh.deleteDownload(repo, id);
+     * 
+     * Delete a download.
+     * 
+     * The id parameter can be determined by looking at the id emmber of the object for the download returned by GitHub.listDownloads().
+     * 
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} id - id of download to delete.
+     * @return {boolean} success - true if the download was deleted.
+     */
+    deleteDownload: function(repo, id) {
+        var url = this.url + '/repos/' + this.repoName(repo) + '/downloads/' + id;
+        var response = cURL({
+            method: 'DELETE',
+            url: url
+        });
+        this.status = response.status;
+        if (this.status != 204) {
+            throw Json.decode(response.responseText);
+        }
+        return this.status == 204;
     }
 });
 
