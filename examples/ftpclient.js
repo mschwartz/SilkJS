@@ -1,16 +1,16 @@
 #!/usr/local/bin/silkjs
 
 var FTP = require('FTP'),
-    ReadLine = require('ReadLine'),
-    fs = require('fs'),
-    process = require('builtin/process'),
-    ncurses = require('builtin/ncurses'),
-    editline = require('builtin/editline'),
-    console = require('console');
+ReadLine = require('ReadLine'),
+fs = require('fs'),
+process = require('builtin/process'),
+ncurses = require('builtin/ncurses'),
+editline = require('builtin/editline'),
+console = require('console');
 
 var ftp,
-    alive = true,
-    stdin;
+alive = true,
+stdin;
 
 var commands = {
     '!': {
@@ -87,7 +87,7 @@ var commands = {
         fn: function(args) {
             args = args.split(/\s+/);
             var remoteFile = args[0],
-                localFile = args[1];
+            localFile = args[1];
             if (!localFile) {
                 localFile = remoteFile.split('/');
                 localFile = localFile.pop();
@@ -101,7 +101,7 @@ var commands = {
         fn: function(args) {
             args = args.split(/\s+/);
             var localFile = args[0],
-                remoteFile = args[1];
+            remoteFile = args[1];
             if (!remoteFile) {
                 remoteFile = localFile.split('/');
                 remoteFile = remoteFile.pop();
@@ -111,7 +111,7 @@ var commands = {
         }
     },
     cat: {
-        help: 'cat remoteFiel - type a remote file to screen',
+        help: 'cat remoteFile - type a remote file to screen',
         fn: function(args) {
             console.log(ftp.readFile(args));
         }
