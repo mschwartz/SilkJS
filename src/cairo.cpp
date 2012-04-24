@@ -1,45 +1,20 @@
-/** @ignore */
-
-#include "SilkJS.h"
-#include <cairo/cairo.h>
-
 /**
- * @function cairo.image_surface_create
+ * @module builtin/cairo
  * 
  * ### Synopsis
  * 
- * var surface = cairo.image_surface_create(format, width, height);
+ * Interface to libcairo graphics library.
  * 
- * Creates an image surface of the specified format and dimensions. Initially the surface contents are all 0. (Specifically, within each pixel, each color or alpha channel belonging to format will be 0. The contents of bits within a pixel, but not belonging to the given format are undefined).
- * 
- * This function always returns a valid handle, but it will return a handle to a "nil" surface if an error such as out of memory occurs. 
- * 
- * You can use cairo.surface_status() to check for this.
- * 
- * The format parameter is one of the following:
- * 
- * + cairo.CONTENT_COLOR - the surface will hold color content only.
- * + cairo.CONTENT_ALPHA - the surface will hold alpha content only.
- * + cairo.CONTENT_COLOR_ALPHA - the surface will hold color and alpha content.
- *
- * @param {int} format - format of pixels in the surface to create.
- * @param {int} width - width of the surface, in pixels
- * @param {int} height - height of the surface, in pixels.
- * @return {object} surface - opaque handle to the newly created surface. The caller owns the surface and should call cairo.surface_destroy() when done with it. 
  */
-static JSVAL image_surface_create(JSARGS args) {
-    int format = args[0]->IntegerValue();
-    int width = args[1]->IntegerValue();
-    int height = args[1]->IntegerValue();
-    return External::New(cairo_image_surface_create(format, width, height));
-}
+#include "SilkJS.h"
+#include <cairo/cairo.h>
 
 /**
  * @function cairo.surface_create_similar
  * 
  * ### Synopsis
  * 
- * var newSurface = cairo.surface_create_similar(handle, content, width, height);
+ * var newSurface = cairo.surface_create_similar(handle, format, width, height);
  * 
  * Create a new surface that is as compatible as possible with an existing surface. 
  * 
@@ -62,10 +37,11 @@ static JSVAL image_surface_create(JSARGS args) {
  * @return {object} newSurface - opaque handle to the newly created surface. The caller owns the surface and should call cairo.surface_destroy() when done with it. 
  */
 static JSVAL surface_create_similar(JSARGS args) {
-    int format = args[0]->IntegerValue();
-    int width = args[1]->IntegerValue();
-    int height = args[1]->IntegerValue();
-    return External::New(cairo_surface_create_similar(format, width, height));
+    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    int format = args[1]->IntegerValue();
+    int width = args[2]->IntegerValue();
+    int height = args[3]->IntegerValue();
+    return External::New(cairo_surface_create_similar(surface, (cairo_content_t)format, width, height));
 }
 
 /**
@@ -120,6 +96,7 @@ static JSVAL surface_status(JSARGS args) {
 static JSVAL surface_destroy(JSARGS args) {
     cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
     cairo_surface_destroy(surface);
+    return Undefined();
 }
 
 /**
@@ -210,7 +187,7 @@ static JSVAL surface_get_device(JSARGS args) {
 static JSVAL surface_get_font_options(JSARGS args) {
     cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
     cairo_font_options_t *options = cairo_font_options_create();
-    cairo_device_t *device = cairo_surface_get_font_options(surface, options);
+    cairo_surface_get_font_options(surface, options);
     return External::New(options);
 }
 
@@ -408,31 +385,31 @@ static JSVAL surface_get_fallback_resolution(JSARGS args) {
  * 
  * The returned type will be one of the following:
  * 
- * cairo.SURFACE_TYPE_IMAGE - The surface is of type image
- * cairo.SURFACE_TYPE_PDF - The surface is of type pdf
- * cairo.SURFACE_TYPE_PS - The surface is of type ps
- * cairo.SURFACE_TYPE_XLIB - The surface is of type xlib
- * cairo.SURFACE_TYPE_XCB - The surface is of type xcb
- * cairo.SURFACE_TYPE_GLITZ - The surface is of type glitz
- * cairo.SURFACE_TYPE_QUARTZ - The surface is of type quartz
- * cairo.SURFACE_TYPE_WIN32 - The surface is of type win32
- * cairo.SURFACE_TYPE_BEOS - The surface is of type beos
- * cairo.SURFACE_TYPE_DIRECTFB - The surface is of type directfb
- * cairo.SURFACE_TYPE_SVG - The surface is of type svg
- * cairo.SURFACE_TYPE_OS2 - The surface is of type os2
- * cairo.SURFACE_TYPE_WIN32_PRINTING - The surface is a win32 printing surface
- * cairo.SURFACE_TYPE_QUARTZ_IMAGE - The surface is of type quartz_image
- * cairo.SURFACE_TYPE_SCRIPT - The surface is of type script, since 1.10
- * cairo.SURFACE_TYPE_QT - The surface is of type Qt, since 1.10
- * cairo.SURFACE_TYPE_RECORDING - The surface is of type recording, since 1.10
- * cairo.SURFACE_TYPE_VG - The surface is a OpenVG surface, since 1.10
- * cairo.SURFACE_TYPE_GL - The surface is of type OpenGL, since 1.10
- * cairo.SURFACE_TYPE_DRM - The surface is of type Direct Render Manager, since 1.10
- * cairo.SURFACE_TYPE_TEE - The surface is of type 'tee' (a multiplexing surface), since 1.10
- * cairo.SURFACE_TYPE_XML - The surface is of type XML (for debugging), since 1.10
- * cairo.SURFACE_TYPE_SKIA - The surface is of type Skia, since 1.10
- * cairo.SURFACE_TYPE_SUBSURFACE - The surface is a subsurface created with cairo_surface_create_for_rectangle(), since 1.10
- * cairo.SURFACE_TYPE_COGL - This surface is of type Cogl, since 1.12
+ * + cairo.SURFACE_TYPE_IMAGE - The surface is of type image
+ * + cairo.SURFACE_TYPE_PDF - The surface is of type pdf
+ * + cairo.SURFACE_TYPE_PS - The surface is of type ps
+ * + cairo.SURFACE_TYPE_XLIB - The surface is of type xlib
+ * + cairo.SURFACE_TYPE_XCB - The surface is of type xcb
+ * + cairo.SURFACE_TYPE_GLITZ - The surface is of type glitz
+ * + cairo.SURFACE_TYPE_QUARTZ - The surface is of type quartz
+ * + cairo.SURFACE_TYPE_WIN32 - The surface is of type win32
+ * + cairo.SURFACE_TYPE_BEOS - The surface is of type beos
+ * + cairo.SURFACE_TYPE_DIRECTFB - The surface is of type directfb
+ * + cairo.SURFACE_TYPE_SVG - The surface is of type svg
+ * + cairo.SURFACE_TYPE_OS2 - The surface is of type os2
+ * + cairo.SURFACE_TYPE_WIN32_PRINTING - The surface is a win32 printing surface
+ * + cairo.SURFACE_TYPE_QUARTZ_IMAGE - The surface is of type quartz_image
+ * + cairo.SURFACE_TYPE_SCRIPT - The surface is of type script, since 1.10
+ * + cairo.SURFACE_TYPE_QT - The surface is of type Qt, since 1.10
+ * + cairo.SURFACE_TYPE_RECORDING - The surface is of type recording, since 1.10
+ * + cairo.SURFACE_TYPE_VG - The surface is a OpenVG surface, since 1.10
+ * + cairo.SURFACE_TYPE_GL - The surface is of type OpenGL, since 1.10
+ * + cairo.SURFACE_TYPE_DRM - The surface is of type Direct Render Manager, since 1.10
+ * + cairo.SURFACE_TYPE_TEE - The surface is of type 'tee' (a multiplexing surface), since 1.10
+ * + cairo.SURFACE_TYPE_XML - The surface is of type XML (for debugging), since 1.10
+ * + cairo.SURFACE_TYPE_SKIA - The surface is of type Skia, since 1.10
+ * + cairo.SURFACE_TYPE_SUBSURFACE - The surface is a subsurface created with cairo_surface_create_for_rectangle(), since 1.10
+ * + cairo.SURFACE_TYPE_COGL - This surface is of type Cogl, since 1.12
  * 
  * @param {object} surface - opaque handle to a cairo surface.
  * @return {int} type - one of the types above.
@@ -504,7 +481,7 @@ static JSVAL surface_show_page(JSARGS args) {
  * 
  * ### Synopsis
  * 
- * cairo.surface_shas_show_text_glyphs(surface);
+ * var status = cairo.surface_has_show_text_glyphs(surface);
  * 
  * Returns whether the surface supports sophisticated cairo.show_text_glyphs() operations. That is, whether it actually uses the provided text and cluster data to a cairo.show_text_glyphs() call.
  * 
@@ -513,6 +490,7 @@ static JSVAL surface_show_page(JSARGS args) {
  * Users can use this function to avoid computing UTF-8 text and cluster mapping if the target surface does not use it.
  * 
  * @param {object} surface - opaque handle to a cairo surface.
+ * @return {boolean} status - true if the surface supports show_text_glyphs().
  */
 static JSVAL surface_has_show_text_glyphs(JSARGS args) {
     cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
@@ -520,20 +498,724 @@ static JSVAL surface_has_show_text_glyphs(JSARGS args) {
 }
 
 
+/**
+ * @function cairo.image_surface_create
+ * 
+ * ### Synopsis
+ * 
+ * var surface = cairo.image_surface_create(format, width, height);
+ * 
+ * Creates an image surface of the specified format and dimensions. Initially the surface contents are all 0. (Specifically, within each pixel, each color or alpha channel belonging to format will be 0. The contents of bits within a pixel, but not belonging to the given format are undefined).
+ * 
+ * This function always returns a valid handle, but it will return a handle to a "nil" surface if an error such as out of memory occurs. 
+ * 
+ * You can use cairo.surface_status() to check for this.
+ * 
+ * The format parameter is one of the following:
+ * 
+ * + cairo.CONTENT_COLOR - the surface will hold color content only.
+ * + cairo.CONTENT_ALPHA - the surface will hold alpha content only.
+ * + cairo.CONTENT_COLOR_ALPHA - the surface will hold color and alpha content.
+ *
+ * @param {int} format - format of pixels in the surface to create.
+ * @param {int} width - width of the surface, in pixels
+ * @param {int} height - height of the surface, in pixels.
+ * @return {object} surface - opaque handle to the newly created surface. The caller owns the surface and should call cairo.surface_destroy() when done with it. 
+ */
+static JSVAL image_surface_create(JSARGS args) {
+    int format = args[0]->IntegerValue();
+    int width = args[1]->IntegerValue();
+    int height = args[1]->IntegerValue();
+    return External::New(cairo_image_surface_create((cairo_format_t)format, width, height));
+}
+
+/**
+ * @functino cairo.image_surface_get_format
+ * 
+ * ### Synopsis
+ * 
+ * var format = cairo.image_surface_get_format(surface);
+ * 
+ * Get the format of the surface.
+ * 
+ * The format returned will be one of the following:
+ * 
+ * + cairo.FORMAT_ARGB32
+ * + cairo.FORMAT_RGB24
+ * + cairo.FORMAT_A8
+ * + cairo.FORMAT_A1
+ * + cairo.FORMAT_RGB16_565
+ * + cairo.FORMAT_RGB30
+ * 
+ * @param {object} surface - opaque handle to a cairo surface.
+ * @return {int} format - one of the above values.
+ */
+static JSVAL image_surface_get_format(JSARGS args) {
+    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_image_surface_get_format(surface));
+}
+
+/**
+ * @functino cairo.image_surface_get_width
+ * 
+ * ### Synopsis
+ * 
+ * var width = cairo.image_surface_get_width(surface);
+ * 
+ * Get the width of the surface.
+ * 
+ * @param {object} surface - opaque handle to a cairo surface.
+ * @return {int} width - width of the surface in pixels.
+ */
+static JSVAL image_surface_get_width(JSARGS args) {
+    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_image_surface_get_width(surface));
+}
+
+/**
+ * @functino cairo.image_surface_get_height
+ * 
+ * ### Synopsis
+ * 
+ * var height = cairo.image_surface_get_height(surface);
+ * 
+ * Get the height of the surface.
+ * 
+ * @param {object} surface - opaque handle to a cairo surface.
+ * @return {int} height - height of the surface in pixels.
+ */
+static JSVAL image_surface_get_height(JSARGS args) {
+    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_image_surface_get_height(surface));
+}
 
 
+////////////////////// CONTEXTS
 
-
-
+/**
+ * @function cairo.context_create
+ * 
+ * ### Synopsis
+ * 
+ * var context = cairo.context_create(surface);
+ * 
+ * Creates a new context with all graphics state parameters set to default values and with surface as a target surface. The target surface should be constructed with a backend-specific function such as cairo.image_surface_create() (or any other cairo.backend_surface_create() variant).
+ * 
+ * This function references surface, so you can immediately call cairo.surface_destroy() on it if you don't need to maintain a separate reference to it.
+ * 
+ * @param {object} surface - opaque handle to a cairo surface.
+ * @return {object} context - opaque handle to a cairo context.
+ */
 static JSVAL context_create(JSARGS args) {
     cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
     return External::New(cairo_create(surface));
 }
 
+/**
+ * @function cairo.context_reference
+ * 
+ * ### Synopsis
+ * 
+ * var context = cairo.context_reference(context);
+ * 
+ * Increases the reference count on context by one. This prevents context from being destroyed until a matching call to cairo.context_destroy() is made.
+ * 
+ * The number of references to a context can be get using cairo.context_get_reference_count().
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} context - opaque handle to the referenced cairo context.
+ */
+static JSVAL context_reference(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return External::New(cairo_reference(context));
+}
+
+/**
+ * @function cairo.context_get_reference_count
+ * 
+ * ### Synopsis
+ * 
+ * var count = cairo.context_get_reference_count(context);
+ * 
+ * Returns the current reference count of context.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {int} count - reference count of the context.
+ */
+static JSVAL context_get_reference_count(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_get_reference_count(context));
+}
+
+/**
+ * @function cairo.context_destroy
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_destroy(context);
+ * 
+ * Decreases the reference count on context by one. If the result is zero, then context and all associated resources are freed. 
+ * 
+ * See cairo.context_reference().
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
 static JSVAL context_destroy(JSARGS args) {
     cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
     cairo_destroy(context);
     return Undefined();
+}
+
+/**
+ * @function cairo.context_status
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.context_status(context);
+ * 
+ * Returns the previous error status code for this context.
+ * 
+ * The status returned is one of the following:
+ *  
+ * + cairo.STATUS_SUCCESS - no error has occurred
+ * + cairo.STATUS_NO_MEMORY - out of memory
+ * + cairo.STATUS_INVALID_RESTORE - cairo_restore() called without matching cairo_save()
+ * + cairo.STATUS_INVALID_POP_GROUP - no saved group to pop, i.e. cairo_pop_group() without matching cairo_push_group()
+ * + cairo.STATUS_NO_CURRENT_POINT - no current point defined
+ * + cairo.STATUS_INVALID_MATRIX - invalid matrix (not invertible)
+ * + cairo.STATUS_INVALID_STATUS - invalid value for an input + cairo.STATUS_t
+ * + cairo.STATUS_NULL_POINTER - NULL pointer
+ * + cairo.STATUS_INVALID_STRING - input string not valid UTF-8
+ * + cairo.STATUS_INVALID_PATH_DATA - input path data not valid
+ * + cairo.STATUS_READ_ERROR - error while reading from input stream
+ * + cairo.STATUS_WRITE_ERROR - error while writing to output stream
+ * + cairo.STATUS_SURFACE_FINISHED - target surface has been finished
+ * + cairo.STATUS_SURFACE_TYPE_MISMATCH - the surface type is not appropriate for the operation
+ * + cairo.STATUS_PATTERN_TYPE_MISMATCH - the pattern type is not appropriate for the operation
+ * + cairo.STATUS_INVALID_CONTENT - invalid value for an input cairo_content_t
+ * + cairo.STATUS_INVALID_FORMAT - invalid value for an input cairo_format_t
+ * + cairo.STATUS_INVALID_VISUAL - invalid value for an input Visual*
+ * + cairo.STATUS_FILE_NOT_FOUND - file not found
+ * + cairo.STATUS_INVALID_DASH - invalid value for a dash setting
+ * + cairo.STATUS_INVALID_DSC_COMMENT - invalid value for a DSC comment (Since 1.2)
+ * + cairo.STATUS_INVALID_INDEX - invalid index passed to getter (Since 1.4)
+ * + cairo.STATUS_CLIP_NOT_REPRESENTABLE - clip region not representable in desired format (Since 1.4)
+ * + cairo.STATUS_TEMP_FILE_ERROR - error creating or writing to a temporary file (Since 1.6)
+ * + cairo.STATUS_INVALID_STRIDE - invalid value for stride (Since 1.6)
+ * + cairo.STATUS_FONT_TYPE_MISMATCH - the font type is not appropriate for the operation (Since 1.8)
+ * + cairo.STATUS_USER_FONT_IMMUTABLE - the user-font is immutable (Since 1.8)
+ * + cairo.STATUS_USER_FONT_ERROR - error occurred in a user-font callback function (Since 1.8)
+ * + cairo.STATUS_NEGATIVE_COUNT - negative number used where it is not allowed (Since 1.8)
+ * + cairo.STATUS_INVALID_CLUSTERS - input clusters do not represent the accompanying text and glyph array (Since 1.8)
+ * + cairo.STATUS_INVALID_SLANT - invalid value for an input cairo_font_slant_t (Since 1.8)
+ * + cairo.STATUS_INVALID_WEIGHT - invalid value for an input cairo_font_weight_t (Since 1.8)
+ * + cairo.STATUS_INVALID_SIZE - invalid value (typically too big) for the size of the input (surface, pattern, etc.) (Since 1.10)
+ * + cairo.STATUS_USER_FONT_NOT_IMPLEMENTED - user-font method not implemented (Since 1.10)
+ * + cairo.STATUS_DEVICE_TYPE_MISMATCH - the device type is not appropriate for the operation (Since 1.10)
+ * + cairo.STATUS_DEVICE_ERROR - an operation to the device caused an unspecified error (Since 1.10)
+ * + cairo.STATUS_INVALID_MESH_CONSTRUCTION - a mesh pattern construction operation was used outside of a cairo_mesh_pattern_begin_patch()/cairo_mesh_pattern_end_patch() pair (Since 1.12)
+ * + cairo.STATUS_DEVICE_FINISHED - target device has been finished (Since 1.12)
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {int} status - see possible values above.
+ */
+static JSVAL context_status(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_status(context));
+}
+
+/**
+ * @function cairo.context_save
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_save(context);
+ * 
+ * Makes a copy of the current state of context and saves it on an internal stack of saved states for context. 
+ * 
+ * When cairo.context_restore() is called, context will be restored to the saved state. 
+ * 
+ * Multiple calls to cairo.context_save() and cairo.context_restore() can be nested; each call to cairo.context_restore() restores the state from the matching paired cairo.context_save().
+ * 
+ * It isn't necessary to clear all saved states before a context is freed. 
+ * 
+ * If the reference count of a context drops to zero in response to a call to cairo.context_destroy(), any saved states will be freed along with the context.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_save(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_save(context);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_restore
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_restore(context);
+ * 
+ * Restores context to the state saved by a preceding call to cairo.context_save() and removes that state from the stack of saved states.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_restore(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_restore(context);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_target
+ * 
+ * ### Synopsis
+ * 
+ * var surface = cairo.context_get_target(context);
+ * 
+ * Gets the target surface for the cairo context as passed to cairo.context_create().
+ * 
+ * This function will always return a valid pointer, but the result can be a "nil" surface if cr is already in an error state, (ie. cairo.context_status() != cairo.STATUS_SUCCESS).
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} surface - opaque handle to the cairo surface.
+ */
+static JSVAL context_get_target(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return External::New(cairo_get_target(context));
+}
+
+/**
+ * @function cairo.context_push_group
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_push_group(context);
+ * 
+ * Temporarily redirects drawing to an intermediate surface known as a group. 
+ * 
+ * The redirection lasts until the group is completed by a call to cairo.context_pop_group() or cairo.context_pop_group_to_source(). 
+ * 
+ * These calls provide the result of any drawing to the group as a pattern, (either as an explicit object, or set as the source pattern).
+ * 
+ * This group functionality can be convenient for performing intermediate compositing. One common use of a group is to render objects as opaque within the group, (so that they occlude each other), and then blend the result with translucence onto the destination.
+ * 
+ * Groups can be nested arbitrarily deep by making balanced calls to cairo.context_push_group()/cairo.context_pop_group(). Each call pushes/pops the new target group onto/from a stack.
+ * 
+ * The cairo.context_push_group() function calls cairo.context_save() so that any changes to the graphics state will not be visible outside the group, (the cairo.content_pop_group() functions call cairo.context__restore()).
+ * 
+ * By default the intermediate group will have a content type of cairo.CONTENT_COLOR_ALPHA. Other content types can be chosen for the group by using cairo.context_push_group_with_content() instead.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * 
+ * ### Example
+ * 
+ * As an example, here is how one might fill and stroke a path with translucence, but without any portion of the fill being visible under the stroke:
+ * 
+ * ```
+ * cairo.context_push_group (context);
+ * cairo.context_set_source (context, fill_pattern);
+ * cairo.context_fill_preserve (context);
+ * cairo.context_set_source (context, stroke_pattern);
+ * cairo.context_stroke (context);
+ * cairo.context_pop_group_to_source (context);
+ * cairo.context_paint_with_alpha (context, alpha);
+ * ```
+ */
+static JSVAL context_push_group(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_push_group(context);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_push_group_with_content
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_push_group_with_content(context, content);
+ * 
+ * Temporarily redirects drawing to an intermediate surface known as a group. The redirection lasts until the group is completed by a call to cairo.context_pop_group() or cairo.context_pop_group_to_source(). These calls provide the result of any drawing to the group as a pattern, (either as an explicit object, or set as the source pattern).
+ * 
+ * The group will have a content type of content. The ability to control this content type is the only distinction between this function and cairo.content_push_group() which you should see for a more detailed description of group rendering.
+ * 
+ * The content parameter is one of the following value:
+ * 
+ * + cairo.CONTENT_COLOR - the surface will hold color content only.
+ * + cairo.CONTENT_ALPHA - the surface will hold alpha content only.
+ * + cairo.CONTENT_COLOR_ALPHA - the surface will hold color and alpha content.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_push_group_with_content(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_push_group_with_content(context, (cairo_content_t)args[0]->IntegerValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_pop_group
+ * 
+ * ### Synopsis
+ * 
+ * var pattern = cairo.context_pop_group(context);
+ * 
+ * Terminates the redirection begun by a call to cairo.context_push_group() or cairo.context_push_group_with_content() and returns a new pattern containing the results of all drawing operations performed to the group.
+ * 
+ * The cairo.context_pop_group() function calls cairo.context_restore(), (balancing a call to cairo.context_save() by the cairo.context_push_group() function), so that any changes to the graphics state will not be visible outside the group.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} pattern - opaque handle to a cairo pattern.
+ */
+static JSVAL context_pop_group(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return External::New(cairo_pop_group(context));
+}
+
+/**
+ * @function cairo.context_pop_group_to_source
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_pop_group_to_source(context);
+ * 
+ * Terminates the redirection begun by a call to cairo.context_push_group() or cairo,context_push_group_with_content() and installs the resulting pattern as the source pattern in the given cairo context.
+ * 
+ * The behavior of this function is equivalent to the sequence of operations:
+ * 
+ * ```
+ * var group = cairo.context_pop_group (context);
+ * cairo.context_set_source (context, group);
+ * cairo.pattern_destroy (group);
+ * ```
+ * but is more convenient as their is no need for a variable to store the short-lived pointer to the pattern.
+ * 
+ * The cairo.context_pop_group() function calls cairo.context_restore(), (balancing a call to cairo.context_save() by the cairo.context_push_group()function), so that any changes to the graphics state will not be visible outside the group.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_pop_group_to_source(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_pop_group_to_source(context);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_group_target
+ * 
+ * ### Synopsis
+ * 
+ * var surface = cairo.context_get_group_target(context);
+ * 
+ * Gets the current destination surface for the context. This is either the original target surface as passed to cairo.context_create() or the target surface for the current group as started by the most recent call to cairo.context_push_group() or cairo.context_push_group_with_content().
+ * 
+ * This function will always return a valid pointer, but the result can be a "nil" surface if context is already in an error state, (ie. cairo.context_status() != cairo.STATUS_SUCCESS).
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} surface - opaque handle to the cairo surface.
+ */
+static JSVAL context_get_group_target(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return External::New(cairo_get_group_target(context));
+}
+
+/**
+ * @function cairo.context_set_source_rgb
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_source_rgb(context, red, green, blue);
+ * 
+ * Sets the source pattern within context to an opaque color. 
+ * 
+ * This opaque color will then be used for any subsequent drawing operation until a new source pattern is set.
+ * 
+ * The color components are floating point numbers in the range 0 to 1. If the values passed in are outside that range, they will be clamped.
+ * 
+ * The default source pattern is opaque black, (that is, it is equivalent to cairo.context_set_source_rgb(context, 0.0, 0.0, 0.0)).
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} red - red component of color
+ * @param {number} green - green component of color
+ * @param {number} blue - blue component of color
+ */
+static JSVAL context_set_source_rgb(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_set_source_rgb(context, args[1]->NumberValue(), args[2]->NumberValue(), args[3]->NumberValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_set_source_rgba
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_source_rgba(context, red, green, blue, alpha);
+ * 
+ * Sets the source pattern within context to a translucent color. 
+ * 
+ * This color will then be used for any subsequent drawing operation until a new source pattern is set.
+ * 
+ * The color and alpha components are floating point numbers in the range 0 to 1. If the values passed in are outside that range, they will be clamped.
+ * 
+ * The default source pattern is opaque black, (that is, it is equivalent to cairo.context_set_source_rgba(context, 0.0, 0.0, 0.0, 1.0)).
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} red - red component of color
+ * @param {number} green - green component of color
+ * @param {number} blue - blue component of color
+ * @param {number} alpha - alpha component of color
+ */
+static JSVAL context_set_source_rgba(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_set_source_rgba(context, args[1]->NumberValue(), args[2]->NumberValue(), args[3]->NumberValue(), args[4]->NumberValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_set_source
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_source(context, pattern);
+ * 
+ * Sets the source pattern within context to pattern. 
+ * 
+ * This pattern will then be used for any subsequent drawing operation until a new source pattern is set.
+ * 
+ * Note: The pattern's transformation matrix will be locked to the user space in effect at the time of cairo.context_set_source(). This means that further modifications of the current transformation matrix will not affect the source pattern. See cairo.pattern_set_matrix().
+ * 
+ * The default source pattern is a solid pattern that is opaque black, (that is, it is equivalent to cairo.context_set_source_rgb(context, 0.0, 0.0, 0.0)).
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ */
+static JSVAL context_set_source(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[1]);
+    cairo_set_source(context, pattern);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_set_source_surface
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_source_surface(context, surface, x, y);
+ * 
+ * This is a convenience function for creating a pattern from surface and setting it as the source in context with cairo.context_set_source().
+ * 
+ * The x and y parameters give the user-space coordinate at which the surface origin should appear. (The surface origin is its upper-left corner before any transformation has been applied.) The x and y parameters are negated and then set as translation values in the pattern matrix.
+ * 
+ * Other than the initial translation pattern matrix, as described above, all other pattern attributes, (such as its extend mode), are set to the default values as in cairo.pattern_create_for_surface(). The resulting pattern can be queried with cairo.context_get_source() so that these attributes can be modified if desired, (eg. to create a repeating pattern with cairo.pattern_set_extend()).
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} surface - opaque handle to a cairo surface..
+ * @param {number} x - x coordinate of surface origin.
+ * @param {number} y - y coordinate of surface origin.
+ */
+static JSVAL context_set_source_surface(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[1]);
+    double x = args[2]->NumberValue();
+    double y = args[3]->NumberValue();
+    cairo_set_source_surface(context, surface, x, y);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_source
+ * 
+ * ### Synopsis
+ * 
+ * var pattern = cairo.context_get_source(context, pattern);
+ * 
+ * Gets the current source pattern within context. 
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} pattern - opaque handle to a cairo pattern.
+ */
+static JSVAL context_get_source(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return External::New(cairo_get_source(context));
+}
+
+/**
+ * @function cairo.context_set_antialias
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_antialias(context, mode);
+ * 
+ * Set the antialiasing mode of the rasterizer used for drawing shapes. 
+ * 
+ * This value is a hint, and a particular backend may or may not support a particular value. At the current time, no backend supports cairo.ANTIALIAS_SUBPIXEL when drawing shapes.
+ * 
+ * Note that this option does not affect text rendering, instead see cairo.context_font_options_set_antialias().
+ * 
+ * Valid modes are:
+ * 
+ * + cairo.ANTIALIAS_DEFAULT - use the default antialiasing for the subsystem and target device.
+ * + cairo.ANTIALIAS_NONE - use a bilevel alpha mask.
+ * + cairo.ANTIALIAS_GRAY - perform single-color antialiasing (using shades of gray for black text on a white background, for example).
+ * + cairo.ANTIALIAS_SUBPIXEL - perform antialiasing by taking advantage of the order of subpixel elements on devices such as LCD panels.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {int} mode - one of the above modes.
+ */
+static JSVAL context_set_antialias(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_set_antialias(context, (cairo_antialias_t)args[1]->IntegerValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_antialias
+ * 
+ * ### Synopsis
+ * 
+ * var mode = cairo.context_get_antialias(context);
+ * 
+ * Gets the current shape antialiasing mode, as set by cairo.context_set_antialias().
+ * 
+ * The return value is a mode:
+ * 
+ * + cairo.ANTIALIAS_DEFAULT - use the default antialiasing for the subsystem and target device.
+ * + cairo.ANTIALIAS_NONE - use a bilevel alpha mask.
+ * + cairo.ANTIALIAS_GRAY - perform single-color antialiasing (using shades of gray for black text on a white background, for example).
+ * + cairo.ANTIALIAS_SUBPIXEL - perform antialiasing by taking advantage of the order of subpixel elements on devices such as LCD panels.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {int} mode - see list above.
+ */
+static JSVAL context_get_antialias(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_get_antialias(context));
+}
+
+/**
+ * @function cairo.content_set_dash
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_dash(context, dashes, offset);
+ * 
+ * Sets the dash pattern to be used by cairo.context_stroke(). 
+ * 
+ * A dash pattern is specified by dashes, an array of positive values. 
+ * 
+ * Each value provides the length of alternate "on" and "off" portions of the stroke. 
+ * 
+ * The offset specifies an offset into the pattern at which the stroke begins.
+ * 
+ * Each "on" segment will have caps applied as if the segment were a separate sub-path. In particular, it is valid to use an "on" length of 0.0 with cairo.LINE_CAP_ROUND or cairo.LINE_CAP_SQUARE in order to distributed dots or squares along a path.
+ * 
+ * Note: The length values are in user-space units as evaluated at the time of stroking. This is not necessarily the same as the user space at the time of cairo.context_set_dash()..
+ * 
+ * If the dashes array has length 0, dashing is disabled.
+ * 
+ * If the dashes array has a single element,  a symmetric pattern is assumed with alternating on and off portions of the size specified by the single value in dashes.
+ * 
+ * If any value in dashes is negative, or if all values are 0, then context will be put into an error state with a status of cairo.STATUS_INVALID_DASH.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {array} dashes - array of dash information, described above.
+ * @param {number} offset - offset into pattern at which the stroke begins.
+ */
+static JSVAL context_set_dash(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    Handle<Array>dashes = Handle<Array>::Cast(args[1]->ToObject());
+    double offset = args[2]->NumberValue();
+    
+    int numDashes = dashes->Length();
+    if (numDashes == 0) {
+        cairo_set_dash(context, NULL, 0, offset);
+    }
+    double *dashArray = new double[numDashes];
+    for (int i=0; i<numDashes; i++) {
+        dashArray[i] = dashes->Get(i)->NumberValue();
+    }
+    cairo_set_dash(context, dashArray, numDashes, offset);
+    delete [] dashArray;
+    
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_dash_count
+ * 
+ * ### Synopsis
+ * 
+ * var count = cairo.context_get_dash_count(context);
+ * 
+ * Returns the length of the dash array in the context, or 0 if dashing is not in effect.
+ * 
+ * See also cairo.context_set_dash() and cairo_context.get_dash().
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {int} count - length of dashes array.
+ */
+static JSVAL context_get_dash_count(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_get_dash_count(context));
+}
+
+/**
+ * @function cairo.context_get_dash
+ * 
+ * ### Synopsis
+ * 
+ * var dashes = cairo.context_get_dash(context);
+ * 
+ * Gets the current dash array.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {array} dashes = array of Number values of the dash array for the context.
+ */
+static JSVAL context_get_dash(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    
+    int count = cairo_get_dash_count(context);
+    double *dashes = new double[count];
+    double offset;
+    cairo_get_dash(context, dashes, &offset);
+    Handle<Array>a = Array::New(count);
+    for (int i=0; i<count; i++) {
+        a->Set(i, Number::New(dashes[i]));
+    }
+    delete [] dashes;
+    return a;
+}
+
+/**
+ * @function cairo.context_set_fill_rule
+ * 
+ * @param args
+ * @return 
+ */
+static JSVAL context_set_fill_rule(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    int rule = args[1]->IntegerValue();
+    cairo_set_fill_rule(context, (cairo_fill_rule_t)rule);
+    return Undefined();
+}
+
+////////////////////////// MISC
+/**
+ * @function cairo.status_to_string
+ * 
+ * ### Synopsis
+ * 
+ * var message = cairo.status_to_string(status);
+ * 
+ * Provides a human-readable description of a cairo.STATUS_* code.
+ * 
+ * @param {int} status - one of the cairo.STATUS_* codes, as returned by a function like cairo.context_status().
+ * @return {string} message - description of the error/status code.
+ */
+static JSVAL status_to_string(JSARGS args) {
+    return String::New(cairo_status_to_string((cairo_status_t)args[0]->IntegerValue()));
 }
 
 void init_cairo_object () {
@@ -547,7 +1229,6 @@ void init_cairo_object () {
     cairo->Set(String::New("FORMAT_RGB16_565"), Integer::New(CAIRO_FORMAT_RGB16_565));
     
     cairo->Set(String::New("STATUS_SUCCESS"), Integer::New(CAIRO_STATUS_SUCCESS));
-
     cairo->Set(String::New("STATUS_NO_MEMORY"), Integer::New(CAIRO_STATUS_NO_MEMORY));
     cairo->Set(String::New("STATUS_INVALID_RESTORE"), Integer::New(CAIRO_STATUS_INVALID_RESTORE));
     cairo->Set(String::New("STATUS_INVALID_POP_GROUP"), Integer::New(CAIRO_STATUS_INVALID_POP_GROUP));
@@ -617,8 +1298,20 @@ void init_cairo_object () {
     cairo->Set(String::New("MIME_TYPE_PNG"), String::New(CAIRO_MIME_TYPE_PNG));
     cairo->Set(String::New("MIME_TYPE_JP2"), String::New(CAIRO_MIME_TYPE_JP2));
     cairo->Set(String::New("MIME_TYPE_URI"), String::New(CAIRO_MIME_TYPE_URI));
-    
 
+    cairo->Set(String::New("ANTIALIAS_DEFAULT"), Integer::New(CAIRO_ANTIALIAS_DEFAULT));
+    cairo->Set(String::New("ANTIALIAS_NONE"), Integer::New(CAIRO_ANTIALIAS_NONE));
+    cairo->Set(String::New("ANTIALIAS_GRAY"), Integer::New(CAIRO_ANTIALIAS_GRAY));
+    cairo->Set(String::New("ANTIALIAS_SUBPIXEL"), Integer::New(CAIRO_ANTIALIAS_SUBPIXEL));
+
+    cairo->Set(String::New("LINE_CAP_BUTT"), Integer::New(CAIRO_LINE_CAP_BUTT));
+    cairo->Set(String::New("LINE_CAP_ROUND"), Integer::New(CAIRO_LINE_CAP_ROUND));
+    cairo->Set(String::New("LINE_CAP_SQUARE"), Integer::New(CAIRO_LINE_CAP_SQUARE));
+    
+    cairo->Set(String::New("FILL_RULE_WINDING"), Integer::New(CAIRO_FILL_RULE_WINDING));
+    cairo->Set(String::New("FILL_RULE_EVEN_ODD"), Integer::New(CAIRO_FILL_RULE_EVEN_ODD));
+    
+    
 //    net->Set(String::New("sendFile"), FunctionTemplate::New(net_sendfile));
 
     builtinObject->Set(String::New("cairo"), cairo);
