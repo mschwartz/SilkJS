@@ -1987,6 +1987,7 @@ static JSVAL context_show_page(JSARGS args) {
 
 
 ////////////////////////// PATHS
+// http://www.cairographics.org/manual/cairo-Paths.html
 
 // functions to return cario_path_t and manipulate them not done.
 
