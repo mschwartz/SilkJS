@@ -1990,6 +1990,78 @@ static JSVAL context_show_page(JSARGS args) {
 
 // functions to return cario_path_t and manipulate them not done.
 
+/**
+ * @function cairo.context_has_current_point
+ * 
+ * ### Synopsis
+ * 
+ * var hasPoint = cairo.context_has_current_point(context);
+ * 
+ * Returns whether a current point is defined on the current path. See cairo.context_get_current_point() for details on the current point.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {boolean} hasPoint - true if a current point is defined.
+ */
+static JSVAL context_has_current_point(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return cairo_has_current_point(context) ? True() : False();
+}
+
+/**
+ * @function cairo.context_get_current_point
+ * 
+ * ### Synopsis
+ * 
+ * var point = cairo.context_get_current_point(context);
+ * 
+ * Gets the current point of the current path, which is conceptually the final point reached by the path so far.
+ * 
+ * The current point is returned in the user-space coordinate system. If there is no defined current point or if context is in an error status, x and y will both be set to 0.0. It is possible to check this in advance with cairo.context_has_current_point().
+ * 
+ * Most path construction functions alter the current point. 
+ * 
+ * See the following for details on how they affect the current point: cairo.context_new_path(), cairo.context_new_sub_path(), cairo.context_append_path(), cairo.context_close_path(), cairo.context_move_to(), cairo.context_line_to(), cairo.context_curve_to(), cairo.context_rel_move_to(), cairo.context_rel_line_to(), cairo.context_rel_curve_to(), cairo.context_arc(), cairo.context_arc_negative(), cairo.context_rectangle(), cairo.context_text_path(), cairo.context_glyph_path(), cairo_stroke_to_path().
+ * 
+ * Some functions use and alter the current point but do not otherwise change current path: cairo.context_show_text().
+ * 
+ * Some functions unset the current path and as a result, current point: cairo.context_fill(), cairo.context_stroke().
+ * 
+ * The object returned has just two members:
+ * 
+ * + {number} x: x coordinate of the current point
+ * + {number} y: y coordinate of the current point
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} point - object of the form described above.
+ */
+static JSVAL context_get_current_point(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    double x,y;
+    
+    cairo_get_current_point(context, &x, &y);
+    JSOBJ o = Object::New();
+    o->Set(String::New("x"), Number::New(x));
+    o->Set(String::New("y"), Number::New(y));
+    return o;
+}
+
+/**
+ * @function cairo.context_new_path
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_new_path(context);
+ * 
+ * Clears the current path. After this call there will be no path and no current point.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return 
+ */
+static JSVAL context_new_path(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_new_path(context);
+    return Undefined();
+}
 
 ////////////////////////// MISC
 
