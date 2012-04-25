@@ -1191,8 +1191,28 @@ static JSVAL context_get_dash(JSARGS args) {
 /**
  * @function cairo.context_set_fill_rule
  * 
- * @param args
- * @return 
+ * ### Synopsis
+ * 
+ * cairo.context_set_fill_rule(context, rule);
+ * 
+ * Set the current fill rule within the cairo context. The fill rule is used to determine which regions are inside or outside a complex (potentially self-intersecting) path. The current fill rule affects both cairo.context_fill() and cairo.context_clip().
+ * 
+ * The rule argument may be:
+ * 
+ * + cairo.FILL_RULE_WINDING
+ * + cairo.FILL_RULE_EVEN_ODD
+ * 
+ * For both fill rules, whether or not a point is included in the fill is determined by taking a ray from that point to infinity and looking at intersections with the path. The ray can be in any direction, as long as it doesn't pass through the end point of a segment or have a tricky intersection such as intersecting tangent to the path. (Note that filling is not actually implemented in this way. This is just a description of the rule that is applied.)
+ * 
+ * cairo.FILL_RULE_WINDING
+ *   If the path crosses the ray from left-to-right, counts +1. If the path crosses the ray from right to left, counts -1. (Left and right are determined from the perspective of looking along the ray from the starting point.) If the total count is non-zero, the point will be filled.
+ * cairo.FILL_RULE_EVEN_ODD
+ *  Counts the total number of intersections, without regard to the orientation of the contour. If the total number of intersections is odd, the point will be filled.
+ * 
+ * The default fill rule is cairo.FILL_RULE_WINDING.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {int} rule - one of the above fill rules.
  */
 static JSVAL context_set_fill_rule(JSARGS args) {
     cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
@@ -1201,7 +1221,778 @@ static JSVAL context_set_fill_rule(JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function cairo.context_get_fill_rule
+ * 
+ * ### Synopsis
+ * 
+ * var rule = cairo.context_get_fill_rule(context);
+ * 
+ * Gets the current fill rule, as set by cairo.context_set_fill_rule().
+ * 
+ * See cairo.context_set_fill_rule() for description of the fill rule values.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {int} rule - fill rule
+ */
+static JSVAL context_get_fill_rule(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_get_fill_rule(context));
+}
+
+/**
+ * @function cairo.context_set_line_cap
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_line_cap(context, line_cap);
+ * 
+ * Sets the current line cap style within the cairo context. 
+ * 
+ * As with the other stroke parameters, the current line cap style is examined by cairo.context_stroke(), cairo.context_stroke_extents(), and cairo.context_stroke_to_path(), but does not have any effect during path construction.
+ * 
+ * The line_cap values may be:
+ * 
+ * cairo.LINE_CAP_BUTT
+ *   start(stop) the line exactly at the start(end) point
+ * cairo.LINE_CAP_ROUND
+ *   use a round ending, the center of the circle is the end point
+ * cairo.LINE_CAP_SQUARE
+ *   use squared ending, the center of the square is the end point
+ * 
+ * The default line cap style is cairo.LINE_CAP_BUTT.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {int} line_cap - one of the above line_cap values.
+ */
+static JSVAL context_set_line_cap(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    int line_cap = args[1]->IntegerValue();
+    cairo_set_line_cap(context, (cairo_line_cap_t)line_cap);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_line_cap
+ * 
+ * ### Synopsis
+ * 
+ * var line_cap = cairo.context_get_line_cap(context);
+ * 
+ * Gets the current line cap style, as set by cairo.context_set_line_cap().
+ * 
+ * See cairo.context_set_line_cap() for description of the line_cap values.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {int} line_cap - line cap style.
+ */
+static JSVAL context_get_line_cap(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_get_line_cap(context));
+}
+
+/**
+ * @function cairo.context_set_line_join
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_line_join(context, line_join);
+ * 
+ * Sets the current line join style within the cairo context. 
+ * 
+ * As with the other stroke parameters, the current line join style is examined by cairo.context_stroke(), cairo.context_stroke_extents(), and cairo.context_stroke_to_path(), but does not have any effect during path construction.
+ * 
+ * Line join styles may be:
+ * 
+ * cairo.LINE_JOIN_MITER
+ *   use a sharp (angled) corner, see cairo.context_set_miter_limit().
+ * cairo.LINE_JOIN_ROUND
+ *   use a rounded join, the center of the circle is the joint point.
+ * cairo.LINE_JOIN_BEVEL
+ *   use a cut-off join, the join is cut off at half the line width from the joint point
+ * 
+ * The default line join style is cairo.LINE_JOIN_MITER.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {int} line_join - one of the above line_join values.
+ */
+static JSVAL context_set_line_join(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    int line_join = args[1]->IntegerValue();
+    cairo_set_line_join(context, (cairo_line_join_t)line_join);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_line_join
+ * 
+ * ### Synopsis
+ * 
+ * var line_join = cairo.context_get_line_join(context);
+ * 
+ * Gets the current line join style, as set by cairo.context_set_line_join().
+ * 
+ * See cairo.context_set_line_join() for description of the line_join values.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {int} line_join - line join style.
+ */
+static JSVAL context_get_line_join(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_get_line_join(context));
+}
+
+/**
+ * @function cairo.context_set_line_width
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_line_width(context, width);
+ * 
+ * Sets the current line width within the cairo context. The line width value specifies the diameter of a pen that is circular in user space, (though device-space pen may be an ellipse in general due to scaling/shear/rotation of the CTM).
+ * 
+ * Note: When the description above refers to user space and CTM it refers to the user space and CTM in effect at the time of the stroking operation, not the user space and CTM in effect at the time of the call to cairo_set_line_width(). The simplest usage makes both of these spaces identical. That is, if there is no change to the CTM between a call to cairo_set_line_width() and the stroking operation, then one can just pass user-space values to cairo.context_set_line_width() and ignore this note.
+ * 
+ * As with the other stroke parameters, the current line width is examined by cairo.context_stroke(), cairo.context_stroke_extents(), and cairo.context_stroke_to_path(), but does not have any effect during path construction.
+ * 
+ * The default line width value is 2.0.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} width - setting for line width.
+ */
+static JSVAL context_set_line_width(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    double width = args[1]->NumberValue();
+    cairo_set_line_width(context, width);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_line_width
+ * 
+ * ### Synopsis
+ * 
+ * var width = cairo.context_get_line_width(context);
+ * 
+ * This function returns the current line width value exactly as set by cairo.context_set_line_width(). 
+ * 
+ * Note that the value is unchanged even if the CTM has changed between the calls to cairo.context_set_line_width() and cairo.context_get_line_width().
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {number} width - current line width.
+ */
+static JSVAL context_get_line_width(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return Number::New(cairo_get_line_width(context));
+}
+
+/**
+ * @function cairo.context_set_miter_limit
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_miter_limit(context, limit);
+ * 
+ * Sets the current miter limit within the cairo context.
+ * 
+ * If the current line join style is set to CAIRO_LINE_JOIN_MITER (see cairo.context_set_line_join()), the miter limit is used to determine whether the lines should be joined with a bevel instead of a miter. Cairo divides the length of the miter by the line width. If the result is greater than the miter limit, the style is converted to a bevel.
+ * 
+ * As with the other stroke parameters, the current line miter limit is examined by cairo.context_stroke(), cairo.context_stroke_extents(), and cairo.context_stroke_to_path(), but does not have any effect during path construction.
+ * 
+ * The default miter limit value is 10.0, which will convert joins with interior angles less than 11 degrees to bevels instead of miters. For reference, a miter limit of 2.0 makes the miter cutoff at 60 degrees, and a miter limit of 1.414 makes the cutoff at 90 degrees.
+ * 
+ * A miter limit for a desired angle can be computed as: miter limit = 1/sin(angle/2)
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} limit - setting for miter limit.
+ */
+static JSVAL context_set_miter_limit(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    double limit = args[1]->NumberValue();
+    cairo_set_miter_limit(context, limit);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_miter_limit
+ * 
+ * ### Synopsis
+ * 
+ * var limit = cairo.context_get_miter_limit(context);
+ * 
+ * This function returns the current miter limit value exactly as set by cairo.context_set_miter_limit(). 
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {number} width - current line width.
+ */
+static JSVAL context_get_miter_limit(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return Number::New(cairo_get_miter_limit(context));
+}
+
+/**
+ * @function cairo.context_set_operator
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_operator(context, operator);
+ * 
+ * Sets the compositing operator to be used for all drawing operations.
+ * 
+ * The default operator is CAIRO_OPERATOR_OVER.
+ * 
+ * The operator parameter may be one of the following values:
+ * 
+ * cairo.OPERATOR_CLEAR - clear destination layer (bounded)
+ * cairo.OPERATOR_SOURCE - replace destination layer (bounded)
+ * cairo.OPERATOR_OVER - draw source layer on top of destination layer (bounded)
+ * cairo.OPERATOR_IN - draw source where there was destination content (unbounded)
+ * cairo.OPERATOR_OUT - draw source where there was no destination content (unbounded)
+ * cairo.OPERATOR_ATOP - draw source on top of destination content and only there
+ * cairo.OPERATOR_DEST - ignore the source
+ * cairo.OPERATOR_DEST_OVER - draw destination on top of source
+ * cairo.OPERATOR_DEST_IN - leave destination only where there was source content (unbounded)
+ * cairo.OPERATOR_DEST_OUT - leave destination only where there was no source content
+ * cairo.OPERATOR_DEST_ATOP - leave destination on top of source content and only there (unbounded)
+ * cairo.OPERATOR_XOR - source and destination are shown where there is only one of them
+ * cairo.OPERATOR_ADD - source and destination layers are accumulated
+ * cairo.OPERATOR_SATURATE - like over, but assuming source and dest are disjoint geometries
+ * cairo.OPERATOR_MULTIPLY - source and destination layers are multiplied. This causes the result to be at least as dark as the darker inputs.
+ * cairo.OPERATOR_SCREEN - source and destination are complemented and multiplied. This causes the result to be at least as light as the lighter inputs.
+ * cairo.OPERATOR_OVERLAY - multiplies or screens, depending on the lightness of the destination color.
+ * cairo.OPERATOR_DARKEN - replaces the destination with the source if it is darker, otherwise keeps the source.
+ * cairo.OPERATOR_LIGHTEN - replaces the destination with the source if it is lighter, otherwise keeps the source.
+ * cairo.OPERATOR_COLOR_DODGE - brightens the destination color to reflect the source color.
+ * cairo.OPERATOR_COLOR_BURN - darkens the destination color to reflect the source color.
+ * cairo.OPERATOR_HARD_LIGHT - Multiplies or screens, dependent on source color.
+ * cairo.OPERATOR_SOFT_LIGHT - Darkens or lightens, dependent on source color.
+ * cairo.OPERATOR_DIFFERENCE - Takes the difference of the source and destination color.
+ * cairo.OPERATOR_EXCLUSION - Produces an effect similar to difference, but with lower contrast.
+ * cairo.OPERATOR_HSL_HUE - Creates a color with the hue of the source and the saturation and luminosity of the target.
+ * cairo.OPERATOR_HSL_SATURATION - Creates a color with the saturation of the source and the hue and luminosity of the target. Painting with this mode onto a gray area produces no change.
+ * cairo.OPERATOR_HSL_COLOR - Creates a color with the hue and saturation of the source and the luminosity of the target. This preserves the gray levels of the target and is useful for coloring monochrome images or tinting color images.
+ * cairo.OPERATOR_HSL_LUMINOSITY - Creates a color with the luminosity of the source and the hue and saturation of the target. This produces an inverse effect to cairo.OPERATOR_HSL_COLOR.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {int} operator - one of the above operators.
+ */
+static JSVAL context_set_operator(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_set_operator(context, (cairo_operator_t)args[1]->IntegerValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_operator
+ * 
+ * ### Synopsis
+ * 
+ * var operator = cairo.context_get_operator(context);
+ * 
+ * Gets the current compositing operator for a cairo context.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {int} operator - one of the operators, as described in cairo.context_set_operator().
+ */
+static JSVAL context_get_operator(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_get_operator(context));
+}
+
+/**
+ * @function cairo.context_set_tolerance
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_tolerance(context, tolerance);
+ * 
+ * Sets the tolerance used when converting paths into trapezoids. 
+ * 
+ * Curved segments of the path will be subdivided until the maximum deviation between the original path and the polygonal approximation is less than tolerance. 
+ * 
+ * The default value is 0.1. 
+ * 
+ * A larger value will give better performance, a smaller value, better appearance. (Reducing the value from the default value of 0.1 is unlikely to improve appearance significantly.) 
+ * 
+ * The accuracy of paths within Cairo is limited by the precision of its internal arithmetic, and the prescribed tolerance is restricted to the smallest representable internal value.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} tolerance - setting for tolerance, in device units (typically pixels).
+ */
+static JSVAL context_set_tolerance(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    double tolerance = args[1]->NumberValue();
+    cairo_set_tolerance(context, tolerance);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_tolerance
+ * 
+ * ### Synopsis
+ * 
+ * var tolerance = cairo.context_get_tolerance(context);
+ * 
+ * This function returns the current tolerance value exactly as set by cairo.context_set_tolerance(). 
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {number} tolerance - current tolerance value.
+ */
+static JSVAL context_get_tolerance(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return Number::New(cairo_get_tolerance(context));
+}
+
+/**
+ * @function cairo.context_clip
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_clip(context);
+ * 
+ * Establishes a new clip region by intersecting the current clip region with the current path as it would be filled by cairo.context_fill() and according to the current fill rule (see cairo.context_set_fill_rule()).
+ * 
+ * After cairo.context_clip(), the current path will be cleared from the cairo context.
+ * 
+ * The current clip region affects all drawing operations by effectively masking out any changes to the surface that are outside the current clip region.
+ * 
+ * Calling cairo.context_clip() can only make the clip region smaller, never larger. But the current clip is part of the graphics state, so a temporary restriction of the clip region can be achieved by calling cairo.context_clip() within a cairo.context_save()/cairo.context_restore() pair. The only other means of increasing the size of the clip region is cairo.context_reset_clip().
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_clip(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_clip(context);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_clip_preserve
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_clip_preserve(context);
+ * 
+ * Establishes a new clip region by intersecting the current clip region with the current path as it would be filled by cairo.context_fill() and according to the current fill rule (see cairo.context_set_fill_rule()).
+ * 
+ * Unlike cairo.context_clip(), cairo.context_clip_preserve() preserves the path within the cairo context.
+ * 
+ * The current clip region affects all drawing operations by effectively masking out any changes to the surface that are outside the current clip region.
+ * 
+ * Calling cairo.context_clip_preserve() can only make the clip region smaller, never larger. But the current clip is part of the graphics state, so a temporary restriction of the clip region can be achieved by calling cairo.context_clip_preserve() within a cairo.context_save()/cairo.context_restore() pair. The only other means of increasing the size of the clip region is cairo.context_reset_clip().
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_clip_preserve(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_clip_preserve(context);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_clip_extents
+ * 
+ * ### Synopsis
+ * 
+ * var extents = cairo.context_clip_extents(context);
+ * 
+ * Computes a bounding box in user coordinates covering the area inside the current clip.
+ * 
+ * The object returned has the following members:
+ * 
+ * + x1: x coordinate of the top left corner of the resulting extents.
+ * + y1: y coordinate of the top left corner of the resulting extents.
+ * + x2: x coordinate of the lower right corner of the resulting extents.
+ * + y2: y coordinate of the lower right corner of the resulting extents.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} extents - see object description above.
+ */
+static JSVAL context_clip_extents(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    double x1,y1, x2,y2;
+    cairo_clip_extents(context, &x1,&y1, &x2,&y2);
+    
+    JSOBJ o = Object::New();
+    o->Set(String::New("x1"), Number::New(x1));
+    o->Set(String::New("y1"), Number::New(y1));
+    o->Set(String::New("x2"), Number::New(x2));
+    o->Set(String::New("y2"), Number::New(y2));
+    return o;
+}
+
+/**
+ * @function cairo.context_in_clip
+ * 
+ * ### Synopsis
+ * 
+ * var inClip = cairo.context_in_clip(context, x, y);
+ * 
+ * Tests whether the given point is inside the area that would be visible through the current clip, i.e. the area that would be filled by a cairo.context_paint() operation.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {boolean} inClip - true if the point is inside the clip rectangle, false if not.
+ */
+static JSVAL context_in_clip(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return cairo_in_clip(context, args[1]->NumberValue(), args[2]->NumberValue()) ? True() : False();
+}
+
+/**
+ * @function cairo.context_reset_clip
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_reset_clip(context);
+ * 
+ * Reset the current clip region to its original, unrestricted state. 
+ * 
+ * That is, set the clip region to an infinitely large shape containing the target surface. Equivalently, if infinity is too hard to grasp, one can imagine the clip region being reset to the exact bounds of the target surface.
+ * 
+ * Note that code meant to be reusable should not call cairo.context_reset_clip() as it will cause results unexpected by higher-level code which calls cairo.context_clip(). Consider using cairo.context_save() and cairo.context_restore() around cairo.context_clip() as a more robust means of temporarily restricting the clip region.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_reset_clip(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_reset_clip(context);
+    return Undefined();
+}
+
+// rectangle list stuff not implemented (yet)
+
+/**
+ * @function cairo.context_fill
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_fill(context);
+ * 
+ * A drawing operator that fills the current path according to the current fill rule, (each sub-path is implicitly closed before being filled). 
+ * 
+ * After cairo.context_fill(), the current path will be cleared from the cairo context. 
+ * 
+ * See cairo.context_set_fill_rule() and cairo.context_fill_preserve().
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_fill(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_fill(context);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_fill_preserve
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_fill_preserve(context);
+ * 
+ * A drawing operator that fills the current path according to the current fill rule, (each sub-path is implicitly closed before being filled). 
+ * 
+ * Unlike cairo.context_fill(), cairo.context_fill_preserve() preserves the path within the cairo context.
+ * 
+ * See cairo.context_set_fill_rule() and cairo.context_fill().
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_fill_preserve(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_fill_preserve(context);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_fill_extents
+ * 
+ * ### Synopsis
+ * 
+ * var extents = cairo.context_fill_extents(context);
+ * 
+ * Computes a bounding box in user coordinates covering the area that would be affected, (the "inked" area), by a cairo.context_fill() operation given the current path and fill parameters. If the current path is empty, returns an empty rectangle ((0,0), (0,0)). Surface dimensions and clipping are not taken into account.
+ * 
+ * Contrast with cairo.context_path_extents(), which is similar, but returns non-zero extents for some paths with no inked area, (such as a simple line segment).
+ * 
+ * Note that cairo.context_fill_extents() must necessarily do more work to compute the precise inked areas in light of the fill rule, so cairo.context_path_extents() may be more desirable for sake of performance if the non-inked path extents are desired.
+ * 
+ * See cairo.context_fill(), cairo.context_set_fill_rule() and cairo.context_fill_preserve().
+ * 
+ * The object returned has the following members:
+ * 
+ * + x1: x coordinate of the top left corner of the resulting extents.
+ * + y1: y coordinate of the top left corner of the resulting extents.
+ * + x2: x coordinate of the lower right corner of the resulting extents.
+ * + y2: y coordinate of the lower right corner of the resulting extents.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} extents - see object description above.
+ */
+static JSVAL context_fill_extents(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    double x1,y1, x2,y2;
+    cairo_fill_extents(context, &x1,&y1, &x2,&y2);
+    
+    JSOBJ o = Object::New();
+    o->Set(String::New("x1"), Number::New(x1));
+    o->Set(String::New("y1"), Number::New(y1));
+    o->Set(String::New("x2"), Number::New(x2));
+    o->Set(String::New("y2"), Number::New(y2));
+    return o;
+}
+
+/**
+ * @function cairo.context_in_fill
+ * 
+ * ### Synopsis
+ * 
+ * var inFill = cairo.context_in_fill(context, x, y);
+ * 
+ * Tests whether the given point is inside the area that would be affected by a cairo.context_fill() operation given the current path and filling parameters. Surface dimensions and clipping are not taken into account.
+ * 
+ * See cairo.context_fill(), cairo.context_set_fill_rule() and cairo.context_fill_preserve().
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {boolean} inFill - true if the point is inside the area that would be affected, false if not.
+ */
+static JSVAL context_in_fill(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return cairo_in_fill(context, args[1]->NumberValue(), args[2]->NumberValue()) ? True() : False();
+}
+
+/**
+ * @function cairo.context_mask
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_mask(context, pattern);
+ * 
+ * A drawing operator that paints the current source using the alpha channel of pattern as a mask. 
+ * 
+ * Opaque areas of pattern are painted with the source, transparent areas are not painted.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} pattern - opaque handle to a cairo pattern.
+ */
+static JSVAL context_mask(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[1]);
+    cairo_mask(context, pattern);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_mask_surface
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_mask_surface(context, surface, surface_x, surface_y);
+ * 
+ * A drawing operator that paints the current source using the alpha channel of surface as a mask. 
+ * 
+ * Opaque areas of surface are painted with the source, transparent areas are not painted.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} surface - opaque handle to a cairo surface.
+ * @param {number} surface_x - x coordinate at which to place the origin of surface.
+ * @param {number} surface_y - y coordinate at which to place the origin of surface.
+ */
+static JSVAL context_mask_surface(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[1]);
+    cairo_mask_surface(context, surface, args[2]->NumberValue(), args[3]->NumberValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_paint
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_paint(context);
+ * 
+ * A drawing operator that paints the current source everywhere within the current clip region.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_paint(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_paint(context);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_paint_with_alpha
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_paint_with_alpha(context, alpha);
+ * 
+ * A drawing operator that paints the current source everywhere within the current clip region using a mask of constant alpha value alpha. 
+ * 
+ * The effect is similar to cairo.context_paint(), but the drawing is faded out using the alpha value.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} alpha - alpha value, between 0 (transparent) and 1 (opaque).
+ */
+static JSVAL context_paint_with_alpha(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_paint_with_alpha(context, args[1]->NumberValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_stroke
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_stroke(context);
+ * 
+ * A drawing operator that strokes the current path according to the current line width, line join, line cap, and dash settings. After cairo.context_stroke(), the current path will be cleared from the cairo context. 
+ * 
+ * See cairo.context_set_line_width(), cairo.context_set_line_join(), cairo.context_set_line_cap(), cairo.context_set_dash(), and cairo.context_stroke_preserve().
+ * 
+ * Note: Degenerate segments and sub-paths are treated specially and provide a useful result. These can result in two different situations:
+ * 
+ * 1. Zero-length "on" segments set in cairo.context_set_dash(). If the cap style is cairo.LINE_CAP_ROUND or cairo.LINE_CAP_SQUARE then these segments will be drawn as circular dots or squares respectively. In the case of cairo.LINE_CAP_SQUARE, the orientation of the squares is determined by the direction of the underlying path.
+ * 2. A sub-path created by cairo.context_move_to() followed by either a cairo.context_close_path() or one or more calls to cairo.context_line_to() to the same coordinate as the cairo_move_to(). If the cap style is cairo._LINE_CAP_ROUND then these sub-paths will be drawn as circular dots. Note that in the case of cairo.LINE_CAP_SQUARE a degenerate sub-path will not be drawn at all, (since the correct orientation is indeterminate).
+ * 
+ * In no case will a cap style of cairo.LINE_CAP_BUTT cause anything to be drawn in the case of either degenerate segments or sub-paths.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_stroke(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_stroke(context);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_stroke_preserve
+ * 
+ * ### Synopsis
+ * 
+ * cairo.stroke_preserve(context);
+ * 
+ * A drawing operator that strokes the current path according to the current line width, line join, line cap, and dash settings. 
+ * 
+ * Unlike cairo.context_stroke(), cairo.context_stroke_preserve() preserves the path within the cairo context.
+ * 
+ * See cairo.context_set_line_width(), cairo.context_set_line_join(), cairo.context_set_line_cap(), and cairo.context_set_dash().
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_stroke_preserve(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_stroke_preserve(context);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_stroke_extents
+ * 
+ * ### Synopsis
+ * 
+ * var extents = cairo.context_stroke_extents(context);
+ * 
+ * Computes a bounding box in user coordinates covering the area that would be affected, (the "inked" area), by a cairo.context_stroke() operation given the current path and stroke parameters. If the current path is empty, returns an empty rectangle ((0,0), (0,0)). Surface dimensions and clipping are not taken into account.
+ * 
+ * Note that if the line width is set to exactly zero, then cairo.context_stroke_extents() will return an empty rectangle. Contrast with cairo.context_path_extents() which can be used to compute the non-empty bounds as the line width approaches zero.
+ * 
+ * Note that cairo.context_stroke_extents() must necessarily do more work to compute the precise inked areas in light of the stroke parameters, so cairo.context_path_extents() may be more desirable for sake of performance if non-inked path extents are desired.
+ * 
+ * See cairo.context_stroke(), cairo.context_set_line_width(), cairo.context_set_line_join(), cairo.context_set_line_cap(), cairo.context_set_dash(), and cairo.context_stroke_preserve().
+ * 
+ * The object returned has the following members:
+ * 
+ * + x1: x coordinate of the top left corner of the resulting extents.
+ * + y1: y coordinate of the top left corner of the resulting extents.
+ * + x2: x coordinate of the lower right corner of the resulting extents.
+ * + y2: y coordinate of the lower right corner of the resulting extents.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} extents - see object description above.
+ */
+static JSVAL context_stroke_extents(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    double x1,y1, x2,y2;
+    cairo_stroke_extents(context, &x1,&y1, &x2,&y2);
+    
+    JSOBJ o = Object::New();
+    o->Set(String::New("x1"), Number::New(x1));
+    o->Set(String::New("y1"), Number::New(y1));
+    o->Set(String::New("x2"), Number::New(x2));
+    o->Set(String::New("y2"), Number::New(y2));
+    return o;
+}
+
+/**
+ * @function cairo.context_in_stroke
+ * 
+ * ### Synopsis
+ * 
+ * var inStroke = cairo.context_in_stroke(context, x, y);
+ * 
+ * Tests whether the given point is inside the area that would be affected by a cairo.context_stroke() operation given the current path and stroking parameters. 
+ * 
+ * Surface dimensions and clipping are not taken into account.
+ * 
+ * See cairo.context_stroke(), cairo.context_set_line_width(), cairo.context_set_line_join(), cairo.context_set_line_cap(), cairo.context_set_dash(), and cairo.context_stroke_preserve().
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {boolean} inStroke - true if the point is inside the area that would be affected, false if not.
+ */
+static JSVAL context_in_stroke(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return cairo_in_stroke(context, args[1]->NumberValue(), args[2]->NumberValue()) ? True() : False();
+}
+
+/**
+ * @function cairo.context_copy_page
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_copy_page(context);
+ * 
+ * Emits the current page for backends that support multiple pages, but doesn't clear it, so, the contents of the current page will be retained for the next page too. Use cairo.conext_show_page() if you want to get an empty page after the emission.
+ * 
+ * This is a convenience function that simply calls cairo.surface_copy_page() on context's target.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_copy_page(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_copy_page(context);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_show_page
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_show_page(context);
+ * 
+ * Emits and clears the current page for backends that support multiple pages. Use cairo.context_copy_page() if you don't want to clear the page.
+ * 
+ * This is a convenience function that simply calls cairo.surface_show_page() on context's target.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_show_page(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_show_page(context);
+    return Undefined();
+}
+
+
+////////////////////////// PATHS
+
+// functions to return cario_path_t and manipulate them not done.
+
+
 ////////////////////////// MISC
+
 /**
  * @function cairo.status_to_string
  * 
@@ -1310,6 +2101,41 @@ void init_cairo_object () {
     
     cairo->Set(String::New("FILL_RULE_WINDING"), Integer::New(CAIRO_FILL_RULE_WINDING));
     cairo->Set(String::New("FILL_RULE_EVEN_ODD"), Integer::New(CAIRO_FILL_RULE_EVEN_ODD));
+    
+    cairo->Set(String::New("LINE_JOIN_MITER"), Integer::New(CAIRO_LINE_JOIN_MITER));
+    cairo->Set(String::New("LINE_JOIN_ROUND"), Integer::New(CAIRO_LINE_JOIN_ROUND));
+    cairo->Set(String::New("LINE_JOIN_BEVEL"), Integer::New(CAIRO_LINE_JOIN_BEVEL));
+    
+    cairo->Set(String::New("OPERATOR_CLEAR"), Integer::New(CAIRO_OPERATOR_CLEAR));
+    cairo->Set(String::New("OPERATOR_SOURCE"), Integer::New(CAIRO_OPERATOR_SOURCE));
+    cairo->Set(String::New("OPERATOR_OVER"), Integer::New(CAIRO_OPERATOR_OVER));
+    cairo->Set(String::New("OPERATOR_IN"), Integer::New(CAIRO_OPERATOR_IN));
+    cairo->Set(String::New("OPERATOR_OUT"), Integer::New(CAIRO_OPERATOR_OUT));
+    cairo->Set(String::New("OPERATOR_ATOP"), Integer::New(CAIRO_OPERATOR_ATOP));
+    cairo->Set(String::New("OPERATOR_DEST"), Integer::New(CAIRO_OPERATOR_DEST));
+    cairo->Set(String::New("OPERATOR_DEST_OVER"), Integer::New(CAIRO_OPERATOR_DEST_OVER));
+    cairo->Set(String::New("OPERATOR_DEST_IN"), Integer::New(CAIRO_OPERATOR_DEST_IN));
+    cairo->Set(String::New("OPERATOR_DEST_OUT"), Integer::New(CAIRO_OPERATOR_DEST_OUT));
+    cairo->Set(String::New("OPERATOR_DEST_ATOP"), Integer::New(CAIRO_OPERATOR_DEST_ATOP));
+    cairo->Set(String::New("OPERATOR_XOR"), Integer::New(CAIRO_OPERATOR_XOR));
+    cairo->Set(String::New("OPERATOR_ADD"), Integer::New(CAIRO_OPERATOR_ADD));
+    cairo->Set(String::New("OPERATOR_SATURATE"), Integer::New(CAIRO_OPERATOR_SATURATE));
+    cairo->Set(String::New("OPERATOR_MULTIPLY"), Integer::New(CAIRO_OPERATOR_MULTIPLY));
+    cairo->Set(String::New("OPERATOR_SCREEN"), Integer::New(CAIRO_OPERATOR_SCREEN));
+    cairo->Set(String::New("OPERATOR_OVERLAY"), Integer::New(CAIRO_OPERATOR_OVERLAY));
+    cairo->Set(String::New("OPERATOR_DARKEN"), Integer::New(CAIRO_OPERATOR_DARKEN));
+    cairo->Set(String::New("OPERATOR_LIGHTEN"), Integer::New(CAIRO_OPERATOR_LIGHTEN));
+    cairo->Set(String::New("OPERATOR_COLOR_DODGE"), Integer::New(CAIRO_OPERATOR_COLOR_DODGE));
+    cairo->Set(String::New("OPERATOR_COLOR_BURN"), Integer::New(CAIRO_OPERATOR_COLOR_BURN));
+    cairo->Set(String::New("OPERATOR_HARD_LIGHT"), Integer::New(CAIRO_OPERATOR_HARD_LIGHT));
+    cairo->Set(String::New("OPERATOR_SOFT_LIGHT"), Integer::New(CAIRO_OPERATOR_SOFT_LIGHT));
+    cairo->Set(String::New("OPERATOR_DIFFERENCE"), Integer::New(CAIRO_OPERATOR_DIFFERENCE));
+    cairo->Set(String::New("OPERATOR_EXCLUSION"), Integer::New(CAIRO_OPERATOR_EXCLUSION));
+    cairo->Set(String::New("OPERATOR_HSL_HUE"), Integer::New(CAIRO_OPERATOR_HSL_HUE));
+    cairo->Set(String::New("OPERATOR_HSL_SATURATION"), Integer::New(CAIRO_OPERATOR_HSL_SATURATION));
+    cairo->Set(String::New("OPERATOR_HSL_COLOR"), Integer::New(CAIRO_OPERATOR_HSL_COLOR));
+    cairo->Set(String::New("OPERATOR_HSL_LUMINOSITY"), Integer::New(CAIRO_OPERATOR_HSL_LUMINOSITY));
+
     
     
 //    net->Set(String::New("sendFile"), FunctionTemplate::New(net_sendfile));
