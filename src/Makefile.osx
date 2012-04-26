@@ -43,7 +43,7 @@ $(OBJ): SilkJS.h Makefile
 
 $(V8):
 	echo "svn checkout"
-	svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8-read-only
+	svn checkout http://v8.googlecode.com/svn/trunk/ v8-read-only
 
 $(V8_LIB):
 	cd $(V8) && scons -j 4 arch=x64
