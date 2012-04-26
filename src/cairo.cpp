@@ -2056,13 +2056,1039 @@ static JSVAL context_get_current_point(JSARGS args) {
  * Clears the current path. After this call there will be no path and no current point.
  * 
  * @param {object} context - opaque handle to a cairo context.
- * @return 
  */
 static JSVAL context_new_path(JSARGS args) {
     cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
     cairo_new_path(context);
     return Undefined();
 }
+
+/**
+ * @function cairo.context_new_sub_path
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_new_sub_path(context);
+ * 
+ * Begin a new sub-path. 
+ * 
+ * Note that the existing path is not affected. After this call there will be no current point.
+ * 
+ * In many cases, this call is not needed since new sub-paths are frequently started with cairo.context_move_to().
+ * 
+ * A call to cairo.context_new_sub_path() is particularly useful when beginning a new sub-path with one of the cairo.context_arc() calls. This makes things easier as it is no longer necessary to manually compute the arc's initial coordinates for a call to cairo.context_move_to().
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_new_sub_path(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_new_sub_path(context);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_close_path
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_close_path(context);
+ * 
+ * Adds a line segment to the path from the current point to the beginning of the current sub-path, (the most recent point passed to cairo.context_move_to()), and closes this sub-path. After this call the current point will be at the joined endpoint of the sub-path.
+ * 
+ * The behavior of cairo.context_close_path() is distinct from simply calling cairo.context_line_to() with the equivalent coordinate in the case of stroking. When a closed sub-path is stroked, there are no caps on the ends of the sub-path. Instead, there is a line join connecting the final and initial segments of the sub-path.
+ * 
+ * If there is no current point before the call to cairo.context_close_path(), this function will have no effect.
+ * 
+ * Note: As of cairo version 1.2.4 any call to cairo.context_close_path() will place an explicit MOVE_TO element into the path immediately after the CLOSE_PATH element, (which can be seen in cairo.context_copy_path() for example). This can simplify path processing in some cases as it may not be necessary to save the "last move_to point" during processing as the MOVE_TO immediately after the CLOSE_PATH will provide that point.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_close_path(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_close_path(context);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_arc
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_arc(context, xc,yc, radius, angle1, angle2);
+ * 
+ * Adds a circular arc of the given radius to the current path. 
+ * 
+ * The arc is centered at (xc, yc), begins at angle1 and proceeds in the direction of increasing angles to end at angle2. If angle2 is less than angle1 it will be progressively increased by 2*M_PI until it is greater than angle1.
+ * 
+ * If there is a current point, an initial line segment will be added to the path to connect the current point to the beginning of the arc. If this initial line is undesired, it can be avoided by calling cairo.context__new_sub_path() before calling cairo.context_arc().
+ * 
+ * Angles are measured in radians. An angle of 0.0 is in the direction of the positive X axis (in user space). An angle of M_PI/2.0 radians (90 degrees) is in the direction of the positive Y axis (in user space). Angles increase in the direction from the positive X axis toward the positive Y axis. So with the default transformation matrix, angles increase in a clockwise direction.
+ * 
+ * (To convert from degrees to radians, use degrees * (M_PI / 180.).)
+ * 
+ * This function gives the arc in the direction of increasing angles; see cairo.context_arc_negative() to get the arc in the direction of decreasing angles.
+ * 
+ * The arc is circular in user space. To achieve an elliptical arc, you can scale the current transformation matrix by different amounts in the X and Y directions. For example, to draw an ellipse in the box given by x, y, width, height:
+ * 
+ * ```
+ * cairo_save (context);
+ * cairo_translate (context, x + width / 2., y + height / 2.);
+ * cairo_scale (context, width / 2., height / 2.);
+ * cairo_arc (context, 0., 0., 1., 0., 2 * M_PI);
+ * cairo_restore (context);
+ * ```
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} xc - x coordinate of the center of the arc.
+ * @param {number} yc - y coordinate of the center of the arc.
+ * @param {number} radius - radius of the arc.
+ * @param {number} angle1 - start angle in radians.
+ * @param {number} angle2 - end angle in radians.
+ */
+static JSVAL context_arc(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_arc(context,
+              args[1]->NumberValue(),   // xc
+              args[2]->NumberValue(),   // yc
+              args[3]->NumberValue(),   // radius
+              args[4]->NumberValue(),   // angle1
+              args[5]->NumberValue()   // angle2
+    );
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_arc_negative
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_arc_negative(context, xc,yc, radius, angle1, angle2);
+ * 
+ * Adds a circular arc of the given radius to the current path. 
+ * 
+ * The arc is centered at (xc, yc), begins at angle1 and proceeds in the direction of decreasing angles to end at angle2. If angle2 is greater than angle1 it will be progressively decreased by 2*M_PI until it is less than angle1.
+ * 
+ * See cairo.context_arc() for more details. This function differs only in the direction of the arc between the two angles.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} xc - x coordinate of the center of the arc.
+ * @param {number} yc - y coordinate of the center of the arc.
+ * @param {number} radius - radius of the arc.
+ * @param {number} angle1 - start angle in radians.
+ * @param {number} angle2 - end angle in radians.
+ */
+static JSVAL context_arc_negative(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_arc_negative(context,
+              args[1]->NumberValue(),   // xc
+              args[2]->NumberValue(),   // yc
+              args[3]->NumberValue(),   // radius
+              args[4]->NumberValue(),   // angle1
+              args[5]->NumberValue()   // angle2
+    );
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_curve_to
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_curve_to(context, x1,y1, x2,y2, x3,y3);
+ * 
+ * Adds a cubic Bézier spline to the path from the current point to position (x3, y3) in user-space coordinates, using (x1, y1) and (x2, y2) as the control points. 
+ * 
+ * After this call the current point will be (x3, y3).
+ * 
+ * If there is no current point before the call to cairo_curve_to() this function will behave as if preceded by a call to cairo.context_move_to(cr, x1, y1).
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} x1 - x coordinate of the first control point.
+ * @param {number} y1 - y coordinate of the first control point.
+ * @param {number} x2 - x coordinate of the second control point.
+ * @param {number} y2 - y coordinate of the second control point.
+ * @param {number} x3 - x coordinate of the third control point.
+ * @param {number} y3 - y coordinate of the third control point.
+ */
+static JSVAL context_curve_to(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_curve_to(context,
+              args[1]->NumberValue(),   // x1
+              args[2]->NumberValue(),   // y1
+              args[3]->NumberValue(),   // x2
+              args[4]->NumberValue(),   // y2
+              args[5]->NumberValue(),   // x3
+              args[6]->NumberValue()   // y3
+    );
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_line_to
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_line_to(context, x,y);
+ * 
+ * Adds a line to the path from the current point to position (x, y) in user-space coordinates. 
+ * 
+ * After this call the current point will be (x, y).
+ * 
+ * If there is no current point before the call to cairo.context_line_to() this function will behave as cairo.context_move_to(context, x, y).
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} x - x coordinate of the end of the new line.
+ * @param {number} y - y coordinate of the end of the new line.
+ */
+static JSVAL context_line_to(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_line_to(context,
+              args[1]->NumberValue(),   // x
+              args[2]->NumberValue()   // y
+    );
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_move_to
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_move_to(context, x,y);
+ * 
+ * Adds a line to the path from the current point to position (x, y) in user-space coordinates. 
+ * 
+ * After this call the current point will be (x, y).
+ * 
+ * If there is no current point before the call to cairo.context_line_to() this function will behave as cairo.context_move_to(context, x, y).
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} x - x coordinate of the end of the new position.
+ * @param {number} y - y coordinate of the end of the new position.
+ */
+static JSVAL context_move_to(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    
+    cairo_move_to(context,
+              args[1]->NumberValue(),   // x
+              args[2]->NumberValue()   // y
+    );
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_rectangle
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_rectangle(context, x,y, w,h);
+ * 
+ * Adds a closed sub-path rectangle of the given size to the current path at position (x, y) in user-space coordinates.
+ * 
+ * This is logically equivalent to:
+ * 
+ * ```
+ * cairo_move_to context, x, y);
+ * cairo_rel_line_to (context, width, 0);
+ * cairo_rel_line_to context, 0, height);
+ * cairo_rel_line_to (context, -width, 0);
+ * cairo_close_path (context);
+ * ```
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} x - x coordinate of the top left corner of the rectangle.
+ * @param {number} y - y coordinate of the top left corner of the rectangle.
+ * @param {number} w - width of the rectangle.
+ * @param {number} h - height of the rectangle.
+ */
+static JSVAL context_rectangle(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    
+    cairo_rectangle(context,
+              args[1]->NumberValue(),  // x
+              args[2]->NumberValue(),  // y
+              args[3]->NumberValue(),  // w
+              args[4]->NumberValue()   // h
+    );
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_glyph_path
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_glyph_path(context, glyphs);
+ * 
+ * Adds closed paths for the glyphs to the current path. 
+ * 
+ * The generated path if filled, achieves an effect similar to that of cairo.context_show_glyphs().
+ * 
+ * The glyphs argument is an array of objects of the following form:
+ * 
+ * + {int} index - glyph index in the font.  The exact interpretation of the glyph index depends on the font technology being used.
+ * + {number} x - the offset in the x direction between the origin used for drawing or measuring the string and the origin of this glyph.
+ * + {number} y - the offset in the y direction between the origin used for drawing or measuring the string and the origin of this glyph.
+ * 
+ * The above structure holds information about a single glyph when drawing or measuring text. A font is (in simple terms) a collection of shapes used to draw text. A glyph is one of these shapes. There can be multiple glyphs for a single character (alternates to be used in different contexts, for example), or a glyph can be a ligature of multiple characters. Cairo doesn't expose any way of converting input text into glyphs, so in order to use the Cairo interfaces that take arrays of glyphs, you must directly access the appropriate underlying font system.
+ * 
+ * Note that the offsets given by x and y are not cumulative. When drawing or measuring text, each glyph is individually positioned with respect to the overall origin
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {array} glyphs - array of objects as described above.
+ */
+static JSVAL context_glyph_path(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    Handle<Array>glyphs = Handle<Array>::Cast(args[1]->ToObject());
+    int num_glyphs = glyphs->Length();
+    cairo_glyph_t *c_glyphs = new cairo_glyph_t[num_glyphs];
+    // 
+    Local<String>index = String::New("index");
+    Local<String>x = String::New("x");
+    Local<String>y = String::New("y");
+    
+    for (int i=0; i<num_glyphs; i++) {
+        JSOBJ o = glyphs->Get(i)->ToObject();
+        c_glyphs[i].index = o->Get(index)->IntegerValue();
+        c_glyphs[i].x = o->Get(x)->NumberValue();
+        c_glyphs[i].y = o->Get(y)->NumberValue();
+    }
+    cairo_glyph_path(context, c_glyphs, num_glyphs);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_text_path
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_text_path(context, str);
+ * 
+ * Adds closed paths for text to the current path. 
+ * 
+ * The generated path if filled, achieves an effect similar to that of cairo.context__show_text().
+ * 
+ * Text conversion and positioning is done similar to cairo.context_show_text().
+ * 
+ * Like cairo.context_show_text(), After this call the current point is moved to the origin of where the next glyph would be placed in this same progression. That is, the current point will be at the origin of the final glyph offset by its advance values. This allows for chaining multiple calls to to cairo.context_text_path() without having to set current point in between.
+ * 
+ * Note: The cairo.context_text_path() function call is part of what the cairo designers call the "toy" text API. It is convenient for short demos and simple programs, but it is not expected to be adequate for serious text-using applications. See cairo.context_glyph_path() for the "real" text path API in cairo.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {string} str - text
+ */
+static JSVAL context_text_path(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    String::Utf8Value str(args[1]->ToString());
+    cairo_text_path(context, *str);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_rel_curve_to
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_rel_curve_to(context, dx1,dy1, dx2,dy2, dx3,dy3);
+ * 
+ * Relative-coordinate version of cairo.context_curve_to(). 
+ * 
+ * All offsets are relative to the current point. Adds a cubic Bézier spline to the path from the current point to a point offset from the current point by (dx3, dy3), using points offset by (dx1, dy1) and (dx2, dy2) as the control points. After this call the current point will be offset by (dx3, dy3).
+ * 
+ * Given a current point of (x, y), cairo.context_rel_curve_to(context, dx1, dy1, dx2, dy2, dx3, dy3) is logically equivalent to cairo.context_curve_to(context, x+dx1, y+dy1, x+dx2, y+dy2, x+dx3, y+dy3).
+ * 
+ * It is an error to call this function with no current point. Doing so will cause context to shutdown with a status of cairo.STATUS_NO_CURRENT_POINT.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} dx1 - x offset to the first control point.
+ * @param {number} dy1 - y offset to the first control point.
+ * @param {number} dx2 - x offset to the second control point.
+ * @param {number} dy2 - y offset to the second control point.
+ * @param {number} dx3 - x offset to the third control point.
+ * @param {number} dy3 - y offset to the third control point.
+ */
+static JSVAL context_rel_curve_to(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_rel_curve_to(context,
+              args[1]->NumberValue(),   // dx1
+              args[2]->NumberValue(),   // dy1
+              args[3]->NumberValue(),   // dx2
+              args[4]->NumberValue(),   // dy2
+              args[5]->NumberValue(),   // dx3
+              args[6]->NumberValue()    // dy3
+    );
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_rel_line_to
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_rel_line_to(context, dx,dy);
+ * 
+ * Relative-coordinate version of cairo.context__line_to(). 
+ * 
+ * Adds a line to the path from the current point to a point that is offset from the current point by (dx, dy) in user space. After this call the current point will be offset by (dx, dy).
+ * 
+ * Given a current point of (x, y), cairo.context_rel_line_to(context, dx, dy) is logically equivalent to cairo.context_line_to(context, x + dx, y + dy).
+ * 
+ * It is an error to call this function with no current point. Doing so will cause context to shutdown with a status of cairo.STATUS_NO_CURRENT_POINT.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} dx - x offset to the end of the new line.
+ * @param {number} dy - y offset to the end of the new line.
+ */
+static JSVAL context_rel_line_to(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_rel_line_to(context,
+              args[1]->NumberValue(),   // dx
+              args[2]->NumberValue()    // dy
+    );
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_rel_move_to
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_rel_move_to(context, dx,dy);
+ * 
+ * Begin a new sub-path. 
+ * 
+ * After this call the current point will offset by (x, y).
+ * 
+ * Given a current point of (x, y), cairo.context_rel_move_to(context, dx, dy) is logically equivalent to cairo.context_move_to(context, x + dx, y + dy).
+ * 
+ * It is an error to call this function with no current point. Doing so will cause context to shutdown with a status of cairo.STATUS_NO_CURRENT_POINT.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} dx - x offset to the end of the new position.
+ * @param {number} dy - y offset to the end of the new position.
+ */
+static JSVAL context_rel_move_to(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    
+    cairo_rel_move_to(context,
+              args[1]->NumberValue(),   // dx
+              args[2]->NumberValue()    // dy
+    );
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_path_extents
+ * 
+ * ### Synopsis
+ * 
+ * var extents = cairo.context_path_extents(context);
+ * 
+ * Computes a bounding box in user-space coordinates covering the points on the current path. 
+ * 
+ * If the current path is empty, returns an empty rectangle ((0,0), (0,0)). Stroke parameters, fill rule, surface dimensions and clipping are not taken into account.
+ * 
+ * Contrast with cairo.context_fill_extents() and cairo.context_stroke_extents() which return the extents of only the area that would be "inked" by the corresponding drawing operations.
+ * 
+ * The result of cairo.context_path_extents() is defined as equivalent to the limit of cairo.context_stroke_extents() with cairo.LINE_CAP_ROUND as the line width approaches 0.0, (but never reaching the empty-rectangle returned by cairo.context_stroke_extents() for a line width of 0.0).
+ * 
+ * Specifically, this means that zero-area sub-paths such as cairo.context_move_to(); cairo.context_line_to() segments, (even degenerate cases where the coordinates to both calls are identical), will be considered as contributing to the extents. However, a lone cairo.context_move_to() will not contribute to the results of cairo.context_path_extents().
+ * 
+ * The object returned has the following members:
+ * 
+ * + x1: x coordinate of the top left corner of the resulting extents.
+ * + y1: y coordinate of the top left corner of the resulting extents.
+ * + x2: x coordinate of the lower right corner of the resulting extents.
+ * + y2: y coordinate of the lower right corner of the resulting extents.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} extents - see object description above.
+ */
+static JSVAL context_path_extents(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    double x1,y1, x2,y2;
+    cairo_path_extents(context, &x1,&y1, &x2,&y2);
+    
+    JSOBJ o = Object::New();
+    o->Set(String::New("x1"), Number::New(x1));
+    o->Set(String::New("y1"), Number::New(y1));
+    o->Set(String::New("x2"), Number::New(x2));
+    o->Set(String::New("y2"), Number::New(y2));
+    return o;
+}
+
+
+////////////////////////// PATTERNS
+// http://www.cairographics.org/manual/cairo-cairo-pattern-t.html
+
+/**
+ * @function cairo.pattern_add_color_stop_rgb
+ * 
+ * ### Synopsis
+ * 
+ * cairo.pattern_add_color_stop_rgb(pattern, offset, red, green, blue);
+ * 
+ * Adds an opaque color stop to a gradient pattern. 
+ * 
+ * The offset specifies the location along the gradient's control vector. For example, a linear gradient's control vector is from (x0,y0) to (x1,y1) while a radial gradient's control vector is from any point on the start circle to the corresponding point on the end circle.
+ * 
+ * The color is specified in the same way as in cairo.context_set_source_rgb().
+ * 
+ * If two (or more) stops are specified with identical offset values, they will be sorted according to the order in which the stops are added, (stops added earlier will compare less than stops added later). This can be useful for reliably making sharp color transitions instead of the typical blend.
+ * 
+ * Note: If the pattern is not a gradient pattern, (eg. a linear or radial pattern), then the pattern will be put into an error status with a status of cairo.STATUS_PATTERN_TYPE_MISMATCH.
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @param {number} offset - an offset in the range 0.0 ... 1.0
+ * @param {number} red - red component of color.
+ * @param {number} green - green component of color.
+ * @param {number} blue - blue component of color.
+ */
+static JSVAL pattern_add_color_stop_rgb(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_add_color_stop_rgb(
+        pattern,
+        args[1]->NumberValue(),     // offset
+        args[2]->NumberValue(),     // red
+        args[3]->NumberValue(),     // green
+        args[4]->NumberValue()      // blue
+    );
+    return Undefined();
+}
+        
+/**
+ * @function cairo.pattern_add_color_stop_rgba
+ * 
+ * ### Synopsis
+ * 
+ * cairo.pattern_add_color_stop_rgba(pattern, offset, red, green, blue, alpha);
+ * 
+ * Adds a translucent color stop to a gradient pattern. 
+ * 
+ * The offset specifies the location along the gradient's control vector. For example, a linear gradient's control vector is from (x0,y0) to (x1,y1) while a radial gradient's control vector is from any point on the start circle to the corresponding point on the end circle.
+ * 
+ * The color is specified in the same way as in cairo.context_set_source_rgba().
+ * 
+ * If two (or more) stops are specified with identical offset values, they will be sorted according to the order in which the stops are added, (stops added earlier will compare less than stops added later). This can be useful for reliably making sharp color transitions instead of the typical blend.
+ * 
+ * Note: If the pattern is not a gradient pattern, (eg. a linear or radial pattern), then the pattern will be put into an error status with a status of cairo.STATUS_PATTERN_TYPE_MISMATCH.
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @param {number} offset - an offset in the range 0.0 ... 1.0
+ * @param {number} red - red component of color.
+ * @param {number} green - green component of color.
+ * @param {number} blue - blue component of color.
+ * @param {number} alpha - alpha component of color.
+ */
+static JSVAL pattern_add_color_stop_rgba(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_add_color_stop_rgba(
+        pattern,
+        args[1]->NumberValue(),     // offset
+        args[2]->NumberValue(),     // red
+        args[3]->NumberValue(),     // green
+        args[4]->NumberValue(),     // blue
+        args[5]->NumberValue()      // alpha
+    );
+    return Undefined();
+}
+        
+/**
+ * @function cairo.pattern_get_stop_color_count
+ * 
+ * ### Synopsis
+ * 
+ * var stops = cairo.pattern_get_stop_color_count(pattern);
+ * 
+ * Gets the number of color stops specified in the given gradient pattern.
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @return {int} stops - number of color stops.
+ * 
+ * ### Note
+ * 
+ * This function will throw an exception if the pattern is not a gradient pattern.
+ */
+static JSVAL pattern_get_stop_color_count(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    int count;
+    cairo_status_t status = cairo_pattern_get_color_stop_count(pattern, &count);
+    if (status == CAIRO_STATUS_SUCCESS) {
+        return Integer::New(count);
+    }
+    ThrowException(String::New(cairo_status_to_string(status)));
+}
+
+/**
+ * @function cairo.pattern_get_color_stop_rgba
+ * 
+ * ### Synopsis
+ * 
+ * var stop = cairo.pattern_get_color_stop_rgba(pattern, index);
+ * 
+ * Gets the color and offset information at the given index for a gradient pattern. 
+ * 
+ * Values of index are 0 to (1 less than the number returned by cairo.pattern_get_color_stop_count()).
+ * 
+ * The object returned has the following members:
+ * 
+ * + {int} offset - offset of the stop
+ * + {number} red - red component of the color, or NULL.
+ * + {number} green - green component of the color, or NULL.
+ * + {number} blue - blue component of the color, or NULL.
+ * + {number} alpha - alpha component of the color, or NULL.
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @param {int} index - index of the color stop information desired.
+ * @return {object} stops - object of the form described above.
+ * 
+ * ### Note
+ * 
+ * This function will throw an exception if the index is invalid or the pattern is not a gradient pattern.
+ */
+static JSVAL pattern_get_color_stop_rgba(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    double offset, red, green, blue, alpha;
+    cairo_status_t status = cairo_pattern_get_color_stop_rgba(pattern, args[1]->IntegerValue(), &offset, &red, &green, &blue, &alpha);
+    if (status != CAIRO_STATUS_SUCCESS) {
+        ThrowException(String::New(cairo_status_to_string(status)));
+    }
+    JSOBJ o = Object::New();
+    o->Set(String::New("offset"), Integer::New(offset));
+    o->Set(String::New("red"), Number::New(red));
+    o->Set(String::New("green"), Number::New(green));
+    o->Set(String::New("blue"), Number::New(blue));
+    o->Set(String::New("alpha"), Number::New(alpha));
+    return o;
+}
+
+/**
+ * @function cairo.pattern_create_rgb
+ * 
+ * ### Synopsis
+ * 
+ * var pattern = cairo.pattern_create_rgb(red, green, blue);
+ * 
+ * Creates a new pattern handle corresponding to an opaque color.  
+ * 
+ * The color components are floating point numbers in the range 0 to 1.  If the values passed in are outside that range, they will be clamped.
+ * 
+ * The caller owns the returned pattern handle and should call cairo.pattern_destroy() when finished with it.
+ * 
+ * This function will always return a valid handle, but if an error occurred, the pattern status will be set to an error.  To inspect the status of a pttern, use cairo.pattern_status().
+ * 
+ * @param {number} red - red component of color.
+ * @param {number} green - green component of color.
+ * @param {number} blue - blue component of color.
+ * @return {object} pattern - opaque handle to newly created pattern.
+ */
+static JSVAL pattern_create_rgb(JSARGS args) {
+    return External::New(cairo_pattern_create_rgb(
+        args[1]->NumberValue(),     // red
+        args[2]->NumberValue(),     // green
+        args[3]->NumberValue()      // blue
+     ));
+}
+
+/**
+ * @function cairo.pattern_create_rgba
+ * 
+ * ### Synopsis
+ * 
+ * var pattern = cairo.pattern_create_rgba(red, green, blue, alpha);
+ * 
+ * Creates a new pattern handle corresponding to a translucent color
+ * 
+ * The color components are floating point numbers in the range 0 to 1.  If the values passed in are outside that range, they will be clamped.
+ * 
+ * The caller owns the returned pattern handle and should call cairo.pattern_destroy() when finished with it.
+ * 
+ * This function will always return a valid handle, but if an error occurred, the pattern status will be set to an error.  To inspect the status of a pttern, use cairo.pattern_status().
+ * 
+ * @param {number} red - red component of color.
+ * @param {number} green - green component of color.
+ * @param {number} blue - blue component of color.
+ * @param {number} alpha - alpha component of color.
+ * @return {object} pattern - opaque handle to newly created pattern.
+ */
+static JSVAL pattern_create_rgba(JSARGS args) {
+    return External::New(cairo_pattern_create_rgba(
+        args[1]->NumberValue(),     // red
+        args[2]->NumberValue(),     // green
+        args[3]->NumberValue(),     // blue
+        args[4]->NumberValue()      // alpha
+     ));
+}
+
+/**
+ * @function cairo.pattern_get_rgba
+ * 
+ * ### Synopsis
+ * 
+ * var color = cairo.pattern_get_rgba(pattern);
+ * 
+ * Gets the solid color for a solid color pattern.
+ * 
+ * The object returned has the following members:
+ * 
+ * + {number} red - red component of the color, or NULL.
+ * + {number} green - green component of the color, or NULL.
+ * + {number} blue - blue component of the color, or NULL.
+ * + {number} alpha - alpha component of the color, or NULL.
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @return {object} color - object of the form described above.
+ * 
+ * ### Note
+ * 
+ * This function will throw an exception if the pattern is not a solid color pattern.
+ */
+static JSVAL pattern_get_rgba(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    double red, green, blue, alpha;
+    cairo_status_t status = cairo_pattern_get_rgba(pattern, &red, &green, &blue, &alpha);
+    if (status != CAIRO_STATUS_SUCCESS) {
+        ThrowException(String::New(cairo_status_to_string(status)));
+    }
+    JSOBJ o = Object::New();
+    o->Set(String::New("red"), Number::New(red));
+    o->Set(String::New("green"), Number::New(green));
+    o->Set(String::New("blue"), Number::New(blue));
+    o->Set(String::New("alpha"), Number::New(alpha));
+    return o;
+}
+
+/**
+ * @function cairo.pattern_create_for_surface
+ * 
+ * ### Synopsis
+ * 
+ * var pattern = cairo.pattern_create_for_surface(surface);
+ * 
+ * Create a new pattern for the given surface.
+ * 
+ * The caller owns the returned handle and should call cairo.pattern_destroy() when finished with it.
+ * 
+ * This function will always return a valid pointer, but if an error occurred, the pattern status will be set to an error.  To inspect the status of a patter, use cairo.pattern_status().
+ * 
+ * @param {object} surface - opaque handle to a cairo surface.
+ * @return {object} pattern - opaque handle to a cairo pattern.
+ */
+static JSVAL pattern_create_for_surface(JSARGS args) {
+    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    return External::New(cairo_pattern_create_for_surface(surface));
+}
+
+/**
+ * @function cairo.pattern_get_surface
+ * 
+ * ### Synopsis
+ * 
+ * var surface = cairo.pattern_get_surface(pattern);
+ * 
+ * Get the surface of a surface pattern.
+ * 
+ * The reference returned in surface is owned by the pattern; the caller should call cairo.surface_reference() if the surface is to be retained.
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @return {object} surface - opaque handle to a cairo surface.
+ * 
+ * ### Note
+ * 
+ * This function will throw an exception if the pattern is not a surface pattern.
+ */
+static JSVAL pattern_get_surface(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface;
+    cairo_status_t status = cairo_pattern_get_surface(pattern, &surface);
+    if (status != CAIRO_STATUS_SUCCESS) {
+        ThrowException(String::New(cairo_status_to_string(status)));
+    }
+    return External::New(surface);
+}
+
+/**
+ * @function cairo.pattern_create_linear
+ * 
+ * ### Synopsis
+ * 
+ * var pattern = cairo.pattern_create_linear(x0,y0, x1,y1);
+ * 
+ * Create a new linear gradient cairo_pattern_t along the line defined by (x0, y0) and (x1, y1). 
+ * 
+ * Before using the gradient pattern, a number of color stops should be defined using cairo.pattern_add_color_stop_rgb() or cairo.pattern_add_color_stop_rgba().
+ * 
+ * Note: The coordinates here are in pattern space. For a new pattern, pattern space is identical to user space, but the relationship between the spaces can be changed with cairo.pattern_set_matrix().
+ * 
+ * The caller owns the returned handle and should call cairo.pattern_destroy() when finished with it.
+ * 
+ * This function will always return a valid pointer, but if an error occurred, the pattern status will be set to an error.  To inspect the status of a patter, use cairo.pattern_status().
+ * 
+ * @param {number} x0 - x coordinate of the start point.
+ * @param {number} y0 - y coordinate of the start point.
+ * @param {number} x1 - x coordinate of the end point.
+ * @param {number} y1 - y coordinate of the end point.
+ * @return {object} pattern - opaque handle to newly created pattern.
+ */
+static JSVAL pattern_create_linear(JSARGS args) {
+    return External::New(cairo_pattern_create_linear(
+        args[0]->NumberValue(),     // x0
+        args[1]->NumberValue(),     // y0
+        args[2]->NumberValue(),     // x1
+        args[3]->NumberValue()      // y1
+    ));
+}
+
+/**
+ * @function cairo.pattern_get_linear_points
+ * 
+ * ### Synopsis
+ * 
+ * var points = cairo.pattern_get_linear_points(pattern);
+ * 
+ * Gets the gradient endpoints for a linear gradient pattern.
+ * 
+ * The object returned has the following members:
+ * 
+ * + {number} x0 - x coordinate of the first point.
+ * + {number} y0 - y coordinate of the first point.
+ * + {number} x1 - x coordinate of the second point.
+ * + {number} y1 - y coordinate of the second point.
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @return {object} points - object of the form described above.
+ * 
+ * ### Note
+ * 
+ * This function will throw an exception if the pattern is not a linear gradient pattern.
+ */
+static JSVAL pattern_get_linear_points(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    double x0,y0, x1,y1;
+    cairo_status_t status = cairo_pattern_get_linear_points(pattern, &x0,&y0, &x1,&y1);
+    if (status != CAIRO_STATUS_SUCCESS) {
+        ThrowException(String::New(cairo_status_to_string(status)));
+    }
+    JSOBJ o = Object::New();
+    o->Set(String::New("x0"), Number::New(x0));
+    o->Set(String::New("y0"), Number::New(y0));
+    o->Set(String::New("x1"), Number::New(x1));
+    o->Set(String::New("y1"), Number::New(y1));
+    return o;
+}
+
+/**
+ * @function cairo.pattern_create_radial
+ * 
+ * ### Synopsis
+ * 
+ * var pattern = cairo.pattern_create_radial(cx0,cy0,radius0, cx1,cy1,radius1);
+ * 
+ * Creates a new radial gradient cairo_pattern_t between the two circles defined by (cx0, cy0, radius0) and (cx1, cy1, radius1). 
+ * 
+ * Before using the gradient pattern, a number of color stops should be defined using cairo.pattern_add_color_stop_rgb() or cairo.pattern_add_color_stop_rgba().
+ * 
+ * Note: The coordinates here are in pattern space. For a new pattern, pattern space is identical to user space, but the relationship between the spaces can be changed with cairo.pattern_set_matrix().
+ * 
+ * The caller owns the returned handle and should call cairo.pattern_destroy() when finished with it.
+ * 
+ * This function will always return a valid pointer, but if an error occurred, the pattern status will be set to an error.  To inspect the status of a patter, use cairo.pattern_status().
+ * 
+ * @param {number} cx0 - x coordinate for the center of the start circle.
+ * @param {number} cy0 - y coordinate for the center of the start circle.
+ * @param {number} radius0 - radius of the start cirle.
+ * @param {number} cx1 - x coordinate for the center of the end circle.
+ * @param {number} cy1 - y coordinate for the center of the end circle.
+ * @param {number} radius1 - radius of the end cirle.
+ * @return {object} pattern - opaque handle to newly created pattern.
+ */
+static JSVAL pattern_create_radial(JSARGS args) {
+    return External::New(cairo_pattern_create_radial(
+        args[0]->NumberValue(),     // cx0
+        args[1]->NumberValue(),     // cy0
+        args[2]->NumberValue(),     // radius0
+        args[3]->NumberValue(),     // cx1
+        args[4]->NumberValue(),     // cy1
+        args[5]->NumberValue()      // radius1
+    ));
+}
+
+/**
+ * @function cairo.pattern_get_radial_circles
+ * 
+ * ### Synopsis
+ * 
+ * var circles = cairo.pattern_get_radial_circles(pattern);
+ * 
+ * Gets the gradient endpoint circles for a radial gradient, each specified as a center coordinate and radius.
+ * 
+ * The object returned has the following members:
+ * 
+ * + {number} x0 - x coordinate of the center of the first circle.
+ * + {number} y0 - y coordinate of the center of the first circle.
+ * + {number} r0 - radius the first circle.
+ * + {number} x1 - x coordinate of the center of the second circle.
+ * + {number} y1 - y coordinate of the center of the second circle.
+ * + {number} r1 - radius the second circle.
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @return {object} circles - object of the form described above.
+ * 
+ * ### Note
+ * 
+ * This function will throw an exception if the pattern is not a solid color pattern.
+ */
+static JSVAL pattern_get_radial_circles(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    double x0,y0,r0, x1,y1,r1;
+    cairo_status_t status = cairo_pattern_get_radial_circles(pattern, &x0,&y0,&r0, &x1,&y1,&r1);
+    if (status != CAIRO_STATUS_SUCCESS) {
+        ThrowException(String::New(cairo_status_to_string(status)));
+    }
+    JSOBJ o = Object::New();
+    o->Set(String::New("x0"), Number::New(x0));
+    o->Set(String::New("y0"), Number::New(y0));
+    o->Set(String::New("r0"), Number::New(r0));
+    o->Set(String::New("x1"), Number::New(x1));
+    o->Set(String::New("y1"), Number::New(y1));
+    o->Set(String::New("r1"), Number::New(r1));
+    return o;
+}
+
+/**
+ * @function cairo.pattern_reference
+ * 
+ * ### Synopsis
+ * 
+ * var pattern = cairo.pattern_reference(pattern);
+ * 
+ * Increases the reference count on pattern by one. 
+ * 
+ * This prevents pattern from being destroyed until a matching call to cairo_pattern_destroy() is made.
+ * 
+ * The number of references to a pattern can be get using cairo.pattern_get_reference_count().
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @return {object} pattern - opaque handle to the referenced cairo pattern.
+ */
+static JSVAL pattern_reference(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    return External::New(cairo_pattern_reference(pattern));
+}
+
+/**
+ * @function cairo.pattern_status
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.pattern_status(pattern);
+ * 
+ * Return error status code for this pattern.
+ * 
+ * Return value may be cairo.STATUS_SUCCESS if there is no error.
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @return {int} status - cairo.STATUS_SUCCESS, cairo.STATUS_NO_MEMORY, cairo.STATUS_INVALID_MATRIX, or cairo.STATUS_PATTERN_TYPE_MISMATCH.
+ */
+static JSVAL pattern_status(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_pattern_status(pattern));
+}
+
+/**
+ * @function cairo.pattern_set_extend
+ * 
+ * ### Synopsis
+ * 
+ * cairo.pattern_set_extend(extend);
+ * 
+ * Sets the mode to be used for drawing outside the area of a pattern.
+ * 
+ * Values for the extend parameter may be:
+ * 
+ * cairo.EXTEND_NONE - pixels outside of the source pattern are fully transparent
+ * cairo.EXTEND_REPEAT - the pattern is tiled by repeating
+ * cairo.EXTEND_REFLECT - the pattern is tiled by reflecting at the edges (Implemented for surface patterns since 1.6)
+ * cairo.EXTEND_PAD - pixels outside of the pattern copy the closest pixel from the source (Since 1.2; but only implemented for surface patterns since 1.6)
+ * 
+ * The extend value is used to describe how pattern color/alpha will be determined for areas "outside" the pattern's natural area, (for example, outside the surface bounds or outside the gradient geometry).
+ * 
+ * The default extend mode is cairo.EXTEND_NONE for surface patterns and cairo.EXTEND_PAD for gradient patterns.
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @param {int} extend - one of the above values.
+ */
+static JSVAL pattern_set_extend(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_set_extend(pattern, (cairo_extend_t)args[1]->IntegerValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.pattern_get_extend
+ * 
+ * ### Synopsis
+ * 
+ * var extend = cairo.pattern_get_extend(pattern);
+ * 
+ * Gets the current extend mode for a pattern.
+ * 
+ * Values for the returned value may be:
+ * 
+ * cairo.EXTEND_NONE - pixels outside of the source pattern are fully transparent
+ * cairo.EXTEND_REPEAT - the pattern is tiled by repeating
+ * cairo.EXTEND_REFLECT - the pattern is tiled by reflecting at the edges (Implemented for surface patterns since 1.6)
+ * cairo.EXTEND_PAD - pixels outside of the pattern copy the closest pixel from the source (Since 1.2; but only implemented for surface patterns since 1.6)
+ * 
+ * The extend value is used to describe how pattern color/alpha will be determined for areas "outside" the pattern's natural area, (for example, outside the surface bounds or outside the gradient geometry).
+ * 
+ * The default extend mode is cairo.EXTEND_NONE for surface patterns and cairo.EXTEND_PAD for gradient patterns.
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @return {int} extend - one of the above values.
+ */
+static JSVAL pattern_get_extend(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_pattern_get_extend(pattern));
+    
+}
+
+/**
+ * @function cairo.pattern_set_filter
+ * 
+ * ### Synopsis
+ * 
+ * cairo.pattern_set_filter(pattern, filter);
+ * 
+ * Sets the filter to be used for resizing when using this pattern.
+ * 
+ * The filter parameter may be one of:
+ * 
+ * cairo.FILTER_FAST - A high-performance filter, with quality similar to cairo.FILTER_NEAREST
+ * cairo.FILTER_GOOD - A reasonable-performance filter, with quality similar to cairo.FILTER_BILINEAR
+ * cairo.FILTER_BEST - The highest-quality available, performance may not be suitable for interactive use.
+ * cairo.FILTER_NEAREST - Nearest-neighbor filtering
+ * cairo.FILTER_BILINEAR - Linear interpolation in two dimensions
+ * cairo.FILTER_GAUSSIAN - This filter value is currently unimplemented, and should not be used in current code.
+ * 
+ * Note that you might want to control filtering even when you do not have an explicit cairo_pattern_t object, (for example when using cairo.context_set_source_surface()). In these cases, it is convenient to use cairo.context__get_source() to get access to the pattern that cairo creates implicitly. For example:
+ * ```
+ * cairo.context_set_source_surface (context, image, x, y);
+ * cairo.pattern_set_filter (cairo_get_source (context), cairo.FILTER_NEAREST);
+ * ```
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @return {int} filter - one of the above values.
+ */
+static JSVAL pattern_set_filter(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_set_filter(pattern, (cairo_extend_t)args[1]->IntegerValue());
+    return Undefined();
+}
+
+
+
+
+
 
 ////////////////////////// MISC
 
@@ -2081,6 +3107,19 @@ static JSVAL context_new_path(JSARGS args) {
 static JSVAL status_to_string(JSARGS args) {
     return String::New(cairo_status_to_string((cairo_status_t)args[0]->IntegerValue()));
 }
+
+
+
+
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
 
 void init_cairo_object () {
     Handle<ObjectTemplate>cairo = ObjectTemplate::New();
@@ -2209,7 +3248,17 @@ void init_cairo_object () {
     cairo->Set(String::New("OPERATOR_HSL_COLOR"), Integer::New(CAIRO_OPERATOR_HSL_COLOR));
     cairo->Set(String::New("OPERATOR_HSL_LUMINOSITY"), Integer::New(CAIRO_OPERATOR_HSL_LUMINOSITY));
 
+    cairo->Set(String::New("EXTEND_NONE"), Integer::New(CAIRO_EXTEND_NONE));
+    cairo->Set(String::New("EXTEND_REPEAT"), Integer::New(CAIRO_EXTEND_REPEAT));
+    cairo->Set(String::New("EXTEND_REFLECT"), Integer::New(CAIRO_EXTEND_REFLECT));
+    cairo->Set(String::New("EXTEND_PAD"), Integer::New(CAIRO_EXTEND_PAD));
     
+    cairo->Set(String::New("FILTER_FAST"), Integer::New(CAIRO_FILTER_FAST));
+    cairo->Set(String::New("FILTER_GOOD"), Integer::New(CAIRO_FILTER_GOOD));
+    cairo->Set(String::New("FILTER_BEST"), Integer::New(CAIRO_FILTER_BEST));
+    cairo->Set(String::New("FILTER_NEAREST"), Integer::New(CAIRO_FILTER_NEAREST));
+    cairo->Set(String::New("FILTER_BILINEAR"), Integer::New(CAIRO_FILTER_BILINEAR));
+    cairo->Set(String::New("FILTER_GAUSSIAN"), Integer::New(CAIRO_FILTER_GAUSSIAN));
     
 //    net->Set(String::New("sendFile"), FunctionTemplate::New(net_sendfile));
 
