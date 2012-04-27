@@ -3279,6 +3279,67 @@ static JSVAL matrix_create(JSARGS args) {
 }
 
 /**
+ * @function cairo.matrix_init
+ * 
+ * ### Synopsis
+ * 
+ * cairo.matrix_init(matrix, xx, yx, xy, yy, x0, y0);
+ * 
+ * Sets matrix to be the affine transformation given by xx, yx, xy, yy, x0, y0. 
+ * 
+ * The transformation is given by:
+ * ```
+ *  x_new = xx * x + xy * y + x0;
+ *  y_new = yx * x + yy * y + y0;
+ * ```
+ * 
+ * @param {object} matrix - opaque handle to a matrix.
+ * @param {number} xx - xx component of the affine transformation.
+ * @param {number} yx - yx component of the affine transformation.
+ * @param {number} xy - xy component of the affine transformation.
+ * @param {number} yy - yy component of the affine transformation.
+ * @param {number} x0 - x translation component of the affine transformation.
+ * @param {number} y0 - y translation component of the affine transformation.
+ */
+static JSVAL matrix_init(JSARGS args) {
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_init(
+        matrix, 
+        args[1]->NumberValue(),     // xx
+        args[2]->NumberValue(),     // yx
+        args[3]->NumberValue(),     // xy
+        args[4]->NumberValue(),     // yy
+        args[5]->NumberValue(),     // x0
+        args[6]->NumberValue()      // y0
+    );
+    return Undefined();
+}
+
+/**
+ * @function cairo.matrix_clone
+ * 
+ * ### Synopsis
+ * 
+ * var clone = cairo.matrix_clone(matrix);
+ * 
+ * This is a convenience function that creates a new matrix object as a clone of the original.
+ * 
+ * All members of the clone have the same values as the original.
+ * 
+ * The clone matrix is owned by the caller and must be released with cairo.matrix_destroy().
+ * 
+ * @param {object} matrix - opaque handle to a matrix.
+ * @return {object} clone - opaque handle to a new matrix.
+ */
+static JSVAL matrix_clone(JSARGS args) {
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *clone = new cairo_matrix_t;
+    memcpy(clone, matrix, sizeof(cairo_matrix_t));
+    return External::New(clone);
+}
+
+
+/**
  * @function cairo.matrix_init_identity
  * 
  * ### Synopsis
@@ -3570,12 +3631,607 @@ static JSVAL matrix_destroy(JSARGS args) {
  * var region = cairo.region_create();
  * 
  * Allocates a new empty region object.
+ * 
+ * This function returns a newly allocated region object. 
+ * 
+ * Free with cairo.region_destroy(). 
+ * 
+ * This function always returns a valid object; if memory cannot be allocated, then a special error object is returned where all operations on the object do nothing. You can check for this with cairo.region_status().
+ * 
+ * @return {object} region - opaque handle to a region
  */
 static JSVAL region_create(JSARGS args) {
     return External::New(cairo_region_create());
 }
 
+/**
+ * @function cairo.region_create_rectangle
+ * 
+ * ### Synopsis
+ * 
+ * var region = cairo.region_create_rectangle(rectangle);
+ * 
+ * Allocates a new region containing the rectangle specified.
+ * 
+ * The rectangle argument is a JavaScript object of the form:
+ * 
+ * + {int} x - x coordinate of upper left corner of rectangle.
+ * + {int} y - y coordinate of upper left corner of rectangle.
+ * + {int} width - width of rectangle.
+ * + {int} height - height of rectangle.
+ * 
+ * This function returns a newly allocated region object containing rectangle. 
+ * 
+ * Free with cairo.region_destroy(). 
+ * 
+ * This function always returns a valid object; if memory cannot be allocated, then a special error object is returned where all operations on the object do nothing. You can check for this with cairo.region_status().
+ * 
+ * @param {object} rectangle - object of the above form.
+ * @return {object} region - opaque handle to a region
+ */
+static JSVAL region_create_rectangle(JSARGS args) {
+    Local<String>_x = String::New("x");
+    Local<String>_y = String::New("y");
+    Local<String>_w = String::New("width");
+    Local<String>_h = String::New("height");
+    JSOBJ o = args[0]->ToObject();
+    cairo_rectangle_int_t rect = { 
+        o->Get(_x)->IntegerValue(),
+        o->Get(_y)->IntegerValue(),
+        o->Get(_w)->IntegerValue(),
+        o->Get(_h)->IntegerValue()
+    };
+    return External::New(cairo_region_create_rectangle(&rect));
+}
 
+/**
+ * @function cairo.region_create_rectangles
+ * 
+ * ### Synopsis
+ * 
+ * var region = cairo.region_create_rectangle(rectangles);
+ * 
+ * Allocates a new region containing the rectangle specified.
+ * 
+ * The rectangle argument is an array of JavaScript objects of the form:
+ * 
+ * + {int} x - x coordinate of upper left corner of rectangle.
+ * + {int} y - y coordinate of upper left corner of rectangle.
+ * + {int} width - width of rectangle.
+ * + {int} height - height of rectangle.
+ * 
+ * This function returns a newly allocated region object containing the union of all given rectangles. 
+ * 
+ * Free with cairo.region_destroy(). 
+ * 
+ * This function always returns a valid object; if memory cannot be allocated, then a special error object is returned where all operations on the object do nothing. You can check for this with cairo.region_status().
+ * 
+ * @param {array} rectangles - array of rectangle objects of the above form.
+ * @return {object} region - opaque handle to a region
+ */
+static JSVAL region_create_rectangles(JSARGS args) {
+    Handle<Array>rectangles = Handle<Array>::Cast(args[0]->ToObject());
+    int numRectangles = rectangles->Length();
+    cairo_rectangle_int_t *rects = new cairo_rectangle_int_t[numRectangles];
+
+    Local<String>_x = String::New("x");
+    Local<String>_y = String::New("y");
+    Local<String>_w = String::New("width");
+    Local<String>_h = String::New("height");
+
+    for (int i=0; i<numRectangles; i++) {
+        JSOBJ o = rectangles->Get(i)->ToObject();
+        rects[i].x = o->Get(_x)->IntegerValue();
+        rects[i].y = o->Get(_y)->IntegerValue();
+        rects[i].width = o->Get(_w)->IntegerValue();
+        rects[i].height = o->Get(_h)->IntegerValue();
+    }
+    cairo_region_t *region = cairo_region_create_rectangles(rects, numRectangles);
+    delete [] rects;
+    return External::New(region);
+    
+}
+
+/**
+ * @function cairo.region_copy
+ * 
+ * ### Synopsis
+ * 
+ * var copy = cairo.region_copy(original);
+ * 
+ * Allocates a new region object, copying the area from original.
+ * 
+ * This function returns a newly allocated region object containing the union of all given rectangles. 
+ * 
+ * Free with cairo.region_destroy(). 
+ * 
+ * This function always returns a valid object; if memory cannot be allocated, then a special error object is returned where all operations on the object do nothing. You can check for this with cairo.region_status().
+ * 
+ * @param {object} original - opaque handle to a region.
+ * @return {object} copy - opaque handle to a copy of the original.
+ * 
+ */
+static JSVAL region_copy(JSARGS args) {
+    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    return External::New(cairo_region_copy(region));
+}
+
+/**
+ * @function cairo.region_reference
+ * 
+ * ### Synopsis
+ * 
+ * var region = cairo.region_reference(region);
+ * 
+ * Increases the reference count on region by one.
+ * 
+ * This prevents region from being destroyed until a matching call to cairo.region_destroy() is made.
+ * 
+ * @param {object} region - opaque handle to a region.
+ * @return {object} region - opaque handle to the referenced region.
+ * 
+ */
+static JSVAL region_reference(JSARGS args) {
+    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    return External::New(cairo_region_reference(region));
+}
+
+/**
+ * @function cairo.region_destroy
+ * 
+ * ### Synopsis
+ * 
+ * cairo.region_destroy(region);
+ * 
+ * Destroys a region created with cairo.region_create(), cairo.region_copy(), or cairo.region_create_rectangle(), etc.
+ * 
+ * @param {object} region - opaque handle to a region.
+ */
+static JSVAL region_destroy(JSARGS args) {
+    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_destroy(region);
+    return Undefined();
+}
+
+/**
+ * @function cairo.region_status
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.region_status(region);
+ * 
+ * Checks whether an error has previously occurred for this region object.
+ * 
+ * @param {object} region - opaque handle to a region.
+ * @return {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY
+ */
+static JSVAL region_status(JSARGS args) {
+    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_region_status(region));
+}
+
+/**
+ * @function cairo.region_get_extents
+ * 
+ * ### Synopsis
+ * 
+ * var extents = cairo.region_get_extents(region);
+ * 
+ * Gets the bounding rectangle of a region.
+ * 
+ * The object returned has the following members:
+ * 
+ * + x: x coordinate of the top left corner of the resulting extents.
+ * + y: y coordinate of the top left corner of the resulting extents.
+ * + width: width of resulting extents.
+ * + height: height of resulting extents.
+ * 
+ * @param {object} region - opaque handle to a region.
+ * @return {object} extents - see object description above.
+ */
+static JSVAL region_get_extents(JSARGS args) {
+    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_rectangle_int_t rect;
+    cairo_region_get_extents(region, &rect);
+    
+    JSOBJ o = Object::New();
+    o->Set(String::New("x"), Number::New(rect.x));
+    o->Set(String::New("y"), Number::New(rect.y));
+    o->Set(String::New("width"), Number::New(rect.width));
+    o->Set(String::New("height"), Number::New(rect.height));
+    return o;
+    
+}
+
+/**
+ * @function cairo.region_num_rectangles
+ * 
+ * ### Synopsis
+ * 
+ * var num = cairo.region_num_rectangles(region);
+ * 
+ * Get the number of rectangles contained in region.
+ * 
+ * @param {object} region - opaque handle to a region.
+ * @return {int} num - number of rectangles contained in region.
+ */
+static JSVAL region_num_rectangles(JSARGS args) {
+    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_region_num_rectangles(region));
+}
+
+/**
+ * @function cairo.region_get_rectangle
+ * 
+ * ### Synopsis
+ * 
+ * var rectangle = cairo.region_get_rectangle(region);
+ * 
+ * Gets the nth rectangle from the region.
+ * 
+ * The object returned has the following members:
+ * 
+ * + x: x coordinate of the top left corner of the resulting extents.
+ * + y: y coordinate of the top left corner of the resulting extents.
+ * + width: width of resulting extents.
+ * + height: height of resulting extents.
+ * 
+ * @param {object} region - opaque handle to a region.
+ * @return {object} rectangle - see object description above.
+ */
+static JSVAL region_get_rectangle(JSARGS args) {
+    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    int nth = args[1]->IntegerValue();
+    cairo_rectangle_int_t rect;
+    cairo_region_get_rectangle(region, nth, &rect);
+    
+    JSOBJ o = Object::New();
+    o->Set(String::New("x"), Number::New(rect.x));
+    o->Set(String::New("y"), Number::New(rect.y));
+    o->Set(String::New("width"), Number::New(rect.width));
+    o->Set(String::New("height"), Number::New(rect.height));
+    return o;
+}
+
+/**
+ * @function cairo.region_is_empty
+ * 
+ * ### Synopsis
+ * 
+ * var is_empty = cairo.region_is_empty(region);
+ * 
+ * Determine if a region is empty.
+ * 
+ * @param {object} region - opaque handle to a region.
+ * @return {boolean} is_empty - true if region is empty, false if not.
+ */
+static JSVAL region_is_empty(JSARGS args) {
+    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    return cairo_region_is_empty(region) ? True() : False();
+}
+
+/**
+ * @function cairo.region_contains_poinrt
+ * 
+ * ### Synopsis
+ * 
+ * var contains_point = cairo.region_contains_point(region, x, y);
+ * 
+ * Determine if the region contains the specified point (x,y).
+ * 
+ * @param {object} region - opaque handle to a region.
+ * @param {int} x - x coordinate of the point.
+ * @param {int} y - y coordinate of the point.
+ * @return {boolean} is_empty - true if region is empty, false if not.
+ */
+static JSVAL region_contains_point(JSARGS args) {
+    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    return cairo_region_contains_point(region, args[1]->IntegerValue(), args[1]->IntegerValue()) ? True() : False();
+}
+
+/**
+ * @function cairo.region_contains_rectangle
+ * 
+ * ### Synopsis
+ * 
+ * var overlap = cairo.region_contains_rectangle(region, rectangle);
+ * 
+ * Determine wither rectangle is inside, outside, or partially contained in region.
+ * 
+ * The rectangle argument is a JavaScript object of the form:
+ * 
+ * + {int} x - x coordinate of upper left corner of rectangle.
+ * + {int} y - y coordinate of upper left corner of rectangle.
+ * + {int} width - width of rectangle.
+ * + {int} height - height of rectangle.
+ * 
+ * The overlap value returned is one of the following constants:
+ * 
+ * cairo.REGION_OVERLAP_IN - rectangle is completely inside region.
+ * cairo.REGION_OVERLAP_OUT - rectangle is completely outside region.
+ * cairo.REGION_OVERLAP_PART - rectiangle is partially inside and partially outside region.
+ * 
+ * @param {object} region - opaque handle to a region
+ * @param {object} rectangle - object of the above form.
+ * @return {int} overlap - one of the above values.
+ */
+static JSVAL region_contains_rectangle(JSARGS args) {
+    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    Local<String>_x = String::New("x");
+    Local<String>_y = String::New("y");
+    Local<String>_w = String::New("width");
+    Local<String>_h = String::New("height");
+    JSOBJ o = args[0]->ToObject();
+    cairo_rectangle_int_t rect = { 
+        o->Get(_x)->IntegerValue(),
+        o->Get(_y)->IntegerValue(),
+        o->Get(_w)->IntegerValue(),
+        o->Get(_h)->IntegerValue()
+    };
+    return Integer::New(cairo_region_contains_rectangle(region, &rect));
+}
+
+/**
+ * @function cairo.region_equal
+ * 
+ * ### Synopsis
+ * 
+ * var is_equal = cairo.region_equal(a, b);
+ * 
+ * Determine wither two regions are equivalent.
+ * 
+ * @param {object} a - opaque handle to a region.
+ * @param {object} b - opaque handle to a region.
+ * @return {boolean} is_equal - true if both regions contain the same coverage, false if not.
+ */
+static JSVAL region_equal(JSARGS args) {
+    cairo_region_t *a = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *b = (cairo_region_t *) JSEXTERN(args[1]);
+    return cairo_region_equal(a, b) ? True() : False();
+}
+
+/**
+ * @function cairo.region_translate
+ * 
+ * ### Synopsis
+ * 
+ * cairo.region_translate(region, dx,dy);
+ * 
+ * Translate region by (dx,dy).
+ * 
+ * @param {object} region - opaque handle to a region
+ * @param {int} dx - amount to translate in the x direction.
+ * @param {int} dy - amount to translate in the y direction.
+ */
+static JSVAL region_translate(JSARGS args) {
+    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_translate(region, args[1]->IntegerValue(), args[2]->IntegerValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.region_intersect
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.region_intersect(dst, other);
+ * 
+ * Computes the intersection of dst with other and places the result in dst.
+ * 
+ * @param {object} dst - opaque handle to a region.
+ * @param {object} other - opaque handle to a region.
+ * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
+ */
+static JSVAL region_intersect(JSARGS args) {
+    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
+    return Integer::New(cairo_region_intersect(dst, other));
+}
+
+/**
+ * @function cairo.region_intersect_rectangle
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.region_intersect_rectangle(dst, rectangle);
+ * 
+ * Computes the intersection of dst with rectangle and places the result in dst.
+ * 
+ * The rectangle argument is a JavaScript object of the form:
+ * 
+ * + {int} x - x coordinate of upper left corner of rectangle.
+ * + {int} y - y coordinate of upper left corner of rectangle.
+ * + {int} width - width of rectangle.
+ * + {int} height - height of rectangle.
+ * 
+ * @param {object} dst - opaque handle to a region.
+ * @param {object} rectangle - object of the above form.
+ * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
+ */
+static JSVAL region_intersect_rectangle(JSARGS args) {
+    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
+    Local<String>_x = String::New("x");
+    Local<String>_y = String::New("y");
+    Local<String>_w = String::New("width");
+    Local<String>_h = String::New("height");
+    JSOBJ o = args[0]->ToObject();
+    cairo_rectangle_int_t rect = { 
+        o->Get(_x)->IntegerValue(),
+        o->Get(_y)->IntegerValue(),
+        o->Get(_w)->IntegerValue(),
+        o->Get(_h)->IntegerValue()
+    };
+    return Integer::New(cairo_region_intersect_rectangle(dst, &rect));
+}
+
+/**
+ * @function cairo.region_subtract
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.region_subtract(dst, other);
+ * 
+ * Subtracts other from dst and places the result in dst.
+ * 
+ * @param {object} dst - opaque handle to a region.
+ * @param {object} other - opaque handle to a region.
+ * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
+ */
+static JSVAL region_subtract(JSARGS args) {
+    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
+    return Integer::New(cairo_region_subtract(dst, other));
+}
+
+/**
+ * @function cairo.region_subtract_rectangle
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.region_subtract_rectangle(dst, rectangle);
+ * 
+ * Subtracts rectangle from dst and places the result in dst.
+ * 
+ * The rectangle argument is a JavaScript object of the form:
+ * 
+ * + {int} x - x coordinate of upper left corner of rectangle.
+ * + {int} y - y coordinate of upper left corner of rectangle.
+ * + {int} width - width of rectangle.
+ * + {int} height - height of rectangle.
+ * 
+ * @param {object} dst - opaque handle to a region.
+ * @param {object} rectangle - object of the above form.
+ * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
+ */
+static JSVAL region_subtract_rectangle(JSARGS args) {
+    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
+    Local<String>_x = String::New("x");
+    Local<String>_y = String::New("y");
+    Local<String>_w = String::New("width");
+    Local<String>_h = String::New("height");
+    JSOBJ o = args[0]->ToObject();
+    cairo_rectangle_int_t rect = { 
+        o->Get(_x)->IntegerValue(),
+        o->Get(_y)->IntegerValue(),
+        o->Get(_w)->IntegerValue(),
+        o->Get(_h)->IntegerValue()
+    };
+    return Integer::New(cairo_region_subtract_rectangle(dst, &rect));
+}
+
+/**
+ * @function cairo.region_union
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.region_union(dst, other);
+ * 
+ * Computes the union of dst with other and places the result in dst.
+ * 
+ * @param {object} dst - opaque handle to a region.
+ * @param {object} other - opaque handle to a region.
+ * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
+ */
+static JSVAL region_union(JSARGS args) {
+    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
+    return Integer::New(cairo_region_union(dst, other));
+}
+
+/**
+ * @function cairo.region_union_rectangle
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.region_union_rectangle(dst, rectangle);
+ * 
+ * Computes the union of dst with rectangle and places the result in dst.
+ * 
+ * The rectangle argument is a JavaScript object of the form:
+ * 
+ * + {int} x - x coordinate of upper left corner of rectangle.
+ * + {int} y - y coordinate of upper left corner of rectangle.
+ * + {int} width - width of rectangle.
+ * + {int} height - height of rectangle.
+ * 
+ * @param {object} dst - opaque handle to a region.
+ * @param {object} rectangle - object of the above form.
+ * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
+ */
+static JSVAL region_union_rectangle(JSARGS args) {
+    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
+    Local<String>_x = String::New("x");
+    Local<String>_y = String::New("y");
+    Local<String>_w = String::New("width");
+    Local<String>_h = String::New("height");
+    JSOBJ o = args[0]->ToObject();
+    cairo_rectangle_int_t rect = { 
+        o->Get(_x)->IntegerValue(),
+        o->Get(_y)->IntegerValue(),
+        o->Get(_w)->IntegerValue(),
+        o->Get(_h)->IntegerValue()
+    };
+    return Integer::New(cairo_region_union_rectangle(dst, &rect));
+}
+
+/**
+ * @function cairo.region_xor
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.region_xor(dst, other);
+ * 
+ * Computes the exclusive difference of dst with other and places the result in dst. 
+ * 
+ * That is, dst will be set to contain all areas that are either in dst or in other, but not in both.
+ * 
+ * @param {object} dst - opaque handle to a region.
+ * @param {object} other - opaque handle to a region.
+ * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
+ */
+static JSVAL region_xor(JSARGS args) {
+    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
+    return Integer::New(cairo_region_xor(dst, other));
+}
+
+/**
+ * @function cairo.region_xor_rectangle
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.region_xor_rectangle(dst, rectangle);
+ * 
+ * Computes the exclusive difference of dst with rectangle and places the result in dst. 
+ * 
+ * That is, dst will be set to contain all areas that are either in dst or in rectangle, but not in both.
+ * 
+ * The rectangle argument is a JavaScript object of the form:
+ * 
+ * + {int} x - x coordinate of upper left corner of rectangle.
+ * + {int} y - y coordinate of upper left corner of rectangle.
+ * + {int} width - width of rectangle.
+ * + {int} height - height of rectangle.
+ * 
+ * @param {object} dst - opaque handle to a region.
+ * @param {object} rectangle - object of the above form.
+ * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
+ */
+static JSVAL region_xor_rectangle(JSARGS args) {
+    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
+    Local<String>_x = String::New("x");
+    Local<String>_y = String::New("y");
+    Local<String>_w = String::New("width");
+    Local<String>_h = String::New("height");
+    JSOBJ o = args[0]->ToObject();
+    cairo_rectangle_int_t rect = { 
+        o->Get(_x)->IntegerValue(),
+        o->Get(_y)->IntegerValue(),
+        o->Get(_w)->IntegerValue(),
+        o->Get(_h)->IntegerValue()
+    };
+    return Integer::New(cairo_region_xor_rectangle(dst, &rect));
+}
 
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\///\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -3729,6 +4385,12 @@ void init_cairo_object () {
     cairo->Set(String::New("PATTERN_TYPE_SURFACE"), Integer::New(CAIRO_PATTERN_TYPE_SURFACE));
     cairo->Set(String::New("PATTERN_TYPE_LINEAR"), Integer::New(CAIRO_PATTERN_TYPE_LINEAR));
     cairo->Set(String::New("PATTERN_TYPE_RADIAL"), Integer::New(CAIRO_PATTERN_TYPE_RADIAL));
+    
+    
+    cairo->Set(String::New("REGION_OVERLAP_IN"), Integer::New(CAIRO_REGION_OVERLAP_IN));
+    cairo->Set(String::New("REGION_OVERLAP_OUT"), Integer::New(CAIRO_REGION_OVERLAP_OUT));
+    cairo->Set(String::New("REGION_OVERLAP_PART"), Integer::New(CAIRO_REGION_OVERLAP_PART));
+    
     
     
 //    net->Set(String::New("sendFile"), FunctionTemplate::New(net_sendfile));
