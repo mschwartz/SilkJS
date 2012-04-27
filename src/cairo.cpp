@@ -9,6 +9,26 @@
 #include "SilkJS.h"
 #include <cairo/cairo.h>
 
+////////////////////////// MISC
+
+/**
+ * @function cairo.status_to_string
+ * 
+ * ### Synopsis
+ * 
+ * var message = cairo.status_to_string(status);
+ * 
+ * Provides a human-readable description of a cairo.STATUS_* code.
+ * 
+ * @param {int} status - one of the cairo.STATUS_* codes, as returned by a function like cairo.context_status().
+ * @return {string} message - description of the error/status code.
+ */
+static JSVAL status_to_string(JSARGS args) {
+    return String::New(cairo_status_to_string((cairo_status_t)args[0]->IntegerValue()));
+}
+
+////////////////////////// SURFACE
+
 /**
  * @function cairo.surface_create_similar
  * 
@@ -24,6 +44,8 @@
  * 
  * Use cairo.surface_create_similar_image() if you need an image surface which can be painted quickly to the target surface.
  *
+ * The caller owns the returned surface and should call cairo.surface_destroy() when done with it.
+ * 
  * The format parameter is one of the following:
  * 
  * + cairo.CONTENT_COLOR - the surface will hold color content only.
@@ -34,7 +56,7 @@
  * @param {int} format - format of pixels in the surface to create.
  * @param {int} width - width of the surface, in pixels
  * @param {int} height - height of the surface, in pixels.
- * @return {object} newSurface - opaque handle to the newly created surface. The caller owns the surface and should call cairo.surface_destroy() when done with it. 
+ * @return {object} newSurface - opaque handle to the newly created surface.
  */
 static JSVAL surface_create_similar(JSARGS args) {
     cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
@@ -3077,49 +3099,492 @@ static JSVAL pattern_get_extend(JSARGS args) {
  * ```
  * 
  * @param {object} pattern - opaque handle to a cairo pattern.
- * @return {int} filter - one of the above values.
+ * @param {int} filter - one of the above values.
  */
 static JSVAL pattern_set_filter(JSARGS args) {
     cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
-    cairo_pattern_set_filter(pattern, (cairo_extend_t)args[1]->IntegerValue());
+    cairo_pattern_set_filter(pattern, (cairo_filter_t)args[1]->IntegerValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.pattern_get_filter
+ * 
+ * ### Synopsis
+ * 
+ * var filter = cairo.pattern_get_filter(pattern);
+ * 
+ * Get the current filter for a pattern.
+ * 
+ * See cairo.pattern_set_filter for details.
+ * 
+ * The returned filter value may be one of:
+ * 
+ * cairo.FILTER_FAST - A high-performance filter, with quality similar to cairo.FILTER_NEAREST
+ * cairo.FILTER_GOOD - A reasonable-performance filter, with quality similar to cairo.FILTER_BILINEAR
+ * cairo.FILTER_BEST - The highest-quality available, performance may not be suitable for interactive use.
+ * cairo.FILTER_NEAREST - Nearest-neighbor filtering
+ * cairo.FILTER_BILINEAR - Linear interpolation in two dimensions
+ * cairo.FILTER_GAUSSIAN - This filter value is currently unimplemented, and should not be used in current code.
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @return {int} filter - one of the above values.
+ */
+static JSVAL pattern_get_filter(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_pattern_get_filter(pattern));
+}
+
+/**
+ * @function cairo.pattern_set_matrix
+ * 
+ * ### Synopsis
+ * 
+ * cairo.pattern_set_matrix(pattern, matrix);
+ * 
+ * Sets the pattern's transformation matrix to matrix. This matrix is a transformation from user space to pattern space.
+ * 
+ * When a pattern is first created it always has the identity matrix for its transformation matrix, which means that pattern space is initially identical to user space.
+ * 
+ * Important: Please note that the direction of this transformation matrix is from user space to pattern space. This means that if you imagine the flow from a pattern to user space (and on to device space), then coordinates in that flow will be transformed by the inverse of the pattern matrix.
+ * 
+ * For example, if you want to make a pattern appear twice as large as it does by default the correct code to use is:
+ * 
+ * ```
+ * var matrix = cairo.matrix_init_scale (0.5, 0.5);
+ * cairo.pattern_set_matrix (pattern, matrix);
+ * ```
+ * 
+ * Meanwhile, using values of 2.0 rather than 0.5 in the code above would cause the pattern to appear at half of its default size.
+ * 
+ * Also, please note the discussion of the user-space locking semantics of cairo.context_set_source().
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @param {object} matrix - opaque handle to a cairo matrix.
+ */
+static JSVAL pattern_set_matrix(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[1]);
+    cairo_pattern_set_matrix(pattern, matrix);
+    return Undefined();
+}
+
+/**
+ * @function cairo.pattern_get_matrix
+ * 
+ * ### Synopsis
+ * 
+ * var matrix = cairo.pattern_get_matrix(pattern);
+ * 
+ * Gets the pattern's transformation matrix.
+ * 
+ * The matrix returned is owned by the caller and must be released by calling cairo.matrix_destroy() when it is no longer needed.
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @return {object} matrix - opaque handle to a cairo matrix.
+ */
+static JSVAL pattern_get_matrix(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = new cairo_matrix_t;
+    cairo_pattern_get_matrix(pattern, matrix);
+    return External::New(matrix);
+}
+
+/**
+ * @function cairo.pattern_get_type
+ * 
+ * ### Synopsis
+ * 
+ * var type = cairo.pattern_get_type(pattern);
+ * 
+ * Get the type of a pattern.
+ * 
+ * The type of a pattern is determined by the function used to create it. 
+ * 
+ * The cairo.pattern_create_rgb() and cairo.pattern_create_rgba() functions create SOLID patterns. 
+ * 
+ * The remaining cairo.pattern_create functions map to pattern types in obvious ways.
+ * 
+ * The pattern type can be queried with cairo.pattern_get_type()
+ * 
+ * Most cairo pattern functions can be called with a pattern of any type, (though trying to change the extend or filter for a solid pattern will have no effect). 
+ * 
+ * A notable exception is cairo.pattern_add_color_stop_rgb() and cairo.pattern_add_color_stop_rgba() which must only be called with gradient patterns (either LINEAR or RADIAL). 
+ * 
+ * Otherwise the pattern will be shutdown and put into an error state.
+ * 
+ * Currently, the types are:
+ * 
+ * cairo.PATTERN_TYPE_SOLID - The pattern is a solid (uniform) color. It may be opaque or translucent.
+ * cairo.PATTERN_TYPE_SURFACE - The pattern is a based on a surface (an image).
+ * cairo.PATTERN_TYPE_LINEAR - The pattern is a linear gradient.
+ * cairo.PATTERN_TYPE_RADIAL - The pattern is a radial gradient.
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @return {int} type - one of the above types.
+ */
+static JSVAL pattern_get_type(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_pattern_get_type(pattern));
+}
+
+/**
+ * @function cairo.pattern_get_reference_count
+ * 
+ * ### Synopsis
+ * 
+ * var count = cairo.pattern_get_reference_count(pattern);
+ * 
+ * Gets the current reference count of pattern.
+ * 
+ * @param {object} pattern - opaque handle to a cairo pattern.
+ * @return {int} count - reference count.
+ */
+static JSVAL pattern_get_reference_count(JSARGS args) {
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_pattern_get_reference_count(pattern));
+}
+
+////////////////////////// MATRIX
+
+/**
+ * @function cairo.matrix_create
+ * 
+ * ### Synopsis
+ * 
+ * var matrix = cairo.matrix_create();
+ * 
+ * Create a matrix object.
+ * 
+ * Matrices are used throughout cairo to convert between different coordinate spaces.  A matrix holds an affine transformation, such as a scale, rotation, shear, or a combination of these.  The transformation of a point(x,y) is given by:
+ * 
+ * ```
+ * x_new = xx * x + xy * y + x0;
+ * y_new = yx * x + yy * y + y0;
+ * 
+ * ```
+ * 
+ * Internally, a matrix contains the following number values: xx, yx, xy, yy, x0, and y0.  JavaScript code will not directly manipulate these values; convenience methods are provided for that purpose.
+ * 
+ * The matrix returned is initialized to an identity transformation.
+ * 
+ * Matrices returned by the SilkJS cairo methods are owned by the caller and should be released by calling cairo.matrix_destroy().
+ * 
+ * @return {object} matrix - opaque handle to a matrix.
+ */
+static JSVAL matrix_create(JSARGS args) {
+    cairo_matrix_t *matrix = new cairo_matrix_t;
+    cairo_matrix_init_identity(matrix);
+    return External::New(matrix);
+}
+
+/**
+ * @function cairo.matrix_init_identity
+ * 
+ * ### Synopsis
+ * 
+ * cairo.matrix_init_identity(matrix);
+ * 
+ * Modifies matrix to be an identity transformation.
+ * 
+ * @param {object} matrix - opaque handle to a matrix.
+ */
+static JSVAL matrix_init_identity(JSARGS args) {
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_init_identity(matrix);
+    return Undefined();
+}
+
+/**
+ * @function cairo.matrix_init_translate
+ * 
+ * ### Synopsis
+ * 
+ * cairo.matrix_init_translate(matrix, tx,ty);
+ * 
+ * Initializes matrix to a transformation that translates by tx and ty in the x and y dimensions, respectively.
+ * 
+ * @param {object} matrix - opaque handle to a matrix.
+ * @param {number} tx - amount to translate in the x direction.
+ * @param {number} ty - amount to translate in the y direction.
+ */
+static JSVAL matrix_init_translate(JSARGS args) {
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_init_translate(matrix, args[1]->NumberValue(), args[2]->NumberValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.matrix_init_scale
+ * 
+ * ### Synopsis
+ * 
+ * cairo.matrix_init_scale(matrix, sx,sy);
+ * 
+ * Initializes matrix to a transformation that scales by sx and sy in the x and y dimensions, respectively.
+ * 
+ * @param {object} matrix - opaque handle to a matrix.
+ * @param {number} sx - scale factor in the x direction.
+ * @param {number} sy - scake factir in the y direction.
+ */
+static JSVAL matrix_init_scale(JSARGS args) {
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_init_scale(matrix, args[1]->NumberValue(), args[2]->NumberValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.matrix_init_rotate
+ * 
+ * ### Synopsis
+ * 
+ * cairo.matrix_init_rotate(matrix, radians);
+ * 
+ * Initializes matrix to a transformation that rotates by radians.
+ * 
+ * The direction of rotation is defined such that positive angles rotate in the direction from the postitive x axis toward the positive y axis.
+ * 
+ * With the default axis orientation of cairo, positive angles rotate in a clockwise direction.
+ * 
+ * @param {object} matrix - opaque handle to a matrix.
+ * @param {number} radians angle of rotation, in radians.
+ */
+static JSVAL matrix_init_rotate(JSARGS args) {
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_init_rotate(matrix, args[1]->NumberValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.matrix_translate
+ * 
+ * ### Synopsis
+ * 
+ * cairo.matrix_translate(matrix, tx, ty);
+ * 
+ * Applies a translateion by tx,ty to the transformation in matrix.
+ * 
+ * The effect of the new transformation is to first translate the coordinates by tx and ty, then apply the original transformation to the coordinates.
+ * 
+ * @param {object} matrix - opaque handle to a matrix.
+ * @param {number} tx - amount to translate in the x direction.
+ * @param {number} ty - amount to translate in the y direction.
+ */
+static JSVAL matrix_translate(JSARGS args) {
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_translate(matrix, args[1]->NumberValue(), args[2]->NumberValue());    
+    return Undefined();
+}
+
+/**
+ * @function cairo.matrix_scale
+ * 
+ * ### Synopsis
+ * 
+ * cairo.matrix_scale(matrix, sx, sy);
+ * 
+ * Applies scaling by sx,sy to the transformation in matrix.
+ * 
+ * The effect of the new transformation is to first scale the coordinates by sx and sy, then apply the original transformation to the coordinates.
+ * 
+ * @param {object} matrix - opaque handle to a matrix.
+ * @param {number} sx - scale factor in the x direction.
+ * @param {number} sy - scale factor in the y direction.
+ */
+static JSVAL matrix_scale(JSARGS args) {
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_scale(matrix, args[1]->NumberValue(), args[2]->NumberValue());    
+    return Undefined();
+}
+
+/**
+ * @function cairo.matrix_rotate
+ * 
+ * ### Synopsis
+ * 
+ * cairo.matrix_rotate(matrix, radians);
+ * 
+ * Applies rotation by radians to the transformation in matrix. 
+ * 
+ * The effect of the new transformation is to first rotate the coordinates by radians, then apply the original transformation to the coordinates.
+ * 
+ * The direction of rotation is defined such that positive angles rotate in the direction from the positive X axis toward the positive Y axis. 
+ * 
+ * With the default axis orientation of cairo, positive angles rotate in a clockwise direction.
+ * 
+ * @param {object} matrix - opaque handle to a matrix.
+ * @param {number} radians angle of rotation, in radians.
+ */
+static JSVAL matrix_rotate(JSARGS args) {
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_rotate(matrix, args[1]->NumberValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.matrix_invert
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.matrix_invert(matrix);
+ * 
+ * Changes matrix to be the inverse of its original value. 
+ * 
+ * Not all transformation matrices have inverses; if the matrix collapses points together (it is degenerate), then it has no inverse and this function will fail.
+ * 
+ * @param {object} matrix - opaque handle to a matrix.
+ * @return {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_INVALID_MATRIX.
+ */
+static JSVAL matrix_invert(JSARGS args) {
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    return Integer::New(cairo_matrix_invert(matrix));
+}
+
+/**
+ * @function cairo.matrix_multiply
+ * 
+ * ### Synopsis
+ * 
+ * var matrix = cairo.matrix_multipl(a, b);
+ * 
+ * Multiplies the affine transformations in a and b together and returns a new resulting matrix. 
+ * 
+ * The effect of the resulting transformation is to first apply the transformation in a to the coordinates and then apply the transformation in b to the coordinates.
+ * 
+ * It is allowable for result to be identical to either a or b.
+ * 
+ * @param {object} a - opaque handle to a matrix.
+ * @param {object} b - opaque handle to a matrix.
+ * @return {object} matrix - opaque handle to a matrix.
+ */
+static JSVAL matrix_multiply(JSARGS args) {
+    cairo_matrix_t *a = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *b = (cairo_matrix_t *) JSEXTERN(args[1]);
+    cairo_matrix_t *result = new cairo_matrix_t;
+    cairo_matrix_multiply(result, a, b);
+    return External::New(result);
+}
+
+/**
+ * @function cairo.matrix_transform_distance
+ * 
+ * ### Synopsis
+ * 
+ * var vector = cairo.matrix_transform_distance(matrix, vector);
+ * 
+ * Transforms the distance vector by matrix.
+ * 
+ * This is similar to cairo.matrix_transform_point() except the translation components of the transformation are ignored.
+ * 
+ * The calculation of the returned vector is as follows:
+ * 
+ * ```
+ * dx2 = dx1 * a + dy1 * c;
+ * dy2 = dx1 * b + dy1 * d;
+ * ```
+ * 
+ * The input vector and output vector are the same object, of the form:
+ * 
+ * + {number} dx - x component of distance vector.
+ * + {number} dy - y component of distance vector.
+ * 
+ * The dx,dy members are modified by this routine.
+ * 
+ * Affine transformations are position invariant, so the same vector always transforms to the same vector. 
+ * 
+ * If (x1,y1) transforms to (x2,y2) then (x1+dx1,y1+dy1) will transform to (x1+dx2,y1+dy2) for all values of x1 and x2.
+ * 
+ * @param {object} matrix - opaque handle to a matrix.
+ * @param {object} vector - object with dx,dy input values.
+ * @return {object} vector - object with modified dx,dy values.
+ */
+static JSVAL matrix_transform_distance(JSARGS args) {
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    Local<String>_dx = String::New("dx");
+    Local<String>_dy = String::New("dy");
+    JSOBJ o = args[1]->ToObject();
+    double dx = o->Get(_dx)->NumberValue();
+    double dy = o->Get(_dy)->NumberValue();
+    cairo_matrix_transform_distance(matrix, &dx, &dy);
+    o->Set(_dx, Number::New(dx));
+    o->Set(_dy, Number::New(dy));
+    return o;
+}
+
+/**
+ * @function cairo.matrix_transform_distance
+ * 
+ * ### Synopsis
+ * 
+ * var point = cairo.matrix_transform_point(matrix, point);
+ * 
+ * Transforms the point by matrix.
+ * 
+ * The input point and output point are the same object, of the form:
+ * 
+ * + {number} x - x position.
+ * + {number} y - y position.
+ * 
+ * The x,y members are modified by this routine.
+ * 
+ * @param {object} matrix - opaque handle to a matrix.
+ * @param {object} point - object with x,y input values.
+ * @return {object} point - object with modified x,y values.
+ */
+static JSVAL matrix_transform_point(JSARGS args) {
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    Local<String>_x = String::New("x");
+    Local<String>_y = String::New("y");
+    JSOBJ o = args[1]->ToObject();
+    double x = o->Get(_x)->NumberValue();
+    double y = o->Get(_y)->NumberValue();
+    cairo_matrix_transform_point(matrix, &x, &y);
+    o->Set(_x, Number::New(x));
+    o->Set(_y, Number::New(y));
+    return o;
+}
+
+/**
+ * @function cairo.matrix_destroy
+ * 
+ * ### Synopsis
+ * 
+ * cairo.matrix_destroy(matrix);
+ * 
+ * Free resources used by a matrix.
+ */
+static JSVAL matrix_destroy(JSARGS args) {
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    delete matrix;
     return Undefined();
 }
 
 
-
-
-
-
-////////////////////////// MISC
+////////////////////////// REGION
 
 /**
- * @function cairo.status_to_string
+ * @function cairo.region_create
  * 
  * ### Synopsis
  * 
- * var message = cairo.status_to_string(status);
+ * var region = cairo.region_create();
  * 
- * Provides a human-readable description of a cairo.STATUS_* code.
- * 
- * @param {int} status - one of the cairo.STATUS_* codes, as returned by a function like cairo.context_status().
- * @return {string} message - description of the error/status code.
+ * Allocates a new empty region object.
  */
-static JSVAL status_to_string(JSARGS args) {
-    return String::New(cairo_status_to_string((cairo_status_t)args[0]->IntegerValue()));
+static JSVAL region_create(JSARGS args) {
+    return External::New(cairo_region_create());
 }
 
 
 
 
-//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
-//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
-//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
-//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
-//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
-//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
-//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
-//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
-//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\///\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\///\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\///\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\///\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\///\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\///\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
+//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\///\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
 
 void init_cairo_object () {
     Handle<ObjectTemplate>cairo = ObjectTemplate::New();
@@ -3259,6 +3724,12 @@ void init_cairo_object () {
     cairo->Set(String::New("FILTER_NEAREST"), Integer::New(CAIRO_FILTER_NEAREST));
     cairo->Set(String::New("FILTER_BILINEAR"), Integer::New(CAIRO_FILTER_BILINEAR));
     cairo->Set(String::New("FILTER_GAUSSIAN"), Integer::New(CAIRO_FILTER_GAUSSIAN));
+    
+    cairo->Set(String::New("PATTERN_TYPE_SOLID"), Integer::New(CAIRO_PATTERN_TYPE_SOLID));
+    cairo->Set(String::New("PATTERN_TYPE_SURFACE"), Integer::New(CAIRO_PATTERN_TYPE_SURFACE));
+    cairo->Set(String::New("PATTERN_TYPE_LINEAR"), Integer::New(CAIRO_PATTERN_TYPE_LINEAR));
+    cairo->Set(String::New("PATTERN_TYPE_RADIAL"), Integer::New(CAIRO_PATTERN_TYPE_RADIAL));
+    
     
 //    net->Set(String::New("sendFile"), FunctionTemplate::New(net_sendfile));
 
