@@ -2178,7 +2178,7 @@ static JSVAL context_user_to_device(JSARGS args) {
     JSOBJ o = args[1]->ToObject();
     double x = o->Get(_x)->NumberValue();
     double y = o->Get(_y)->NumberValue();
-    cairo_user_to_device(matrix, &x, &y);
+    cairo_user_to_device(context, &x, &y);
     o->Set(_x, Number::New(x));
     o->Set(_y, Number::New(y));
     return o;
@@ -2213,7 +2213,7 @@ static JSVAL context_user_to_device_distance(JSARGS args) {
     JSOBJ o = args[1]->ToObject();
     double dx = o->Get(_dx)->NumberValue();
     double dy = o->Get(_dy)->NumberValue();
-    cairo_user_to_device_distance(matrix, &dx, &dy);
+    cairo_user_to_device_distance(context, &dx, &dy);
     o->Set(_dx, Number::New(dx));
     o->Set(_dy, Number::New(dy));
     return o;
@@ -2246,7 +2246,7 @@ static JSVAL context_device_to_user(JSARGS args) {
     JSOBJ o = args[1]->ToObject();
     double x = o->Get(_x)->NumberValue();
     double y = o->Get(_y)->NumberValue();
-    cairo_device_to_user(matrix, &dx, &dy);
+    cairo_device_to_user(context, &x, &y);
     o->Set(_x, Number::New(x));
     o->Set(_y, Number::New(y));
     return o;
@@ -2281,7 +2281,7 @@ static JSVAL context_device_to_user_distance(JSARGS args) {
     JSOBJ o = args[1]->ToObject();
     double dx = o->Get(_dx)->NumberValue();
     double dy = o->Get(_dy)->NumberValue();
-    cairo_device_to_user_distance(matrix, &dx, &dy);
+    cairo_device_to_user_distance(context, &dx, &dy);
     o->Set(_dx, Number::New(dx));
     o->Set(_dy, Number::New(dy));
     return o;
