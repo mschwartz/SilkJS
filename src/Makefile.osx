@@ -1,4 +1,4 @@
-OBJ=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o mysql.o http.o gd.o ncurses.o sem.o logfile.o v8.o md5.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o memcached.o ftplib.o ftp.o editline.o popen.o linenoise.o
+OBJ=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o mysql.o http.o gd.o ncurses.o sem.o logfile.o v8.o md5.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o memcached.o ftplib.o ftp.o editline.o popen.o linenoise.o cairo.o
 
 CFLAGS = -O6 -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-strict-aliasing -fno-rtti -fno-exceptions -fvisibility=hidden -Wall -W -Wno-unused-parameter -Wnon-virtual-dtor -m64 -O3 -fomit-frame-pointer -fdata-sections -ffunction-sections -ansi -fno-strict-aliasing
 
@@ -25,7 +25,7 @@ LIBDIR = $(CURDIR)/osx_dependencies
 DEPENDENCIES = $(MYSQL) $(JPEG) $(GD2) $(MM) $(CURL) $(SSH2) $(MEMCACHED)
 
 %.o: %.cpp SilkJS.h Makefile
-	g++ $(CFLAGS) -c -I$(CURDIR)/osx_dependencies/include -I$(MYSQL)/include -I$(SSH2)/include -Iv8-read-only/include -g -o $*.o $*.cpp
+	g++ $(CFLAGS) -c -I/usr/X11/include -I$(CURDIR)/osx_dependencies/include -I$(MYSQL)/include -I$(SSH2)/include -Iv8-read-only/include -g -o $*.o $*.cpp
 
 SilkJS:	$(V8) $(V8_LIB) $(DEPENDENCIES) $(OBJ) SilkJS.h Makefile
 	g++ $(CFLAGS) -o silkjs $(OBJ) -Lv8-read-only -lv8 -L$(LIBDIR)/lib/mysql -lmysqlclient -L$(LIBDIR)/lib -lmm -ljpeg -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lmemcached -ledit
@@ -43,7 +43,7 @@ $(OBJ): SilkJS.h Makefile
 
 $(V8):
 	echo "svn checkout"
-	svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8-read-only
+	svn checkout http://v8.googlecode.com/svn/trunk/ v8-read-only
 
 $(V8_LIB):
 	cd $(V8) && scons -j 4 arch=x64

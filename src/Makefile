@@ -2,7 +2,7 @@ ARCH := $(shell getconf LONG_BIT)
 
 CORE=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o v8.o http.o md5.o popen.o linenoise.o
 
-OBJ=	mysql.o memcached.o gd.o ncurses.o sem.o logfile.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o ftp.o ftplib.o editline.o
+OBJ=	mysql.o memcached.o gd.o ncurses.o sem.o logfile.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o ftp.o ftplib.o editline.o cairo.o
 
 V8DIR=	./v8-read-only
 
@@ -39,6 +39,7 @@ bootstrap:  $(V8) $(CORE) SilkJS.h Makefile
 	
 $(V8DIR):
 	echo "svn checkout"
+#	svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8-read-only
 	svn checkout http://v8.googlecode.com/svn/trunk/ v8-read-only
 
 $(V8):
