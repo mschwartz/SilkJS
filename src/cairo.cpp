@@ -1221,15 +1221,12 @@ static JSVAL context_get_dash(JSARGS args) {
  * 
  * The rule argument may be:
  * 
- * + cairo.FILL_RULE_WINDING
- * + cairo.FILL_RULE_EVEN_ODD
- * 
- * For both fill rules, whether or not a point is included in the fill is determined by taking a ray from that point to infinity and looking at intersections with the path. The ray can be in any direction, as long as it doesn't pass through the end point of a segment or have a tricky intersection such as intersecting tangent to the path. (Note that filling is not actually implemented in this way. This is just a description of the rule that is applied.)
- * 
  * cairo.FILL_RULE_WINDING
  *   If the path crosses the ray from left-to-right, counts +1. If the path crosses the ray from right to left, counts -1. (Left and right are determined from the perspective of looking along the ray from the starting point.) If the total count is non-zero, the point will be filled.
  * cairo.FILL_RULE_EVEN_ODD
- *  Counts the total number of intersections, without regard to the orientation of the contour. If the total number of intersections is odd, the point will be filled.
+ *   Counts the total number of intersections, without regard to the orientation of the contour. If the total number of intersections is odd, the point will be filled.
+ * 
+ * For both fill rules, whether or not a point is included in the fill is determined by taking a ray from that point to infinity and looking at intersections with the path. The ray can be in any direction, as long as it doesn't pass through the end point of a segment or have a tricky intersection such as intersecting tangent to the path. (Note that filling is not actually implemented in this way. This is just a description of the rule that is applied.)
  * 
  * The default fill rule is cairo.FILL_RULE_WINDING.
  * 
@@ -2007,6 +2004,290 @@ static JSVAL context_show_page(JSARGS args) {
     return Undefined();
 }
 
+/**
+ * @function cairo.context_translate
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_translate(context, tx,ty);
+ * 
+ * Modifies the current transformation matrix (CTM) by translating the user-space origin by (tx, ty). 
+ * 
+ * This offset is interpreted as a user-space coordinate according to the CTM in place before the new call to cairo.context_translate(). 
+ * 
+ * In other words, the translation of the user-space origin takes place after any existing transformation.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} tx - amount to translate in the x direction.
+ * @param {number} ty - amount to translate in the y direction.
+ */
+static JSVAL context_translate(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_translate(context, args[1]->NumberValue(), args[2]->NumberValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_scale
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_scale(context, sx,sy);
+ * 
+ * Modifies the current transformation matrix (CTM) by scaling the X and Y user-space axes by sx and sy respectively. 
+ * 
+ * The scaling of the axes takes place after any existing transformation of user space.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} sx - scale factor for the x dimension.
+ * @param {number} sy - scale factor for the y dimension.
+ */
+static JSVAL context_scale(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_scale(context, args[1]->NumberValue(), args[2]->NumberValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_rotate
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_rotate(context, angle);
+ * 
+ * Modifies the current transformation matrix (CTM) by rotating the user-space axes by angle radians. 
+ * 
+ * The rotation of the axes takes places after any existing transformation of user space. 
+ * 
+ * The rotation direction for positive angles is from the positive X axis toward the positive Y axis.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} angle - angle in radians by which the user space axes will be rotated.
+ */
+static JSVAL context_rotate(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_rotate(context, args[1]->NumberValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_transform
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_transform(pattern, matrix);
+ * 
+ * Modifies the current transformation matrix (CTM) by applying matrix as an additional transformation. 
+ * 
+ * The new transformation of user space takes place after any existing transformation.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} matrix - opaque handle to a cairo matrix.
+ */
+static JSVAL context_transform(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[1]);
+    cairo_transform(context, matrix);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_set_matrix
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_matrix(pattern, matrix);
+ * 
+ * Modifies the current transformation matrix (CTM) by setting it equal to matrix.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} matrix - opaque handle to a cairo matrix.
+ */
+static JSVAL context_set_matrix(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[1]);
+    cairo_set_matrix(context, matrix);
+    return Undefined();
+}
+
+
+/**
+ * @function cairo.context_get_matrix
+ * 
+ * ### Synopsis
+ * 
+ * var matrix = cairo.context_get_matrix(context);
+ * 
+ * Gets the context's transformation matrix.
+ * 
+ * The matrix returned is owned by the caller and must be released by calling cairo.matrix_destroy() when it is no longer needed.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} matrix - opaque handle to a cairo matrix.
+ */
+static JSVAL context_get_matrix(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = new cairo_matrix_t;
+    cairo_get_matrix(context, matrix);
+    return External::New(matrix);
+}
+
+/**
+ * @function cairo.context_identity_matrix
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_identity_matrix(context);
+ * 
+ * Resets the current transformation matrix (CTM) by setting it equal to the identity matrix. 
+ * 
+ * That is, the user-space and device-space axes will be aligned and one user-space unit will transform to one device-space unit.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ */
+static JSVAL context_identity_matrix(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_identity_matrix(context);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_user_to_device
+ * 
+ * ### Synopsis
+ * 
+ * var vector = cairo.context_user_to_device(context, vector);
+ * 
+ * Transform a coordinate from user space to device space by multiplying the given point by the current transformation matrix (CTM).
+ * 
+ * The input vector and output vector are the same object, of the form:
+ * 
+ * + {number} x - x coordinate.
+ * + {number} y - y coordinate
+ * 
+ * The dx,dy members are modified by this routine.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} vector - JavaScript object of the form described above.
+ * @return {object} vector - JavaScript object of the form described above.
+ */
+static JSVAL context_user_to_device(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    Local<String>_x = String::New("x");
+    Local<String>_y = String::New("y");
+    JSOBJ o = args[1]->ToObject();
+    double x = o->Get(_x)->NumberValue();
+    double y = o->Get(_y)->NumberValue();
+    cairo_user_to_device(matrix, &x, &y);
+    o->Set(_x, Number::New(x));
+    o->Set(_y, Number::New(y));
+    return o;
+}
+
+/**
+ * @function cairo.context_user_to_device_distance
+ * 
+ * ### Synopsis
+ * 
+ * var vector = cairo.context_user_to_device_distance(context, vector);
+ * 
+ * Transform a distance vector from user space to device space. 
+ * 
+ * This function is similar to cairo.context_user_to_device() except that the translation components of the CTM will be ignored when transforming (dx,dy).
+ * 
+ * The input vector and output vector are the same object, of the form:
+ * 
+ * + {number} dx - x component of distance vector.
+ * + {number} dy - y component of distance vector.
+ * 
+ * The dx,dy members are modified by this routine.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} vector - JavaScript object of the form described above.
+ * @return {object} vector - JavaScript object of the form described above.
+ */
+static JSVAL context_user_to_device_distance(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    Local<String>_dx = String::New("dx");
+    Local<String>_dy = String::New("dy");
+    JSOBJ o = args[1]->ToObject();
+    double dx = o->Get(_dx)->NumberValue();
+    double dy = o->Get(_dy)->NumberValue();
+    cairo_user_to_device_distance(matrix, &dx, &dy);
+    o->Set(_dx, Number::New(dx));
+    o->Set(_dy, Number::New(dy));
+    return o;
+}
+
+/**
+ * @function cairo.context_device_to_user
+ * 
+ * ### Synopsis
+ * 
+ * var vector = cairo.context_device_to_user(context, vector);
+ * 
+ * Transform a coordinate from device space to user space by multiplying the given point by the inverse of the current transformation matrix (CTM).
+ * 
+ * The input vector and output vector are the same object, of the form:
+ * 
+ * + {number} x - x component of distance vector.
+ * + {number} y - y component of distance vector.
+ * 
+ * The dx,dy members are modified by this routine.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} vector - JavaScript object of the form described above.
+ * @return {object} vector - JavaScript object of the form described above.
+ */
+static JSVAL context_device_to_user(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    Local<String>_x = String::New("x");
+    Local<String>_y = String::New("y");
+    JSOBJ o = args[1]->ToObject();
+    double x = o->Get(_x)->NumberValue();
+    double y = o->Get(_y)->NumberValue();
+    cairo_device_to_user(matrix, &dx, &dy);
+    o->Set(_x, Number::New(x));
+    o->Set(_y, Number::New(y));
+    return o;
+}
+
+/**
+ * @function cairo.context_device_to_user_distance
+ * 
+ * ### Synopsis
+ * 
+ * var vector = cairo.context_device_to_user_distance(context, vector);
+ * 
+ * Transform a distance vector from device space to user space. 
+ * 
+ * This function is similar to cairo.context_device_to_user() except that the translation components of the inverse CTM will be ignored when transforming (dx,dy).
+ * 
+ * The input vector and output vector are the same object, of the form:
+ * 
+ * + {number} dx - x component of distance vector.
+ * + {number} dy - y component of distance vector.
+ * 
+ * The dx,dy members are modified by this routine.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} vector - JavaScript object of the form described above.
+ * @return {object} vector - JavaScript object of the form described above.
+ */
+static JSVAL context_device_to_user_distance(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    Local<String>_dx = String::New("dx");
+    Local<String>_dy = String::New("dy");
+    JSOBJ o = args[1]->ToObject();
+    double dx = o->Get(_dx)->NumberValue();
+    double dy = o->Get(_dy)->NumberValue();
+    cairo_device_to_user_distance(matrix, &dx, &dy);
+    o->Set(_dx, Number::New(dx));
+    o->Set(_dy, Number::New(dy));
+    return o;
+}
+
+
 
 ////////////////////////// PATHS
 // http://www.cairographics.org/manual/cairo-Paths.html
@@ -2020,7 +2301,9 @@ static JSVAL context_show_page(JSARGS args) {
  * 
  * var hasPoint = cairo.context_has_current_point(context);
  * 
- * Returns whether a current point is defined on the current path. See cairo.context_get_current_point() for details on the current point.
+ * Returns whether a current point is defined on the current path. 
+ * 
+ * See cairo.context_get_current_point() for details on the current point.
  * 
  * @param {object} context - opaque handle to a cairo context.
  * @return {boolean} hasPoint - true if a current point is defined.
