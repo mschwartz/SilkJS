@@ -1,3 +1,5 @@
+/** @ignore */
+
 /**
  * @module builtin/cairo
  * 
