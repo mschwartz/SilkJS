@@ -17,7 +17,7 @@
  * message.setFrom(from);
  * message.addTo(to);
  * message.setSubject(subject);
- * message.setHtml('<h1>Test Message</h1>');
+ * message.setHtml('&lt;h1>Test Message&lt;/h1>');
  * message.addAttachment('foo', 'text/plain', fs.readFile64('/tmp/foo'));
  * message.send();
  * ```
@@ -39,7 +39,7 @@ var uuid = require('phpjs').uuid,
     console = require('console');
 
 /**
- * @consructor Mail
+ * @constructor Mail
  *
  * ### synopsis
  *
