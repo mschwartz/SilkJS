@@ -179,6 +179,7 @@ static JSVAL surface_flush(JSARGS args) {
  * @param {object} surface - opaque handle to a cairo surface.
  * @return {object} device - opaque handle to the device for the surface, or null if the surface does not have an associated device.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL surface_get_device(JSARGS args) {
     cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
     cairo_device_t *device = cairo_surface_get_device(surface);
@@ -187,6 +188,7 @@ static JSVAL surface_get_device(JSARGS args) {
     }
     return External::New(device);
 }
+#endif
 
 /**
  * @function cairo.surface_get_font_options
@@ -1654,10 +1656,12 @@ static JSVAL context_clip_extents(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  * @return {boolean} inClip - true if the point is inside the clip rectangle, false if not.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL context_in_clip(JSARGS args) {
     cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
     return cairo_in_clip(context, args[1]->NumberValue(), args[2]->NumberValue()) ? True() : False();
 }
+#endif
 
 /**
  * @function cairo.context_reset_clip
@@ -3925,9 +3929,11 @@ static JSVAL matrix_destroy(JSARGS args) {
  * 
  * @return {object} region - opaque handle to a region
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_create(JSARGS args) {
     return External::New(cairo_region_create());
 }
+#endif
 
 /**
  * @function cairo.region_create_rectangle
@@ -3954,6 +3960,7 @@ static JSVAL region_create(JSARGS args) {
  * @param {object} rectangle - object of the above form.
  * @return {object} region - opaque handle to a region
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_create_rectangle(JSARGS args) {
     Local<String>_x = String::New("x");
     Local<String>_y = String::New("y");
@@ -3968,6 +3975,7 @@ static JSVAL region_create_rectangle(JSARGS args) {
     };
     return External::New(cairo_region_create_rectangle(&rect));
 }
+#endif
 
 /**
  * @function cairo.region_create_rectangles
@@ -3994,6 +4002,7 @@ static JSVAL region_create_rectangle(JSARGS args) {
  * @param {array} rectangles - array of rectangle objects of the above form.
  * @return {object} region - opaque handle to a region
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_create_rectangles(JSARGS args) {
     Handle<Array>rectangles = Handle<Array>::Cast(args[0]->ToObject());
     int numRectangles = rectangles->Length();
@@ -4016,6 +4025,7 @@ static JSVAL region_create_rectangles(JSARGS args) {
     return External::New(region);
     
 }
+#endif
 
 /**
  * @function cairo.region_copy
@@ -4036,10 +4046,12 @@ static JSVAL region_create_rectangles(JSARGS args) {
  * @return {object} copy - opaque handle to a copy of the original.
  * 
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_copy(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     return External::New(cairo_region_copy(region));
 }
+#endif
 
 /**
  * @function cairo.region_reference
@@ -4056,10 +4068,12 @@ static JSVAL region_copy(JSARGS args) {
  * @return {object} region - opaque handle to the referenced region.
  * 
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_reference(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     return External::New(cairo_region_reference(region));
 }
+#endif
 
 /**
  * @function cairo.region_destroy
@@ -4072,11 +4086,13 @@ static JSVAL region_reference(JSARGS args) {
  * 
  * @param {object} region - opaque handle to a region.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_destroy(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_region_destroy(region);
     return Undefined();
 }
+#endif
 
 /**
  * @function cairo.region_status
@@ -4090,10 +4106,12 @@ static JSVAL region_destroy(JSARGS args) {
  * @param {object} region - opaque handle to a region.
  * @return {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_status(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     return Integer::New(cairo_region_status(region));
 }
+#endif
 
 /**
  * @function cairo.region_get_extents
@@ -4114,6 +4132,7 @@ static JSVAL region_status(JSARGS args) {
  * @param {object} region - opaque handle to a region.
  * @return {object} extents - see object description above.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_get_extents(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_rectangle_int_t rect;
@@ -4125,8 +4144,8 @@ static JSVAL region_get_extents(JSARGS args) {
     o->Set(String::New("width"), Number::New(rect.width));
     o->Set(String::New("height"), Number::New(rect.height));
     return o;
-    
 }
+#endif
 
 /**
  * @function cairo.region_num_rectangles
@@ -4140,10 +4159,12 @@ static JSVAL region_get_extents(JSARGS args) {
  * @param {object} region - opaque handle to a region.
  * @return {int} num - number of rectangles contained in region.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_num_rectangles(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     return Integer::New(cairo_region_num_rectangles(region));
 }
+#endif
 
 /**
  * @function cairo.region_get_rectangle
@@ -4164,6 +4185,7 @@ static JSVAL region_num_rectangles(JSARGS args) {
  * @param {object} region - opaque handle to a region.
  * @return {object} rectangle - see object description above.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_get_rectangle(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     int nth = args[1]->IntegerValue();
@@ -4177,6 +4199,7 @@ static JSVAL region_get_rectangle(JSARGS args) {
     o->Set(String::New("height"), Number::New(rect.height));
     return o;
 }
+#endif
 
 /**
  * @function cairo.region_is_empty
@@ -4190,10 +4213,12 @@ static JSVAL region_get_rectangle(JSARGS args) {
  * @param {object} region - opaque handle to a region.
  * @return {boolean} is_empty - true if region is empty, false if not.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_is_empty(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     return cairo_region_is_empty(region) ? True() : False();
 }
+#endif
 
 /**
  * @function cairo.region_contains_poinrt
@@ -4209,10 +4234,12 @@ static JSVAL region_is_empty(JSARGS args) {
  * @param {int} y - y coordinate of the point.
  * @return {boolean} is_empty - true if region is empty, false if not.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_contains_point(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     return cairo_region_contains_point(region, args[1]->IntegerValue(), args[1]->IntegerValue()) ? True() : False();
 }
+#endif
 
 /**
  * @function cairo.region_contains_rectangle
@@ -4240,6 +4267,7 @@ static JSVAL region_contains_point(JSARGS args) {
  * @param {object} rectangle - object of the above form.
  * @return {int} overlap - one of the above values.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_contains_rectangle(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     Local<String>_x = String::New("x");
@@ -4255,6 +4283,7 @@ static JSVAL region_contains_rectangle(JSARGS args) {
     };
     return Integer::New(cairo_region_contains_rectangle(region, &rect));
 }
+#endif
 
 /**
  * @function cairo.region_equal
@@ -4269,11 +4298,13 @@ static JSVAL region_contains_rectangle(JSARGS args) {
  * @param {object} b - opaque handle to a region.
  * @return {boolean} is_equal - true if both regions contain the same coverage, false if not.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_equal(JSARGS args) {
     cairo_region_t *a = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_region_t *b = (cairo_region_t *) JSEXTERN(args[1]);
     return cairo_region_equal(a, b) ? True() : False();
 }
+#endif
 
 /**
  * @function cairo.region_translate
@@ -4288,11 +4319,13 @@ static JSVAL region_equal(JSARGS args) {
  * @param {int} dx - amount to translate in the x direction.
  * @param {int} dy - amount to translate in the y direction.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_translate(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_region_translate(region, args[1]->IntegerValue(), args[2]->IntegerValue());
     return Undefined();
 }
+#endif
 
 /**
  * @function cairo.region_intersect
@@ -4307,11 +4340,13 @@ static JSVAL region_translate(JSARGS args) {
  * @param {object} other - opaque handle to a region.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_intersect(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
     return Integer::New(cairo_region_intersect(dst, other));
 }
+#endif
 
 /**
  * @function cairo.region_intersect_rectangle
@@ -4333,6 +4368,7 @@ static JSVAL region_intersect(JSARGS args) {
  * @param {object} rectangle - object of the above form.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_intersect_rectangle(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     Local<String>_x = String::New("x");
@@ -4348,6 +4384,7 @@ static JSVAL region_intersect_rectangle(JSARGS args) {
     };
     return Integer::New(cairo_region_intersect_rectangle(dst, &rect));
 }
+#endif
 
 /**
  * @function cairo.region_subtract
@@ -4362,11 +4399,13 @@ static JSVAL region_intersect_rectangle(JSARGS args) {
  * @param {object} other - opaque handle to a region.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_subtract(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
     return Integer::New(cairo_region_subtract(dst, other));
 }
+#endif
 
 /**
  * @function cairo.region_subtract_rectangle
@@ -4388,6 +4427,7 @@ static JSVAL region_subtract(JSARGS args) {
  * @param {object} rectangle - object of the above form.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_subtract_rectangle(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     Local<String>_x = String::New("x");
@@ -4403,6 +4443,7 @@ static JSVAL region_subtract_rectangle(JSARGS args) {
     };
     return Integer::New(cairo_region_subtract_rectangle(dst, &rect));
 }
+#endif
 
 /**
  * @function cairo.region_union
@@ -4417,11 +4458,13 @@ static JSVAL region_subtract_rectangle(JSARGS args) {
  * @param {object} other - opaque handle to a region.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_union(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
     return Integer::New(cairo_region_union(dst, other));
 }
+#endif
 
 /**
  * @function cairo.region_union_rectangle
@@ -4443,6 +4486,7 @@ static JSVAL region_union(JSARGS args) {
  * @param {object} rectangle - object of the above form.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_union_rectangle(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     Local<String>_x = String::New("x");
@@ -4458,6 +4502,7 @@ static JSVAL region_union_rectangle(JSARGS args) {
     };
     return Integer::New(cairo_region_union_rectangle(dst, &rect));
 }
+#endif
 
 /**
  * @function cairo.region_xor
@@ -4474,11 +4519,13 @@ static JSVAL region_union_rectangle(JSARGS args) {
  * @param {object} other - opaque handle to a region.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_xor(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
     return Integer::New(cairo_region_xor(dst, other));
 }
+#endif
 
 /**
  * @function cairo.region_xor_rectangle
@@ -4502,6 +4549,7 @@ static JSVAL region_xor(JSARGS args) {
  * @param {object} rectangle - object of the above form.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_xor_rectangle(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     Local<String>_x = String::New("x");
@@ -4517,6 +4565,7 @@ static JSVAL region_xor_rectangle(JSARGS args) {
     };
     return Integer::New(cairo_region_xor_rectangle(dst, &rect));
 }
+#endif
 
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\///\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -4530,7 +4579,9 @@ static JSVAL region_xor_rectangle(JSARGS args) {
 void init_cairo_object () {
     Handle<ObjectTemplate>cairo = ObjectTemplate::New();
 
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("FORMAT_INVALID"), Integer::New(CAIRO_FORMAT_INVALID));
+#endif
     cairo->Set(String::New("FORMAT_ARGB32"), Integer::New(CAIRO_FORMAT_ARGB32));
     cairo->Set(String::New("FORMAT_RGB24"), Integer::New(CAIRO_FORMAT_RGB24));
     cairo->Set(String::New("FORMAT_A8"), Integer::New(CAIRO_FORMAT_A8));
@@ -4569,11 +4620,12 @@ void init_cairo_object () {
     cairo->Set(String::New("STATUS_INVALID_CLUSTERS"), Integer::New(CAIRO_STATUS_INVALID_CLUSTERS));
     cairo->Set(String::New("STATUS_INVALID_SLANT"), Integer::New(CAIRO_STATUS_INVALID_SLANT));
     cairo->Set(String::New("STATUS_INVALID_WEIGHT"), Integer::New(CAIRO_STATUS_INVALID_WEIGHT));
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("STATUS_INVALID_SIZE"), Integer::New(CAIRO_STATUS_INVALID_SIZE));
     cairo->Set(String::New("STATUS_USER_FONT_NOT_IMPLEMENTED"), Integer::New(CAIRO_STATUS_USER_FONT_NOT_IMPLEMENTED));
     cairo->Set(String::New("STATUS_DEVICE_TYPE_MISMATCH"), Integer::New(CAIRO_STATUS_DEVICE_TYPE_MISMATCH));
     cairo->Set(String::New("STATUS_DEVICE_ERROR"), Integer::New(CAIRO_STATUS_DEVICE_ERROR));
-
+#endif
     cairo->Set(String::New("CONTENT_COLOR"), Integer::New(CAIRO_CONTENT_COLOR));
     cairo->Set(String::New("CONTENT_ALPHA"), Integer::New(CAIRO_CONTENT_ALPHA));
     cairo->Set(String::New("CONTENT_COLOR_ALPHA"), Integer::New(CAIRO_CONTENT_COLOR_ALPHA));
@@ -4592,6 +4644,7 @@ void init_cairo_object () {
     cairo->Set(String::New("SURFACE_TYPE_OS2"), Integer::New(CAIRO_SURFACE_TYPE_OS2));
     cairo->Set(String::New("SURFACE_TYPE_WIN32_PRINTING"), Integer::New(CAIRO_SURFACE_TYPE_WIN32_PRINTING));
     cairo->Set(String::New("SURFACE_TYPE_QUARTZ_IMAGE"), Integer::New(CAIRO_SURFACE_TYPE_QUARTZ_IMAGE));
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("SURFACE_TYPE_SCRIPT"), Integer::New(CAIRO_SURFACE_TYPE_SCRIPT));
     cairo->Set(String::New("SURFACE_TYPE_QT"), Integer::New(CAIRO_SURFACE_TYPE_QT));
     cairo->Set(String::New("SURFACE_TYPE_RECORDING"), Integer::New(CAIRO_SURFACE_TYPE_RECORDING));
@@ -4602,12 +4655,15 @@ void init_cairo_object () {
     cairo->Set(String::New("SURFACE_TYPE_XML"), Integer::New(CAIRO_SURFACE_TYPE_XML));
     cairo->Set(String::New("SURFACE_TYPE_SKIA"), Integer::New(CAIRO_SURFACE_TYPE_SKIA));
     cairo->Set(String::New("SURFACE_TYPE_SUBSURFACE"), Integer::New(CAIRO_SURFACE_TYPE_SUBSURFACE));
-
+#endif
+    
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("MIME_TYPE_JPEG"), String::New(CAIRO_MIME_TYPE_JPEG));
     cairo->Set(String::New("MIME_TYPE_PNG"), String::New(CAIRO_MIME_TYPE_PNG));
     cairo->Set(String::New("MIME_TYPE_JP2"), String::New(CAIRO_MIME_TYPE_JP2));
     cairo->Set(String::New("MIME_TYPE_URI"), String::New(CAIRO_MIME_TYPE_URI));
-
+#endif
+    
     cairo->Set(String::New("ANTIALIAS_DEFAULT"), Integer::New(CAIRO_ANTIALIAS_DEFAULT));
     cairo->Set(String::New("ANTIALIAS_NONE"), Integer::New(CAIRO_ANTIALIAS_NONE));
     cairo->Set(String::New("ANTIALIAS_GRAY"), Integer::New(CAIRO_ANTIALIAS_GRAY));
@@ -4638,6 +4694,7 @@ void init_cairo_object () {
     cairo->Set(String::New("OPERATOR_XOR"), Integer::New(CAIRO_OPERATOR_XOR));
     cairo->Set(String::New("OPERATOR_ADD"), Integer::New(CAIRO_OPERATOR_ADD));
     cairo->Set(String::New("OPERATOR_SATURATE"), Integer::New(CAIRO_OPERATOR_SATURATE));
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("OPERATOR_MULTIPLY"), Integer::New(CAIRO_OPERATOR_MULTIPLY));
     cairo->Set(String::New("OPERATOR_SCREEN"), Integer::New(CAIRO_OPERATOR_SCREEN));
     cairo->Set(String::New("OPERATOR_OVERLAY"), Integer::New(CAIRO_OPERATOR_OVERLAY));
@@ -4653,7 +4710,7 @@ void init_cairo_object () {
     cairo->Set(String::New("OPERATOR_HSL_SATURATION"), Integer::New(CAIRO_OPERATOR_HSL_SATURATION));
     cairo->Set(String::New("OPERATOR_HSL_COLOR"), Integer::New(CAIRO_OPERATOR_HSL_COLOR));
     cairo->Set(String::New("OPERATOR_HSL_LUMINOSITY"), Integer::New(CAIRO_OPERATOR_HSL_LUMINOSITY));
-
+#endif
     cairo->Set(String::New("EXTEND_NONE"), Integer::New(CAIRO_EXTEND_NONE));
     cairo->Set(String::New("EXTEND_REPEAT"), Integer::New(CAIRO_EXTEND_REPEAT));
     cairo->Set(String::New("EXTEND_REFLECT"), Integer::New(CAIRO_EXTEND_REFLECT));
@@ -4672,9 +4729,11 @@ void init_cairo_object () {
     cairo->Set(String::New("PATTERN_TYPE_RADIAL"), Integer::New(CAIRO_PATTERN_TYPE_RADIAL));
     
     
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("REGION_OVERLAP_IN"), Integer::New(CAIRO_REGION_OVERLAP_IN));
     cairo->Set(String::New("REGION_OVERLAP_OUT"), Integer::New(CAIRO_REGION_OVERLAP_OUT));
     cairo->Set(String::New("REGION_OVERLAP_PART"), Integer::New(CAIRO_REGION_OVERLAP_PART));
+#endif
     
     
     
