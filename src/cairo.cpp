@@ -7,6 +7,8 @@
  * 
  * Interface to libcairo graphics library.
  * 
+ * http://www.cairographics.org/manual/index.html
+ * 
  */
 #include "SilkJS.h"
 #include <cairo/cairo.h>
