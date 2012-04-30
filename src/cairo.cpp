@@ -7,6 +7,8 @@
  * 
  * Interface to libcairo graphics library.
  * 
+ * Not all functions and constants are available in all SilkJS builds.  Some versions of Ubuntu (Lucid, for one) may not install a new enough version of libcairo to support newer methods and constants provided by cairo.
+ * 
  */
 #include "SilkJS.h"
 #include <cairo/cairo.h>
@@ -175,6 +177,8 @@ static JSVAL surface_flush(JSARGS args) {
  * This function returns the device for a surface.
  * 
  * See device methods.
+ * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
  * 
  * @param {object} surface - opaque handle to a cairo surface.
  * @return {object} device - opaque handle to the device for the surface, or null if the surface does not have an associated device.
@@ -3927,6 +3931,8 @@ static JSVAL matrix_destroy(JSARGS args) {
  * 
  * This function always returns a valid object; if memory cannot be allocated, then a special error object is returned where all operations on the object do nothing. You can check for this with cairo.region_status().
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @return {object} region - opaque handle to a region
  */
 #if CAIRO_VERSION_MINOR >= 10
@@ -3956,6 +3962,8 @@ static JSVAL region_create(JSARGS args) {
  * Free with cairo.region_destroy(). 
  * 
  * This function always returns a valid object; if memory cannot be allocated, then a special error object is returned where all operations on the object do nothing. You can check for this with cairo.region_status().
+ * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
  * 
  * @param {object} rectangle - object of the above form.
  * @return {object} region - opaque handle to a region
@@ -3998,6 +4006,8 @@ static JSVAL region_create_rectangle(JSARGS args) {
  * Free with cairo.region_destroy(). 
  * 
  * This function always returns a valid object; if memory cannot be allocated, then a special error object is returned where all operations on the object do nothing. You can check for this with cairo.region_status().
+ * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
  * 
  * @param {array} rectangles - array of rectangle objects of the above form.
  * @return {object} region - opaque handle to a region
@@ -4042,9 +4052,10 @@ static JSVAL region_create_rectangles(JSARGS args) {
  * 
  * This function always returns a valid object; if memory cannot be allocated, then a special error object is returned where all operations on the object do nothing. You can check for this with cairo.region_status().
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} original - opaque handle to a region.
  * @return {object} copy - opaque handle to a copy of the original.
- * 
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_copy(JSARGS args) {
@@ -4064,9 +4075,10 @@ static JSVAL region_copy(JSARGS args) {
  * 
  * This prevents region from being destroyed until a matching call to cairo.region_destroy() is made.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} region - opaque handle to a region.
  * @return {object} region - opaque handle to the referenced region.
- * 
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_reference(JSARGS args) {
@@ -4083,6 +4095,8 @@ static JSVAL region_reference(JSARGS args) {
  * cairo.region_destroy(region);
  * 
  * Destroys a region created with cairo.region_create(), cairo.region_copy(), or cairo.region_create_rectangle(), etc.
+ * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
  * 
  * @param {object} region - opaque handle to a region.
  */
@@ -4102,6 +4116,8 @@ static JSVAL region_destroy(JSARGS args) {
  * var status = cairo.region_status(region);
  * 
  * Checks whether an error has previously occurred for this region object.
+ * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
  * 
  * @param {object} region - opaque handle to a region.
  * @return {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY
@@ -4128,6 +4144,8 @@ static JSVAL region_status(JSARGS args) {
  * + y: y coordinate of the top left corner of the resulting extents.
  * + width: width of resulting extents.
  * + height: height of resulting extents.
+ * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
  * 
  * @param {object} region - opaque handle to a region.
  * @return {object} extents - see object description above.
@@ -4156,6 +4174,8 @@ static JSVAL region_get_extents(JSARGS args) {
  * 
  * Get the number of rectangles contained in region.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} region - opaque handle to a region.
  * @return {int} num - number of rectangles contained in region.
  */
@@ -4181,6 +4201,8 @@ static JSVAL region_num_rectangles(JSARGS args) {
  * + y: y coordinate of the top left corner of the resulting extents.
  * + width: width of resulting extents.
  * + height: height of resulting extents.
+ * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
  * 
  * @param {object} region - opaque handle to a region.
  * @return {object} rectangle - see object description above.
@@ -4210,6 +4232,8 @@ static JSVAL region_get_rectangle(JSARGS args) {
  * 
  * Determine if a region is empty.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} region - opaque handle to a region.
  * @return {boolean} is_empty - true if region is empty, false if not.
  */
@@ -4228,6 +4252,8 @@ static JSVAL region_is_empty(JSARGS args) {
  * var contains_point = cairo.region_contains_point(region, x, y);
  * 
  * Determine if the region contains the specified point (x,y).
+ * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
  * 
  * @param {object} region - opaque handle to a region.
  * @param {int} x - x coordinate of the point.
@@ -4263,6 +4289,8 @@ static JSVAL region_contains_point(JSARGS args) {
  * cairo.REGION_OVERLAP_OUT - rectangle is completely outside region.
  * cairo.REGION_OVERLAP_PART - rectiangle is partially inside and partially outside region.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} region - opaque handle to a region
  * @param {object} rectangle - object of the above form.
  * @return {int} overlap - one of the above values.
@@ -4294,6 +4322,8 @@ static JSVAL region_contains_rectangle(JSARGS args) {
  * 
  * Determine wither two regions are equivalent.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} a - opaque handle to a region.
  * @param {object} b - opaque handle to a region.
  * @return {boolean} is_equal - true if both regions contain the same coverage, false if not.
@@ -4315,6 +4345,8 @@ static JSVAL region_equal(JSARGS args) {
  * 
  * Translate region by (dx,dy).
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} region - opaque handle to a region
  * @param {int} dx - amount to translate in the x direction.
  * @param {int} dy - amount to translate in the y direction.
@@ -4335,6 +4367,8 @@ static JSVAL region_translate(JSARGS args) {
  * var status = cairo.region_intersect(dst, other);
  * 
  * Computes the intersection of dst with other and places the result in dst.
+ * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
  * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} other - opaque handle to a region.
@@ -4363,6 +4397,8 @@ static JSVAL region_intersect(JSARGS args) {
  * + {int} y - y coordinate of upper left corner of rectangle.
  * + {int} width - width of rectangle.
  * + {int} height - height of rectangle.
+ * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
  * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} rectangle - object of the above form.
@@ -4395,6 +4431,8 @@ static JSVAL region_intersect_rectangle(JSARGS args) {
  * 
  * Subtracts other from dst and places the result in dst.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} other - opaque handle to a region.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
@@ -4422,6 +4460,8 @@ static JSVAL region_subtract(JSARGS args) {
  * + {int} y - y coordinate of upper left corner of rectangle.
  * + {int} width - width of rectangle.
  * + {int} height - height of rectangle.
+ * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
  * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} rectangle - object of the above form.
@@ -4454,6 +4494,8 @@ static JSVAL region_subtract_rectangle(JSARGS args) {
  * 
  * Computes the union of dst with other and places the result in dst.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} other - opaque handle to a region.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
@@ -4481,6 +4523,8 @@ static JSVAL region_union(JSARGS args) {
  * + {int} y - y coordinate of upper left corner of rectangle.
  * + {int} width - width of rectangle.
  * + {int} height - height of rectangle.
+ * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
  * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} rectangle - object of the above form.
@@ -4515,6 +4559,8 @@ static JSVAL region_union_rectangle(JSARGS args) {
  * 
  * That is, dst will be set to contain all areas that are either in dst or in other, but not in both.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} other - opaque handle to a region.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
@@ -4544,6 +4590,8 @@ static JSVAL region_xor(JSARGS args) {
  * + {int} y - y coordinate of upper left corner of rectangle.
  * + {int} width - width of rectangle.
  * + {int} height - height of rectangle.
+ * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
  * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} rectangle - object of the above form.
