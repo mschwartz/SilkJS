@@ -2670,6 +2670,7 @@ static JSVAL context_glyph_path(JSARGS args) {
         c_glyphs[i].y = o->Get(y)->NumberValue();
     }
     cairo_glyph_path(context, c_glyphs, num_glyphs);
+    delete [] c_glyphs;
     return Undefined();
 }
 
@@ -2835,10 +2836,391 @@ static JSVAL context_path_extents(JSARGS args) {
 
 ////////////////////////// TEXT AND GLYPHS
 
+/**
+ * @function cairo.context_select_font_face
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_select_font_face(context, family, slant, weight);
+ * 
+ * Selects a family and style of font from a simplified description as a family name, slant and weight. 
+ * 
+ * Cairo provides no operation to list available family names on the system (this is a "toy", remember), but the standard CSS2 generic family names, ("serif", "sans-serif", "cursive", "fantasy", "monospace"), are likely to work as expected.
+ * 
+ * If family starts with the string "cairo:", or if no native font backends are compiled in, cairo will use an internal font family. The internal font family recognizes many modifiers in the family string, most notably, it recognizes the string "monospace". That is, the family name "cairo:monospace" will use the monospace version of the internal font family.
+ * 
+ * For "real" font selection, see the font-backend-specific font_face_create functions for the font backend you are using. (For example, if you are using the freetype-based cairo-ft font backend, see cairo.ft_font_face_create_for_ft_face() or cairo.ft_font_face_create_for_pattern().) The resulting font face could then be used with cairo.scaled_font_create() and cairo.context_set_scaled_font().
+ * 
+ * Similarly, when using the "real" font support, you can call directly into the underlying font system, (such as fontconfig or freetype), for operations such as listing available fonts, etc.
+ * 
+ * It is expected that most applications will need to use a more comprehensive font handling and text layout library, (for example, pango), in conjunction with cairo.
+ * 
+ * If text is drawn without a call to cairo.context_select_font_face(), (nor cairo.context_set_font_face() nor cairo.context_set_scaled_font()), the default family is platform-specific, but is essentially "sans-serif". Default slant is cairo.FONT_SLANT_NORMAL, and default weight is cairo.FONT_WEIGHT_NORMAL.
+ * 
+ * This function is equivalent to a call to cairo_toy_font_face_create() followed by cairo.context_set_font_face().
+ * 
+ * Note: The cairo_select_font_face() function call is part of what the cairo designers call the "toy" text API. It is convenient for short demos and simple programs, but it is not expected to be adequate for serious text-using applications.
+ * 
+ * The slant argument may be one of:
+ * 
+ * + cairo.FONT_SLANT_NORMAL - Upright font style
+ * + cairo.FONT_SLANT_ITALIC - Italic font style
+ * + cairo.FONT_SLANT_OBLIQUE - Oblique font style
+ * 
+ * The weight argument may be one of:
+ * 
+ * + cairo.FONT_WEIGHT_NORMAL - Normal font weight.
+ * + cairo.FONT_WEIGHT_BOLD - Bold font weight.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {string} family - font family name.
+ * @param {int} slant - the slant for the font.
+ * @param {int} weight - the font weight for the font.
+ */
 static JSVAL context_select_font_face(JSARGS args) {
     cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
     String::Utf8Value family(args[1]->ToString());
     cairo_select_font_face(context, *family, (cairo_font_slant_t)args[2]->IntegerValue(), (cairo_font_weight_t)args[3]->IntegerValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_set_font_size
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_font_size(context, size);
+ * 
+ * Sets the current font matrix to a scale by a factor of size, replacing any font matrix previously set with cairo.context_set_font_size() or cairo.context_set_font_matrix(). 
+ * 
+ * This results in a font size of size user space units. (More precisely, this matrix will result in the font's em-square being a size by size square in user space.)
+ * 
+ * If text is drawn without a call to cairo.context_set_font_size(), (nor cairo.context_set_font_matrix() nor cairo.context_set_scaled_font()), the default font size is 10.0.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} size - the new font size, in user space units.
+ */
+static JSVAL context_set_font_size(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_set_font_size(context, args[1]->NumberValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_set_font_matrix
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_font_matrix(context, matrix);
+ * 
+ * Sets the current font matrix to matrix. The font matrix gives a transformation from the design space of the font (in this space, the em-square is 1 unit by 1 unit) to user space. 
+ * 
+ * Normally, a simple scale is used (see cairo_set_font_size()), but a more complex font matrix can be used to shear the font or stretch it unequally along the two axes.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} matrix - opaque handle to a cairo matrix.
+ */
+static JSVAL context_set_font_matrix(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[1]);
+    cairo_set_font_matrix(context, matrix);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_font_matrix
+ * 
+ * ### Synopsis
+ * 
+ * var matrix = cairo.context_get_font_matrix(context);
+ * 
+ * Gets the current font matrix.
+ * 
+ * The matrix returned is owned by the caller and must be released by calling cairo.matrix_destroy() when it is no longer needed.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} matrix - opaque handle to a cairo matrix.
+ */
+static JSVAL context_get_font_matrix(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = new cairo_matrix_t;
+    cairo_get_font_matrix(context, matrix);
+    return External::New(matrix);
+}
+
+/**
+ * @function cairo.context_set_font_options
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_font_options(context, options);
+ * 
+ * Sets a set of custom font rendering options for the context. 
+ * 
+ * Rendering options are derived by merging these options with the options derived from underlying surface; if the value in options has a default value (like cairo.ANTIALIAS_DEFAULT), then the value from the surface is used.
+ * 
+ * See font_options methods for creating the font options object.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} options - opaque handle to a cairo font options object.
+ */
+static JSVAL context_set_font_options(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[1]);
+    cairo_set_font_options(context, options);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_font_options
+ * 
+ * ### Synopsis
+ * 
+ * var options = cairo.context_get_font_options(context);
+ * 
+ * Retrieves font rendering options set via cairo.context_set_font_options. 
+ * 
+ * Note that the returned options do not include any options derived from the underlying surface; they are literally the options passed to cairo.context_set_font_options().
+ * 
+ * The caller owns the returned opaque handle to the font options.  It must be freed by calling cairo.font_options_destroy().
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} options - opaque handle to a cairo font options object.
+ */
+static JSVAL context_get_font_options(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_font_options_t *options = cairo_font_options_create();
+    cairo_get_font_options(context, options);
+    return External::New(options);
+}
+
+/**
+ * @function cairo.context_set_font_face
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_font_face(context, face);
+ * 
+ * Replaces the current cairo_font_face_t object in the cairo_t with font_face. 
+ * 
+ * The replaced font face in the cairo_t will be destroyed if there are no other references to it.
+ * 
+ * See also the font_face methods.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} face - opaque handle to a cairo font face object.
+ */
+static JSVAL context_set_font_face(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_font_face_t *face = (cairo_font_face_t *)JSEXTERN(args[1]);
+    cairo_set_font_face(context, face);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_font_face
+ * 
+ * ### Synopsis
+ * 
+ * var font_face = cairo.context_get_font_face(context);
+ * 
+ * Gets the current font face for a context.
+ * 
+ * The returned object is owned by cairo. To keep a reference to it, you must call cairo.font_face_reference(). 
+ * 
+ * This function never returns NULL. 
+ * 
+ * If memory cannot be allocated, a special "nil" font face object will be returned on which cairo.font_face_status() returns cairo.STATUS_NO_MEMORY. 
+ * 
+ * Using this nil object will cause its error state to propagate to other objects it is passed to, (for example, calling cairo.context_set_font_face() with a nil font will trigger an error that will shutdown the context object).
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} font_face  - opaque handle to a cairo font face object.
+ */
+static JSVAL context_get_font_face(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return External::New(cairo_get_font_face(context));
+}
+
+/**
+ * @function cairo.context_set_scaled_font
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_scaled_font(context, scaled_font);
+ * 
+ * Replaces the current font face, font matrix, and font options in the context with those of the scaled_font. 
+ * 
+ * Except for some translation, the current CTM of the context should be the same as that of the scaled_font, which can be accessed using cairo.scaled_font_get_ctm().
+ * 
+ * See also the scaled_font methods.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} scaled_font - opaque handle to a cairo font face object.
+ */
+static JSVAL context_set_scaled_font(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[1]);
+    cairo_set_scaled_font(context, scaled_font);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_scaled_font
+ * 
+ * ### Synopsis
+ * 
+ * var scaled_font = cairo.context_get_scaled_font(context);
+ * 
+ * Gets the current scaled font for a context.
+ * 
+ * The returned object is owned by cairo. To keep a reference to it, you must call cairo.scaled_font_reference(). 
+ * 
+ * This function never returns NULL. 
+ * 
+ * If memory cannot be allocated, a special "nil" scaled font object will be returned on which cairo.scaled_font_status() returns cairo.STATUS_NO_MEMORY. 
+ * 
+ * Using this nil object will cause its error state to propagate to other objects it is passed to, (for example, calling cairo.context_set_scaled_font() with a nil font will trigger an error that will shutdown the context object).
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} scaled_font  - opaque handle to a cairo scaled font object.
+ */
+static JSVAL context_get_scaled_font(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return External::New(cairo_get_scaled_font(context));
+}
+
+/**
+ * @function cairo.context_show_text
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_show_text(context, text);
+ * 
+ * A drawing operator that generates the shape from a string of UTF-8 characters, rendered according to the current font_face, font_size (font_matrix), and font_options.
+ * 
+ * This function first computes a set of glyphs for the string of text. The first glyph is placed so that its origin is at the current point. The origin of each subsequent glyph is offset from that of the previous glyph by the advance values of the previous glyph.
+ * 
+ * After this call the current point is moved to the origin of where the next glyph would be placed in this same progression. That is, the current point will be at the origin of the final glyph offset by its advance values. This allows for easy display of a single logical string with multiple calls to cairo.context_show_text().
+ * 
+ * Note: The cairo.context_show_text() function call is part of what the cairo designers call the "toy" text API. It is convenient for short demos and simple programs, but it is not expected to be adequate for serious text-using applications. See cairo.context_show_glyphs() for the "real" text display API in cairo.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {string} text - text to render.
+ */
+static JSVAL context_show_text(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    String::Utf8Value text(args[1]->ToString());
+    cairo_show_text(context, *text);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_show_glyphs
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_show_glyphs(context, glyphs);
+ * 
+ * A drawing operator that generates the shape from an array of glyphs, rendered according to the current font face, font size (font matrix), and font options.
+ * 
+ * The glyphs argument is an array of objects of the following form:
+ * 
+ * + {int} index - glyph index in the font.  The exact interpretation of the glyph index depends on the font technology being used.
+ * + {number} x - the offset in the x direction between the origin used for drawing or measuring the string and the origin of this glyph.
+ * + {number} y - the offset in the y direction between the origin used for drawing or measuring the string and the origin of this glyph.
+ * 
+ * The above structure holds information about a single glyph when drawing or measuring text. A font is (in simple terms) a collection of shapes used to draw text. A glyph is one of these shapes. There can be multiple glyphs for a single character (alternates to be used in different contexts, for example), or a glyph can be a ligature of multiple characters. Cairo doesn't expose any way of converting input text into glyphs, so in order to use the Cairo interfaces that take arrays of glyphs, you must directly access the appropriate underlying font system.
+ * 
+ * Note that the offsets given by x and y are not cumulative. When drawing or measuring text, each glyph is individually positioned with respect to the overall origin
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {array} glyphs - array of objects as described above.
+ */
+static JSVAL context_show_glyphs(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    Handle<Array>glyphs = Handle<Array>::Cast(args[1]->ToObject());
+    int num_glyphs = glyphs->Length();
+    cairo_glyph_t *c_glyphs = new cairo_glyph_t[num_glyphs];
+    // 
+    Local<String>index = String::New("index");
+    Local<String>x = String::New("x");
+    Local<String>y = String::New("y");
+    
+    for (int i=0; i<num_glyphs; i++) {
+        JSOBJ o = glyphs->Get(i)->ToObject();
+        c_glyphs[i].index = o->Get(index)->IntegerValue();
+        c_glyphs[i].x = o->Get(x)->NumberValue();
+        c_glyphs[i].y = o->Get(y)->NumberValue();
+    }
+    cairo_show_glyphs(context, c_glyphs, num_glyphs);
+    delete c_glyphs;
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_show_text_glyphs
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_show_text_glyphs(context, text, glyphs, clusters, cluster_flags);
+ * 
+ * This operation has rendering effects similar to cairo.context_show_glyphs() but, if the target surface supports it, uses the provided text and cluster mapping to embed the text for the glyphs shown in the output. 
+ * 
+ * If the target does not support the extended attributes, this function acts like the basic cairo.context_show_glyphs() as if it had been passed glyphs.
+ * 
+ * The mapping between text and glyphs is provided by an array of clusters. Each cluster covers a number of text bytes and glyphs, and neighboring clusters cover neighboring areas of text and glyphs. The clusters should collectively cover text and glyphs in entirety.
+ * 
+ * The first cluster always covers bytes from the beginning of text. If cluster_flags do not have the cairo.TEXT_CLUSTER_FLAG_BACKWARD set, the first cluster also covers the beginning of glyphs, otherwise it covers the end of the glyphs array and following clusters move backward.
+ * 
+ * The glyphs argument is an array of objects of the following form:
+ * 
+ * + {int} index - glyph index in the font.  The exact interpretation of the glyph index depends on the font technology being used.
+ * + {number} x - the offset in the x direction between the origin used for drawing or measuring the string and the origin of this glyph.
+ * + {number} y - the offset in the y direction between the origin used for drawing or measuring the string and the origin of this glyph.
+ * 
+ * The above structure holds information about a single glyph when drawing or measuring text. A font is (in simple terms) a collection of shapes used to draw text. A glyph is one of these shapes. There can be multiple glyphs for a single character (alternates to be used in different contexts, for example), or a glyph can be a ligature of multiple characters. Cairo doesn't expose any way of converting input text into glyphs, so in order to use the Cairo interfaces that take arrays of glyphs, you must directly access the appropriate underlying font system.
+ * 
+ * Note that the offsets given by x and y are not cumulative. When drawing or measuring text, each glyph is individually positioned with respect to the overall origin
+ * 
+ * The clusters argument is an array of objects of the following form:
+ * + {int} num_bytes - the number of bytes of UTF-8 text covered by this cluster.
+ * + {int} num_glyphs - the number of glyphs covered by this cluster.
+ * 
+ * @param args
+ * @return 
+ */
+static JSVAL context_show_text_glyphs(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    String::Utf8Value text(args[1]->ToString());
+    Handle<Array>glyphs = Handle<Array>::Cast(args[2]->ToObject());
+    int num_glyphs = glyphs->Length();
+    cairo_glyph_t *c_glyphs = new cairo_glyph_t[num_glyphs];
+    // 
+    Local<String>index = String::New("index");
+    Local<String>_x = String::New("x");
+    Local<String>_y = String::New("y");
+    
+    for (int i=0; i<num_glyphs; i++) {
+        JSOBJ o = glyphs->Get(i)->ToObject();
+        c_glyphs[i].index = o->Get(index)->IntegerValue();
+        c_glyphs[i].x = o->Get(_x)->NumberValue();
+        c_glyphs[i].y = o->Get(_y)->NumberValue();
+    }
+    
+    Handle<Array>clusters = Handle<Array>::Cast(args[3]->ToObject());
+    int num_clusters = clusters->Length();
+    cairo_text_cluster_t *c_clusters = new cairo_text_cluster_t[num_clusters];
+    Local<String>_num_bytes = String::New("num_bytes");
+    Local<String>_num_glyphs = String::New("num_glyphs");
+    for (int i=0; i<num_clusters; i++) {
+        JSOBJ o = clusters->Get(i)->ToObject();
+        c_clusters[i].num_bytes = o->Get(_num_bytes)->NumberValue();
+        c_clusters[i].num_glyphs = o->Get(_num_glyphs)->NumberValue();
+    }
+    cairo_show_text_glyphs(context, *text, -1, c_glyphs, num_glyphs, c_clusters, num_clusters, (cairo_text_cluster_flags_t)args[4]->IntegerValue());
+    delete c_clusters;
+    delete c_glyphs;
     return Undefined();
 }
 
@@ -4799,6 +5181,8 @@ void init_cairo_object () {
     
     cairo->Set(String::New("FONT_WEIGHT_NORMAL"), Integer::New(CAIRO_FONT_WEIGHT_NORMAL));
     cairo->Set(String::New("FONT_WEIGHT_BOLD"), Integer::New(CAIRO_FONT_WEIGHT_BOLD));
+
+    cairo->Set(String::New("TEXT_CLUSTER_FLAG_BACKWARD"), Integer::New(CAIRO_TEXT_CLUSTER_FLAG_BACKWARD));
     
     
 //    net->Set(String::New("sendFile"), FunctionTemplate::New(net_sendfile));
