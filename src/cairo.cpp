@@ -6713,6 +6713,7 @@ void init_cairo_object () {
     cairo->Set(String::New("matrix_transform_distance"), FunctionTemplate::New(matrix_transform_distance));
     cairo->Set(String::New("matrix_transform_point"), FunctionTemplate::New(matrix_transform_point));
     cairo->Set(String::New("matrix_destroy"), FunctionTemplate::New(matrix_destroy));
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("region_create"), FunctionTemplate::New(region_create));
     cairo->Set(String::New("region_create_rectangle"), FunctionTemplate::New(region_create_rectangle));
     cairo->Set(String::New("region_create_rectangles"), FunctionTemplate::New(region_create_rectangles));
@@ -6720,7 +6721,6 @@ void init_cairo_object () {
     cairo->Set(String::New("region_reference"), FunctionTemplate::New(region_reference));
     cairo->Set(String::New("region_destroy"), FunctionTemplate::New(region_destroy));
     cairo->Set(String::New("region_status"), FunctionTemplate::New(region_status));
-#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("region_get_extents"), FunctionTemplate::New(region_get_extents));
     cairo->Set(String::New("region_num_rectangles"), FunctionTemplate::New(region_num_rectangles));
     cairo->Set(String::New("region_get_rectangle"), FunctionTemplate::New(region_get_rectangle));
