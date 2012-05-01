@@ -1,9 +1,7 @@
-/** @ignore */
-
 /**
  * @module builtin/cairo
  * 
- * ### Synopsis
+ * ## Synopsis
  * 
  * Interface to libcairo graphics library.
  * 
@@ -563,7 +561,7 @@ static JSVAL surface_has_show_text_glyphs(JSARGS args) {
 static JSVAL image_surface_create(JSARGS args) {
     int format = args[0]->IntegerValue();
     int width = args[1]->IntegerValue();
-    int height = args[1]->IntegerValue();
+    int height = args[2]->IntegerValue();
     return External::New(cairo_image_surface_create((cairo_format_t)format, width, height));
 }
 
@@ -4458,6 +4456,53 @@ static JSVAL font_options_get_hint_metrics(JSARGS args) {
     return Integer::New(cairo_font_options_get_hint_metrics(options));
 }
 
+////////////////////////// PNG SUPPORT
+
+/**
+ * @function cairo.image_surface_create_from_png
+ * 
+ * ### Synopsis
+ * 
+ * var surface = cairo.image_surface_create_from_png(filename);
+ * 
+ * Creates a new image surface and initializes the contents to the given PNG file.
+ * 
+ * If an error occurs, this function returns a "nil" surface.  A nil surface can be checked for with cairo.surface_status(surface) which may return one of the following values: cairo.STATUS_NO_MEMORY, cairo.STATUS_FILE_NOT_FOUND, or  cairo.STATUS_READ_ERROR.
+ * 
+ * Alternatively, you can allow errors to propagate through the drawing operations and check the status on the context upon completion using cairo.context_status()..
+ * 
+ * @param {string} filename - name of PNG file to load.
+ * @return {object} surface - opaque handle to a newly created surface.
+ */
+static JSVAL image_surface_create_from_png(JSARGS args) {
+    String::Utf8Value filename(args[0]->ToString());
+    return External::New(cairo_image_surface_create_from_png(*filename));
+}
+
+/**
+ * @function cairo.surface_write_to_png
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.surface_write_to_png(surface, filename);
+ * 
+ * Writes the contents of surface to a new file filename as a PNG image.
+ * 
+ * If an error occurs, the value returned may be:
+ * 
+ * + cairo.STATUS_NO_MEMORY if memory could not be allocated for the operation.
+ * + cairo.STATUS_SURFACE_TYPE_MISMATCH if the surface does not have pixel contents.
+ * + cairo.STATUS_WRITE_ERROR if an I/O error occurs while attempting to write the file..
+ * 
+ * @param {object} surface - opaque handle to a cairo surface.
+ * @return {int} status - either cairo.STATUS_SUCCESS, or one of the above values if an error occurred.
+ */
+static JSVAL surface_write_to_png(JSARGS args) {
+    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    String::Utf8Value filename(args[1]->ToString());
+    return Integer::New(cairo_surface_write_to_png(surface, *filename));
+}
+
 ////////////////////////// PATTERNS
 // http://www.cairographics.org/manual/cairo-cairo-pattern-t.html
 
@@ -4557,6 +4602,7 @@ static JSVAL pattern_get_stop_color_count(JSARGS args) {
         return Integer::New(count);
     }
     ThrowException(String::New(cairo_status_to_string(status)));
+    return Undefined();
 }
 
 /**
@@ -6460,5 +6506,232 @@ void init_cairo_object () {
     
 //    net->Set(String::New("sendFile"), FunctionTemplate::New(net_sendfile));
 
+    cairo->Set(String::New("status_to_string"), FunctionTemplate::New(status_to_string));
+    cairo->Set(String::New("surface_create_similar"), FunctionTemplate::New(surface_create_similar));
+    cairo->Set(String::New("surface_reference"), FunctionTemplate::New(surface_reference));
+    cairo->Set(String::New("surface_status"), FunctionTemplate::New(surface_status));
+    cairo->Set(String::New("surface_destroy"), FunctionTemplate::New(surface_destroy));
+    cairo->Set(String::New("surface_finish"), FunctionTemplate::New(surface_finish));
+    cairo->Set(String::New("surface_flush"), FunctionTemplate::New(surface_flush));
+    cairo->Set(String::New("surface_get_device"), FunctionTemplate::New(surface_get_device));
+    cairo->Set(String::New("surface_get_font_options"), FunctionTemplate::New(surface_get_font_options));
+    cairo->Set(String::New("surface_get_content"), FunctionTemplate::New(surface_get_content));
+    cairo->Set(String::New("surface_mark_dirty"), FunctionTemplate::New(surface_mark_dirty));
+    cairo->Set(String::New("surface_mark_dirty_rectangle"), FunctionTemplate::New(surface_mark_dirty_rectangle));
+    cairo->Set(String::New("surface_set_device_offset"), FunctionTemplate::New(surface_set_device_offset));
+    cairo->Set(String::New("surface_get_device_offset"), FunctionTemplate::New(surface_get_device_offset));
+    cairo->Set(String::New("surface_set_fallback_resolution"), FunctionTemplate::New(surface_set_fallback_resolution));
+    cairo->Set(String::New("surface_get_fallback_resolution"), FunctionTemplate::New(surface_get_fallback_resolution));
+    cairo->Set(String::New("surface_get_type"), FunctionTemplate::New(surface_get_type));
+    cairo->Set(String::New("surface_get_reference_count"), FunctionTemplate::New(surface_get_reference_count));
+    cairo->Set(String::New("surface_copy_page"), FunctionTemplate::New(surface_copy_page));
+    cairo->Set(String::New("surface_show_page"), FunctionTemplate::New(surface_show_page));
+    cairo->Set(String::New("surface_has_show_text_glyphs"), FunctionTemplate::New(surface_has_show_text_glyphs));
+    cairo->Set(String::New("image_surface_create"), FunctionTemplate::New(image_surface_create));
+    cairo->Set(String::New("image_surface_get_format"), FunctionTemplate::New(image_surface_get_format));
+    cairo->Set(String::New("image_surface_get_width"), FunctionTemplate::New(image_surface_get_width));
+    cairo->Set(String::New("image_surface_get_height"), FunctionTemplate::New(image_surface_get_height));
+    cairo->Set(String::New("context_create"), FunctionTemplate::New(context_create));
+    cairo->Set(String::New("context_reference"), FunctionTemplate::New(context_reference));
+    cairo->Set(String::New("context_get_reference_count"), FunctionTemplate::New(context_get_reference_count));
+    cairo->Set(String::New("context_destroy"), FunctionTemplate::New(context_destroy));
+    cairo->Set(String::New("context_status"), FunctionTemplate::New(context_status));
+    cairo->Set(String::New("context_save"), FunctionTemplate::New(context_save));
+    cairo->Set(String::New("context_restore"), FunctionTemplate::New(context_restore));
+    cairo->Set(String::New("context_get_target"), FunctionTemplate::New(context_get_target));
+    cairo->Set(String::New("context_push_group"), FunctionTemplate::New(context_push_group));
+    cairo->Set(String::New("context_push_group_with_content"), FunctionTemplate::New(context_push_group_with_content));
+    cairo->Set(String::New("context_pop_group"), FunctionTemplate::New(context_pop_group));
+    cairo->Set(String::New("context_pop_group_to_source"), FunctionTemplate::New(context_pop_group_to_source));
+    cairo->Set(String::New("context_get_group_target"), FunctionTemplate::New(context_get_group_target));
+    cairo->Set(String::New("context_set_source_rgb"), FunctionTemplate::New(context_set_source_rgb));
+    cairo->Set(String::New("context_set_source_rgba"), FunctionTemplate::New(context_set_source_rgba));
+    cairo->Set(String::New("context_set_source"), FunctionTemplate::New(context_set_source));
+    cairo->Set(String::New("context_set_source_surface"), FunctionTemplate::New(context_set_source_surface));
+    cairo->Set(String::New("context_get_source"), FunctionTemplate::New(context_get_source));
+    cairo->Set(String::New("context_set_antialias"), FunctionTemplate::New(context_set_antialias));
+    cairo->Set(String::New("context_get_antialias"), FunctionTemplate::New(context_get_antialias));
+    cairo->Set(String::New("context_set_dash"), FunctionTemplate::New(context_set_dash));
+    cairo->Set(String::New("context_get_dash_count"), FunctionTemplate::New(context_get_dash_count));
+    cairo->Set(String::New("context_get_dash"), FunctionTemplate::New(context_get_dash));
+    cairo->Set(String::New("context_set_fill_rule"), FunctionTemplate::New(context_set_fill_rule));
+    cairo->Set(String::New("context_get_fill_rule"), FunctionTemplate::New(context_get_fill_rule));
+    cairo->Set(String::New("context_set_line_cap"), FunctionTemplate::New(context_set_line_cap));
+    cairo->Set(String::New("context_get_line_cap"), FunctionTemplate::New(context_get_line_cap));
+    cairo->Set(String::New("context_set_line_join"), FunctionTemplate::New(context_set_line_join));
+    cairo->Set(String::New("context_get_line_join"), FunctionTemplate::New(context_get_line_join));
+    cairo->Set(String::New("context_set_line_width"), FunctionTemplate::New(context_set_line_width));
+    cairo->Set(String::New("context_get_line_width"), FunctionTemplate::New(context_get_line_width));
+    cairo->Set(String::New("context_set_miter_limit"), FunctionTemplate::New(context_set_miter_limit));
+    cairo->Set(String::New("context_get_miter_limit"), FunctionTemplate::New(context_get_miter_limit));
+    cairo->Set(String::New("context_set_operator"), FunctionTemplate::New(context_set_operator));
+    cairo->Set(String::New("context_get_operator"), FunctionTemplate::New(context_get_operator));
+    cairo->Set(String::New("context_set_tolerance"), FunctionTemplate::New(context_set_tolerance));
+    cairo->Set(String::New("context_get_tolerance"), FunctionTemplate::New(context_get_tolerance));
+    cairo->Set(String::New("context_clip"), FunctionTemplate::New(context_clip));
+    cairo->Set(String::New("context_clip_preserve"), FunctionTemplate::New(context_clip_preserve));
+    cairo->Set(String::New("context_clip_extents"), FunctionTemplate::New(context_clip_extents));
+    cairo->Set(String::New("context_in_clip"), FunctionTemplate::New(context_in_clip));
+    cairo->Set(String::New("context_reset_clip"), FunctionTemplate::New(context_reset_clip));
+    cairo->Set(String::New("context_fill"), FunctionTemplate::New(context_fill));
+    cairo->Set(String::New("context_fill_preserve"), FunctionTemplate::New(context_fill_preserve));
+    cairo->Set(String::New("context_fill_extents"), FunctionTemplate::New(context_fill_extents));
+    cairo->Set(String::New("context_in_fill"), FunctionTemplate::New(context_in_fill));
+    cairo->Set(String::New("context_mask"), FunctionTemplate::New(context_mask));
+    cairo->Set(String::New("context_mask_surface"), FunctionTemplate::New(context_mask_surface));
+    cairo->Set(String::New("context_paint"), FunctionTemplate::New(context_paint));
+    cairo->Set(String::New("context_paint_with_alpha"), FunctionTemplate::New(context_paint_with_alpha));
+    cairo->Set(String::New("context_stroke"), FunctionTemplate::New(context_stroke));
+    cairo->Set(String::New("context_stroke_preserve"), FunctionTemplate::New(context_stroke_preserve));
+    cairo->Set(String::New("context_stroke_extents"), FunctionTemplate::New(context_stroke_extents));
+    cairo->Set(String::New("context_in_stroke"), FunctionTemplate::New(context_in_stroke));
+    cairo->Set(String::New("context_copy_page"), FunctionTemplate::New(context_copy_page));
+    cairo->Set(String::New("context_show_page"), FunctionTemplate::New(context_show_page));
+    cairo->Set(String::New("context_translate"), FunctionTemplate::New(context_translate));
+    cairo->Set(String::New("context_scale"), FunctionTemplate::New(context_scale));
+    cairo->Set(String::New("context_rotate"), FunctionTemplate::New(context_rotate));
+    cairo->Set(String::New("context_transform"), FunctionTemplate::New(context_transform));
+    cairo->Set(String::New("context_set_matrix"), FunctionTemplate::New(context_set_matrix));
+    cairo->Set(String::New("context_get_matrix"), FunctionTemplate::New(context_get_matrix));
+    cairo->Set(String::New("context_identity_matrix"), FunctionTemplate::New(context_identity_matrix));
+    cairo->Set(String::New("context_user_to_device"), FunctionTemplate::New(context_user_to_device));
+    cairo->Set(String::New("context_user_to_device_distance"), FunctionTemplate::New(context_user_to_device_distance));
+    cairo->Set(String::New("context_device_to_user"), FunctionTemplate::New(context_device_to_user));
+    cairo->Set(String::New("context_device_to_user_distance"), FunctionTemplate::New(context_device_to_user_distance));
+    cairo->Set(String::New("context_has_current_point"), FunctionTemplate::New(context_has_current_point));
+    cairo->Set(String::New("context_get_current_point"), FunctionTemplate::New(context_get_current_point));
+    cairo->Set(String::New("context_new_path"), FunctionTemplate::New(context_new_path));
+    cairo->Set(String::New("context_new_sub_path"), FunctionTemplate::New(context_new_sub_path));
+    cairo->Set(String::New("context_close_path"), FunctionTemplate::New(context_close_path));
+    cairo->Set(String::New("context_arc"), FunctionTemplate::New(context_arc));
+    cairo->Set(String::New("context_arc_negative"), FunctionTemplate::New(context_arc_negative));
+    cairo->Set(String::New("context_curve_to"), FunctionTemplate::New(context_curve_to));
+    cairo->Set(String::New("context_line_to"), FunctionTemplate::New(context_line_to));
+    cairo->Set(String::New("context_move_to"), FunctionTemplate::New(context_move_to));
+    cairo->Set(String::New("context_rectangle"), FunctionTemplate::New(context_rectangle));
+    cairo->Set(String::New("context_glyph_path"), FunctionTemplate::New(context_glyph_path));
+    cairo->Set(String::New("context_text_path"), FunctionTemplate::New(context_text_path));
+    cairo->Set(String::New("context_rel_curve_to"), FunctionTemplate::New(context_rel_curve_to));
+    cairo->Set(String::New("context_rel_line_to"), FunctionTemplate::New(context_rel_line_to));
+    cairo->Set(String::New("context_rel_move_to"), FunctionTemplate::New(context_rel_move_to));
+    cairo->Set(String::New("context_path_extents"), FunctionTemplate::New(context_path_extents));
+    cairo->Set(String::New("context_select_font_face"), FunctionTemplate::New(context_select_font_face));
+    cairo->Set(String::New("context_set_font_size"), FunctionTemplate::New(context_set_font_size));
+    cairo->Set(String::New("context_set_font_matrix"), FunctionTemplate::New(context_set_font_matrix));
+    cairo->Set(String::New("context_get_font_matrix"), FunctionTemplate::New(context_get_font_matrix));
+    cairo->Set(String::New("context_set_font_options"), FunctionTemplate::New(context_set_font_options));
+    cairo->Set(String::New("context_get_font_options"), FunctionTemplate::New(context_get_font_options));
+    cairo->Set(String::New("context_set_font_face"), FunctionTemplate::New(context_set_font_face));
+    cairo->Set(String::New("context_get_font_face"), FunctionTemplate::New(context_get_font_face));
+    cairo->Set(String::New("context_set_scaled_font"), FunctionTemplate::New(context_set_scaled_font));
+    cairo->Set(String::New("context_get_scaled_font"), FunctionTemplate::New(context_get_scaled_font));
+    cairo->Set(String::New("context_show_text"), FunctionTemplate::New(context_show_text));
+    cairo->Set(String::New("context_show_glyphs"), FunctionTemplate::New(context_show_glyphs));
+    cairo->Set(String::New("context_show_text_glyphs"), FunctionTemplate::New(context_show_text_glyphs));
+    cairo->Set(String::New("context_font_extents"), FunctionTemplate::New(context_font_extents));
+    cairo->Set(String::New("context_text_extents"), FunctionTemplate::New(context_text_extents));
+    cairo->Set(String::New("context_glyph_extents"), FunctionTemplate::New(context_glyph_extents));
+    cairo->Set(String::New("toy_font_face_create"), FunctionTemplate::New(toy_font_face_create));
+    cairo->Set(String::New("toy_font_face_get_family"), FunctionTemplate::New(toy_font_face_get_family));
+    cairo->Set(String::New("toy_font_face_get_slant"), FunctionTemplate::New(toy_font_face_get_slant));
+    cairo->Set(String::New("toy_font_face_get_weight"), FunctionTemplate::New(toy_font_face_get_weight));
+    cairo->Set(String::New("font_face_reference"), FunctionTemplate::New(font_face_reference));
+    cairo->Set(String::New("font_face_destroy"), FunctionTemplate::New(font_face_destroy));
+    cairo->Set(String::New("font_face_status"), FunctionTemplate::New(font_face_status));
+    cairo->Set(String::New("font_face_get_type"), FunctionTemplate::New(font_face_get_type));
+    cairo->Set(String::New("font_face_get_reference_count"), FunctionTemplate::New(font_face_get_reference_count));
+    cairo->Set(String::New("scaled_font_create"), FunctionTemplate::New(scaled_font_create));
+    cairo->Set(String::New("scaled_font_reference"), FunctionTemplate::New(scaled_font_reference));
+    cairo->Set(String::New("scaled_font_destroy"), FunctionTemplate::New(scaled_font_destroy));
+    cairo->Set(String::New("scaled_font_get_reference_count"), FunctionTemplate::New(scaled_font_get_reference_count));
+    cairo->Set(String::New("scaled_font_status"), FunctionTemplate::New(scaled_font_status));
+    cairo->Set(String::New("scaled_font_extents"), FunctionTemplate::New(scaled_font_extents));
+    cairo->Set(String::New("scaled_font_text_extents"), FunctionTemplate::New(scaled_font_text_extents));
+    cairo->Set(String::New("scaled_font_glyph_extents"), FunctionTemplate::New(scaled_font_glyph_extents));
+    cairo->Set(String::New("scaled_font_get_font_face"), FunctionTemplate::New(scaled_font_get_font_face));
+    cairo->Set(String::New("scaled_font_get_font_options"), FunctionTemplate::New(scaled_font_get_font_options));
+    cairo->Set(String::New("scaled_font_get_font_matrix"), FunctionTemplate::New(scaled_font_get_font_matrix));
+    cairo->Set(String::New("scaled_font_get_ctm"), FunctionTemplate::New(scaled_font_get_ctm));
+    cairo->Set(String::New("scaled_font_get_scale_matrix"), FunctionTemplate::New(scaled_font_get_scale_matrix));
+    cairo->Set(String::New("scaled_font_get_type"), FunctionTemplate::New(scaled_font_get_type));
+    cairo->Set(String::New("font_options_create"), FunctionTemplate::New(font_options_create));
+    cairo->Set(String::New("font_options_copy"), FunctionTemplate::New(font_options_copy));
+    cairo->Set(String::New("font_options_destroy"), FunctionTemplate::New(font_options_destroy));
+    cairo->Set(String::New("font_options_status"), FunctionTemplate::New(font_options_status));
+    cairo->Set(String::New("font_options_merge"), FunctionTemplate::New(font_options_merge));
+    cairo->Set(String::New("font_options_hash"), FunctionTemplate::New(font_options_hash));
+    cairo->Set(String::New("font_options_equal"), FunctionTemplate::New(font_options_equal));
+    cairo->Set(String::New("font_options_set_antialias"), FunctionTemplate::New(font_options_set_antialias));
+    cairo->Set(String::New("font_options_get_antialias"), FunctionTemplate::New(font_options_get_antialias));
+    cairo->Set(String::New("font_options_set_subpixel_order"), FunctionTemplate::New(font_options_set_subpixel_order));
+    cairo->Set(String::New("font_options_get_subpixel_order"), FunctionTemplate::New(font_options_get_subpixel_order));
+    cairo->Set(String::New("font_options_set_hint_style"), FunctionTemplate::New(font_options_set_hint_style));
+    cairo->Set(String::New("font_options_get_hint_style"), FunctionTemplate::New(font_options_get_hint_style));
+    cairo->Set(String::New("font_options_set_hint_metrics"), FunctionTemplate::New(font_options_set_hint_metrics));
+    cairo->Set(String::New("font_options_get_hint_metrics"), FunctionTemplate::New(font_options_get_hint_metrics));
+    cairo->Set(String::New("image_surface_create_from_png"), FunctionTemplate::New(image_surface_create_from_png));
+    cairo->Set(String::New("surface_write_to_png"), FunctionTemplate::New(surface_write_to_png));
+    cairo->Set(String::New("pattern_add_color_stop_rgb"), FunctionTemplate::New(pattern_add_color_stop_rgb));
+    cairo->Set(String::New("pattern_add_color_stop_rgba"), FunctionTemplate::New(pattern_add_color_stop_rgba));
+    cairo->Set(String::New("pattern_get_stop_color_count"), FunctionTemplate::New(pattern_get_stop_color_count));
+    cairo->Set(String::New("pattern_get_color_stop_rgba"), FunctionTemplate::New(pattern_get_color_stop_rgba));
+    cairo->Set(String::New("pattern_create_rgb"), FunctionTemplate::New(pattern_create_rgb));
+    cairo->Set(String::New("pattern_create_rgba"), FunctionTemplate::New(pattern_create_rgba));
+    cairo->Set(String::New("pattern_get_rgba"), FunctionTemplate::New(pattern_get_rgba));
+    cairo->Set(String::New("pattern_create_for_surface"), FunctionTemplate::New(pattern_create_for_surface));
+    cairo->Set(String::New("pattern_get_surface"), FunctionTemplate::New(pattern_get_surface));
+    cairo->Set(String::New("pattern_create_linear"), FunctionTemplate::New(pattern_create_linear));
+    cairo->Set(String::New("pattern_get_linear_points"), FunctionTemplate::New(pattern_get_linear_points));
+    cairo->Set(String::New("pattern_create_radial"), FunctionTemplate::New(pattern_create_radial));
+    cairo->Set(String::New("pattern_get_radial_circles"), FunctionTemplate::New(pattern_get_radial_circles));
+    cairo->Set(String::New("pattern_reference"), FunctionTemplate::New(pattern_reference));
+    cairo->Set(String::New("pattern_status"), FunctionTemplate::New(pattern_status));
+    cairo->Set(String::New("pattern_set_extend"), FunctionTemplate::New(pattern_set_extend));
+    cairo->Set(String::New("pattern_get_extend"), FunctionTemplate::New(pattern_get_extend));
+    cairo->Set(String::New("pattern_set_filter"), FunctionTemplate::New(pattern_set_filter));
+    cairo->Set(String::New("pattern_get_filter"), FunctionTemplate::New(pattern_get_filter));
+    cairo->Set(String::New("pattern_set_matrix"), FunctionTemplate::New(pattern_set_matrix));
+    cairo->Set(String::New("pattern_get_matrix"), FunctionTemplate::New(pattern_get_matrix));
+    cairo->Set(String::New("pattern_get_type"), FunctionTemplate::New(pattern_get_type));
+    cairo->Set(String::New("pattern_get_reference_count"), FunctionTemplate::New(pattern_get_reference_count));
+    cairo->Set(String::New("matrix_create"), FunctionTemplate::New(matrix_create));
+    cairo->Set(String::New("matrix_init"), FunctionTemplate::New(matrix_init));
+    cairo->Set(String::New("matrix_clone"), FunctionTemplate::New(matrix_clone));
+    cairo->Set(String::New("matrix_init_identity"), FunctionTemplate::New(matrix_init_identity));
+    cairo->Set(String::New("matrix_init_translate"), FunctionTemplate::New(matrix_init_translate));
+    cairo->Set(String::New("matrix_init_scale"), FunctionTemplate::New(matrix_init_scale));
+    cairo->Set(String::New("matrix_init_rotate"), FunctionTemplate::New(matrix_init_rotate));
+    cairo->Set(String::New("matrix_translate"), FunctionTemplate::New(matrix_translate));
+    cairo->Set(String::New("matrix_scale"), FunctionTemplate::New(matrix_scale));
+    cairo->Set(String::New("matrix_rotate"), FunctionTemplate::New(matrix_rotate));
+    cairo->Set(String::New("matrix_invert"), FunctionTemplate::New(matrix_invert));
+    cairo->Set(String::New("matrix_multiply"), FunctionTemplate::New(matrix_multiply));
+    cairo->Set(String::New("matrix_transform_distance"), FunctionTemplate::New(matrix_transform_distance));
+    cairo->Set(String::New("matrix_transform_point"), FunctionTemplate::New(matrix_transform_point));
+    cairo->Set(String::New("matrix_destroy"), FunctionTemplate::New(matrix_destroy));
+    cairo->Set(String::New("region_create"), FunctionTemplate::New(region_create));
+    cairo->Set(String::New("region_create_rectangle"), FunctionTemplate::New(region_create_rectangle));
+    cairo->Set(String::New("region_create_rectangles"), FunctionTemplate::New(region_create_rectangles));
+    cairo->Set(String::New("region_copy"), FunctionTemplate::New(region_copy));
+    cairo->Set(String::New("region_reference"), FunctionTemplate::New(region_reference));
+    cairo->Set(String::New("region_destroy"), FunctionTemplate::New(region_destroy));
+    cairo->Set(String::New("region_status"), FunctionTemplate::New(region_status));
+    cairo->Set(String::New("region_get_extents"), FunctionTemplate::New(region_get_extents));
+    cairo->Set(String::New("region_num_rectangles"), FunctionTemplate::New(region_num_rectangles));
+    cairo->Set(String::New("region_get_rectangle"), FunctionTemplate::New(region_get_rectangle));
+    cairo->Set(String::New("region_is_empty"), FunctionTemplate::New(region_is_empty));
+    cairo->Set(String::New("region_contains_point"), FunctionTemplate::New(region_contains_point));
+    cairo->Set(String::New("region_contains_rectangle"), FunctionTemplate::New(region_contains_rectangle));
+    cairo->Set(String::New("region_equal"), FunctionTemplate::New(region_equal));
+    cairo->Set(String::New("region_translate"), FunctionTemplate::New(region_translate));
+    cairo->Set(String::New("region_intersect"), FunctionTemplate::New(region_intersect));
+    cairo->Set(String::New("region_intersect_rectangle"), FunctionTemplate::New(region_intersect_rectangle));
+    cairo->Set(String::New("region_subtract"), FunctionTemplate::New(region_subtract));
+    cairo->Set(String::New("region_subtract_rectangle"), FunctionTemplate::New(region_subtract_rectangle));
+    cairo->Set(String::New("region_union"), FunctionTemplate::New(region_union));
+    cairo->Set(String::New("region_union_rectangle"), FunctionTemplate::New(region_union_rectangle));
+    cairo->Set(String::New("region_xor"), FunctionTemplate::New(region_xor));
+    cairo->Set(String::New("region_xor_rectangle"), FunctionTemplate::New(region_xor_rectangle));
+    
     builtinObject->Set(String::New("cairo"), cairo);
 }
