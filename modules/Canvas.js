@@ -8,6 +8,10 @@
  * Implementation of Canvas for SilkJS.  
  * 
  * With this class, you should be able to render server-side what you would normally be able to render client-side using Canvas.
+ * 
+ * ## See also
+ * 
+ * http://www.whatwg.org/specs/web-apps/current-work/multipage/the-canvas-element.html
  */
 
 var cairo = require('builtin/cairo');
