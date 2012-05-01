@@ -28,7 +28,7 @@ DEPENDENCIES = $(MYSQL) $(JPEG) $(GD2) $(MM) $(CURL) $(SSH2) $(MEMCACHED)
 	g++ $(CFLAGS) -c -I/usr/X11/include -I$(CURDIR)/osx_dependencies/include -I$(MYSQL)/include -I$(SSH2)/include -Iv8-read-only/include -g -o $*.o $*.cpp
 
 SilkJS:	$(V8) $(V8_LIB) $(DEPENDENCIES) $(OBJ) SilkJS.h Makefile
-	g++ $(CFLAGS) -o silkjs $(OBJ) -Lv8-read-only -lv8 -L$(LIBDIR)/lib/mysql -lmysqlclient -L$(LIBDIR)/lib -lmm -ljpeg -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lmemcached -ledit
+	g++ $(CFLAGS) -o silkjs $(OBJ) -Lv8-read-only -lv8 -L$(LIBDIR)/lib/mysql -lmysqlclient -L$(LIBDIR)/lib -lmm -ljpeg -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lmemcached -ledit -L/usr/X11/lib -lcairo
 
 clean:
 	rm -rf silkjs *.o 

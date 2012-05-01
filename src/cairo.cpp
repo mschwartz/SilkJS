@@ -1,11 +1,13 @@
-/** @ignore */
-
 /**
  * @module builtin/cairo
  * 
- * ### Synopsis
+ * ## Synopsis
  * 
  * Interface to libcairo graphics library.
+ * 
+ * http://www.cairographics.org/manual/index.html
+ * 
+ * Not all functions and constants are available in all SilkJS builds.  Some versions of Ubuntu (Lucid, for one) may not install a new enough version of libcairo to support newer methods and constants provided by cairo.
  * 
  */
 #include "SilkJS.h"
@@ -176,9 +178,12 @@ static JSVAL surface_flush(JSARGS args) {
  * 
  * See device methods.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} surface - opaque handle to a cairo surface.
  * @return {object} device - opaque handle to the device for the surface, or null if the surface does not have an associated device.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL surface_get_device(JSARGS args) {
     cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
     cairo_device_t *device = cairo_surface_get_device(surface);
@@ -187,6 +192,7 @@ static JSVAL surface_get_device(JSARGS args) {
     }
     return External::New(device);
 }
+#endif
 
 /**
  * @function cairo.surface_get_font_options
@@ -202,6 +208,12 @@ static JSVAL surface_get_device(JSARGS args) {
  * The result can then be used with cairo.scaled_font_create().
  * 
  * NOTE: the resulting options object should be freed with cairo.font_options_destroy().
+ * 
+ * The options object returned is an opaque structure holding all options that are used when rendering fonts.
+ * 
+ * Individual features of a cairo font_options object can be set or accessed using functions named cairo.font_options_set_feature_name() and cairo.font_options_get_feature_name(), like cairo.font_options_set_antialias() and cairo.font_options_get_antialias().
+ * 
+ * New features may be added to a cairo font_options object in the future. For this reason, cairo.font_options_copy(), cairo.font_options_equal(), cairo.font_options_merge(), and cairo.font_options_hash() should be used to copy, check for equality, merge, or compute a hash value of cairo font_options objects. 
  * 
  * See font_options methods.
  * 
@@ -549,7 +561,7 @@ static JSVAL surface_has_show_text_glyphs(JSARGS args) {
 static JSVAL image_surface_create(JSARGS args) {
     int format = args[0]->IntegerValue();
     int width = args[1]->IntegerValue();
-    int height = args[1]->IntegerValue();
+    int height = args[2]->IntegerValue();
     return External::New(cairo_image_surface_create((cairo_format_t)format, width, height));
 }
 
@@ -1084,6 +1096,9 @@ static JSVAL context_get_source(JSARGS args) {
  * + cairo.ANTIALIAS_NONE - use a bilevel alpha mask.
  * + cairo.ANTIALIAS_GRAY - perform single-color antialiasing (using shades of gray for black text on a white background, for example).
  * + cairo.ANTIALIAS_SUBPIXEL - perform antialiasing by taking advantage of the order of subpixel elements on devices such as LCD panels.
+ * + cairo_ANTIALIAS_FAST - Hint that the backend should perform some antialiasing but prefer speed over quality, since 1.12.
+ * + cairo.ANTIALIAS_GOOD - The backend should balance quality against performance, since 1.12.
+ * + CAIRO_ANTIALIAS_BEST - Hint that the backend should render at the highest quality, sacrificing speed if necessary, since 1.12
  * 
  * @param {object} context - opaque handle to a cairo context.
  * @param {int} mode - one of the above modes.
@@ -1105,10 +1120,15 @@ static JSVAL context_set_antialias(JSARGS args) {
  * 
  * The return value is a mode:
  * 
+ * Valid modes are:
+ * 
  * + cairo.ANTIALIAS_DEFAULT - use the default antialiasing for the subsystem and target device.
  * + cairo.ANTIALIAS_NONE - use a bilevel alpha mask.
  * + cairo.ANTIALIAS_GRAY - perform single-color antialiasing (using shades of gray for black text on a white background, for example).
  * + cairo.ANTIALIAS_SUBPIXEL - perform antialiasing by taking advantage of the order of subpixel elements on devices such as LCD panels.
+ * + cairo_ANTIALIAS_FAST - Hint that the backend should perform some antialiasing but prefer speed over quality, since 1.12.
+ * + cairo.ANTIALIAS_GOOD - The backend should balance quality against performance, since 1.12.
+ * + CAIRO_ANTIALIAS_BEST - Hint that the backend should render at the highest quality, sacrificing speed if necessary, since 1.12
  * 
  * @param {object} context - opaque handle to a cairo context.
  * @return {int} mode - see list above.
@@ -1654,10 +1674,12 @@ static JSVAL context_clip_extents(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  * @return {boolean} inClip - true if the point is inside the clip rectangle, false if not.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL context_in_clip(JSARGS args) {
     cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
     return cairo_in_clip(context, args[1]->NumberValue(), args[2]->NumberValue()) ? True() : False();
 }
+#endif
 
 /**
  * @function cairo.context_reset_clip
@@ -2660,6 +2682,7 @@ static JSVAL context_glyph_path(JSARGS args) {
         c_glyphs[i].y = o->Get(y)->NumberValue();
     }
     cairo_glyph_path(context, c_glyphs, num_glyphs);
+    delete [] c_glyphs;
     return Undefined();
 }
 
@@ -2823,6 +2846,1662 @@ static JSVAL context_path_extents(JSARGS args) {
     return o;
 }
 
+////////////////////////// TEXT AND GLYPHS
+
+/**
+ * @function cairo.context_select_font_face
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_select_font_face(context, family, slant, weight);
+ * 
+ * Selects a family and style of font from a simplified description as a family name, slant and weight. 
+ * 
+ * Cairo provides no operation to list available family names on the system (this is a "toy", remember), but the standard CSS2 generic family names, ("serif", "sans-serif", "cursive", "fantasy", "monospace"), are likely to work as expected.
+ * 
+ * If family starts with the string "cairo:", or if no native font backends are compiled in, cairo will use an internal font family. The internal font family recognizes many modifiers in the family string, most notably, it recognizes the string "monospace". That is, the family name "cairo:monospace" will use the monospace version of the internal font family.
+ * 
+ * For "real" font selection, see the font-backend-specific font_face_create functions for the font backend you are using. (For example, if you are using the freetype-based cairo-ft font backend, see cairo.ft_font_face_create_for_ft_face() or cairo.ft_font_face_create_for_pattern().) The resulting font face could then be used with cairo.scaled_font_create() and cairo.context_set_scaled_font().
+ * 
+ * Similarly, when using the "real" font support, you can call directly into the underlying font system, (such as fontconfig or freetype), for operations such as listing available fonts, etc.
+ * 
+ * It is expected that most applications will need to use a more comprehensive font handling and text layout library, (for example, pango), in conjunction with cairo.
+ * 
+ * If text is drawn without a call to cairo.context_select_font_face(), (nor cairo.context_set_font_face() nor cairo.context_set_scaled_font()), the default family is platform-specific, but is essentially "sans-serif". Default slant is cairo.FONT_SLANT_NORMAL, and default weight is cairo.FONT_WEIGHT_NORMAL.
+ * 
+ * This function is equivalent to a call to cairo_toy_font_face_create() followed by cairo.context_set_font_face().
+ * 
+ * Note: The cairo_select_font_face() function call is part of what the cairo designers call the "toy" text API. It is convenient for short demos and simple programs, but it is not expected to be adequate for serious text-using applications.
+ * 
+ * The slant argument may be one of:
+ * 
+ * + cairo.FONT_SLANT_NORMAL - Upright font style
+ * + cairo.FONT_SLANT_ITALIC - Italic font style
+ * + cairo.FONT_SLANT_OBLIQUE - Oblique font style
+ * 
+ * The weight argument may be one of:
+ * 
+ * + cairo.FONT_WEIGHT_NORMAL - Normal font weight.
+ * + cairo.FONT_WEIGHT_BOLD - Bold font weight.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {string} family - font family name.
+ * @param {int} slant - the slant for the font.
+ * @param {int} weight - the font weight for the font.
+ */
+static JSVAL context_select_font_face(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    String::Utf8Value family(args[1]->ToString());
+    cairo_select_font_face(context, *family, (cairo_font_slant_t)args[2]->IntegerValue(), (cairo_font_weight_t)args[3]->IntegerValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_set_font_size
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_font_size(context, size);
+ * 
+ * Sets the current font matrix to a scale by a factor of size, replacing any font matrix previously set with cairo.context_set_font_size() or cairo.context_set_font_matrix(). 
+ * 
+ * This results in a font size of size user space units. (More precisely, this matrix will result in the font's em-square being a size by size square in user space.)
+ * 
+ * If text is drawn without a call to cairo.context_set_font_size(), (nor cairo.context_set_font_matrix() nor cairo.context_set_scaled_font()), the default font size is 10.0.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {number} size - the new font size, in user space units.
+ */
+static JSVAL context_set_font_size(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_set_font_size(context, args[1]->NumberValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_set_font_matrix
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_font_matrix(context, matrix);
+ * 
+ * Sets the current font matrix to matrix. The font matrix gives a transformation from the design space of the font (in this space, the em-square is 1 unit by 1 unit) to user space. 
+ * 
+ * Normally, a simple scale is used (see cairo_set_font_size()), but a more complex font matrix can be used to shear the font or stretch it unequally along the two axes.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} matrix - opaque handle to a cairo matrix.
+ */
+static JSVAL context_set_font_matrix(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[1]);
+    cairo_set_font_matrix(context, matrix);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_font_matrix
+ * 
+ * ### Synopsis
+ * 
+ * var matrix = cairo.context_get_font_matrix(context);
+ * 
+ * Gets the current font matrix.
+ * 
+ * The matrix returned is owned by the caller and must be released by calling cairo.matrix_destroy() when it is no longer needed.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} matrix - opaque handle to a cairo matrix.
+ */
+static JSVAL context_get_font_matrix(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = new cairo_matrix_t;
+    cairo_get_font_matrix(context, matrix);
+    return External::New(matrix);
+}
+
+/**
+ * @function cairo.context_set_font_options
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_font_options(context, options);
+ * 
+ * Sets a set of custom font rendering options for the context. 
+ * 
+ * Rendering options are derived by merging these options with the options derived from underlying surface; if the value in options has a default value (like cairo.ANTIALIAS_DEFAULT), then the value from the surface is used.
+ * 
+ * See font_options methods for creating the font options object.
+ * 
+ * The options object is an opaque structure holding all options that are used when rendering fonts.
+ * 
+ * Individual features of a cairo font_options object can be set or accessed using functions named cairo.font_options_set_feature_name() and cairo.font_options_get_feature_name(), like cairo.font_options_set_antialias() and cairo.font_options_get_antialias().
+ * 
+ * New features may be added to a cairo font_options object in the future. For this reason, cairo.font_options_copy(), cairo.font_options_equal(), cairo.font_options_merge(), and cairo.font_options_hash() should be used to copy, check for equality, merge, or compute a hash value of cairo font_options objects. 
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} options - opaque handle to a cairo font options object.
+ */
+static JSVAL context_set_font_options(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[1]);
+    cairo_set_font_options(context, options);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_font_options
+ * 
+ * ### Synopsis
+ * 
+ * var options = cairo.context_get_font_options(context);
+ * 
+ * Retrieves font rendering options set via cairo.context_set_font_options. 
+ * 
+ * Note that the returned options do not include any options derived from the underlying surface; they are literally the options passed to cairo.context_set_font_options().
+ * 
+ * The caller owns the returned opaque handle to the font options.  It must be freed by calling cairo.font_options_destroy().
+ * 
+ * The options object is an opaque structure holding all options that are used when rendering fonts.
+ * 
+ * Individual features of a cairo font_options object can be set or accessed using functions named cairo.font_options_set_feature_name() and cairo.font_options_get_feature_name(), like cairo.font_options_set_antialias() and cairo.font_options_get_antialias().
+ * 
+ * New features may be added to a cairo font_options object in the future. For this reason, cairo.font_options_copy(), cairo.font_options_equal(), cairo.font_options_merge(), and cairo.font_options_hash() should be used to copy, check for equality, merge, or compute a hash value of cairo font_options objects. 
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} options - opaque handle to a cairo font options object.
+ */
+static JSVAL context_get_font_options(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_font_options_t *options = cairo_font_options_create();
+    cairo_get_font_options(context, options);
+    return External::New(options);
+}
+
+/**
+ * @function cairo.context_set_font_face
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_font_face(context, face);
+ * 
+ * Replaces the current cairo_font_face_t object in the cairo_t with font_face. 
+ * 
+ * The replaced font face in the context will be destroyed if there are no other references to it.
+ * 
+ * A cairo font_face specifies all aspects of a font other than the size or font matrix (a font matrix is used to distort a font by shearing it or scaling it unequally in the two directions) . A font face can be set on a context by using cairo.context_set_font_face(); the size and font matrix are set with cairo.context_set_font_size() and cairo.context_set_font_matrix().
+ * 
+ * There are various types of font faces, depending on the font backend they use. The type of a font face can be queried using cairo.font_face_get_type().
+ * 
+ * Memory management of cairo font_faces is done with cairo.font_face_reference() and cairo.font_face_destroy().
+ * 
+ * See also the font_face methods.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} face - opaque handle to a cairo font face object.
+ */
+static JSVAL context_set_font_face(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_font_face_t *face = (cairo_font_face_t *)JSEXTERN(args[1]);
+    cairo_set_font_face(context, face);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_font_face
+ * 
+ * ### Synopsis
+ * 
+ * var font_face = cairo.context_get_font_face(context);
+ * 
+ * Gets the current font face for a context.
+ * 
+ * The returned object is owned by cairo. To keep a reference to it, you must call cairo.font_face_reference(). 
+ * 
+ * This function never returns NULL. 
+ * 
+ * If memory cannot be allocated, a special "nil" font face object will be returned on which cairo.font_face_status() returns cairo.STATUS_NO_MEMORY. 
+ * 
+ * Using this nil object will cause its error state to propagate to other objects it is passed to, (for example, calling cairo.context_set_font_face() with a nil font will trigger an error that will shutdown the context object).
+ * 
+ * A cairo font_face specifies all aspects of a font other than the size or font matrix (a font matrix is used to distort a font by shearing it or scaling it unequally in the two directions) . A font face can be set on a context by using cairo.context_set_font_face(); the size and font matrix are set with cairo.context_set_font_size() and cairo.context_set_font_matrix().
+ * 
+ * There are various types of font faces, depending on the font backend they use. The type of a font face can be queried using cairo.font_face_get_type().
+ * 
+ * Memory management of cairo font_faces is done with cairo.font_face_reference() and cairo.font_face_destroy().
+ * 
+ * See also the font_face methods.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} font_face  - opaque handle to a cairo font face object.
+ */
+static JSVAL context_get_font_face(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return External::New(cairo_get_font_face(context));
+}
+
+/**
+ * @function cairo.context_set_scaled_font
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_set_scaled_font(context, scaled_font);
+ * 
+ * Replaces the current font face, font matrix, and font options in the context with those of the scaled_font. 
+ * 
+ * Except for some translation, the current CTM of the context should be the same as that of the scaled_font, which can be accessed using cairo.scaled_font_get_ctm().
+ * 
+ * A cairo scaled_font is a font scaled to a particular size and device resolution. A cairo scaled_font is most useful for low-level font usage where a library or application wants to cache a reference to a scaled font to speed up the computation of metrics.
+ * 
+ * There are various types of scaled fonts, depending on the font backend they use. The type of a scaled font can be queried using cairo.scaled_font_get_type().
+ * 
+ * Memory management of cairo scaled_font is done with cairo.scaled_font_reference() and cairo.scaled_font_destroy().
+ * 
+ * See also the scaled_font methods.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} scaled_font - opaque handle to a cairo scaled font object.
+ */
+static JSVAL context_set_scaled_font(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[1]);
+    cairo_set_scaled_font(context, scaled_font);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_get_scaled_font
+ * 
+ * ### Synopsis
+ * 
+ * var scaled_font = cairo.context_get_scaled_font(context);
+ * 
+ * Gets the current scaled font for a context.
+ * 
+ * The returned object is owned by cairo. To keep a reference to it, you must call cairo.scaled_font_reference(). 
+ * 
+ * This function never returns NULL. 
+ * 
+ * If memory cannot be allocated, a special "nil" scaled font object will be returned on which cairo.scaled_font_status() returns cairo.STATUS_NO_MEMORY. 
+ * 
+ * Using this nil object will cause its error state to propagate to other objects it is passed to, (for example, calling cairo.context_set_scaled_font() with a nil font will trigger an error that will shutdown the context object).
+ * 
+ * A cairo scaled_font is a font scaled to a particular size and device resolution. A cairo scaled_font is most useful for low-level font usage where a library or application wants to cache a reference to a scaled font to speed up the computation of metrics.
+ * 
+ * There are various types of scaled fonts, depending on the font backend they use. The type of a scaled font can be queried using cairo.scaled_font_get_type().
+ * 
+ * Memory management of cairo scaled_font is done with cairo.scaled_font_reference() and cairo.scaled_font_destroy().
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} scaled_font  - opaque handle to a cairo scaled font object.
+ */
+static JSVAL context_get_scaled_font(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return External::New(cairo_get_scaled_font(context));
+}
+
+/**
+ * @function cairo.context_show_text
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_show_text(context, text);
+ * 
+ * A drawing operator that generates the shape from a string of UTF-8 characters, rendered according to the current font_face, font_size (font_matrix), and font_options.
+ * 
+ * This function first computes a set of glyphs for the string of text. The first glyph is placed so that its origin is at the current point. The origin of each subsequent glyph is offset from that of the previous glyph by the advance values of the previous glyph.
+ * 
+ * After this call the current point is moved to the origin of where the next glyph would be placed in this same progression. That is, the current point will be at the origin of the final glyph offset by its advance values. This allows for easy display of a single logical string with multiple calls to cairo.context_show_text().
+ * 
+ * Note: The cairo.context_show_text() function call is part of what the cairo designers call the "toy" text API. It is convenient for short demos and simple programs, but it is not expected to be adequate for serious text-using applications. See cairo.context_show_glyphs() for the "real" text display API in cairo.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {string} text - text to render.
+ */
+static JSVAL context_show_text(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    String::Utf8Value text(args[1]->ToString());
+    cairo_show_text(context, *text);
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_show_glyphs
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_show_glyphs(context, glyphs);
+ * 
+ * A drawing operator that generates the shape from an array of glyphs, rendered according to the current font face, font size (font matrix), and font options.
+ * 
+ * The glyphs argument is an array of objects of the following form:
+ * 
+ * + {int} index - glyph index in the font.  The exact interpretation of the glyph index depends on the font technology being used.
+ * + {number} x - the offset in the x direction between the origin used for drawing or measuring the string and the origin of this glyph.
+ * + {number} y - the offset in the y direction between the origin used for drawing or measuring the string and the origin of this glyph.
+ * 
+ * The above structure holds information about a single glyph when drawing or measuring text. A font is (in simple terms) a collection of shapes used to draw text. A glyph is one of these shapes. There can be multiple glyphs for a single character (alternates to be used in different contexts, for example), or a glyph can be a ligature of multiple characters. Cairo doesn't expose any way of converting input text into glyphs, so in order to use the Cairo interfaces that take arrays of glyphs, you must directly access the appropriate underlying font system.
+ * 
+ * Note that the offsets given by x and y are not cumulative. When drawing or measuring text, each glyph is individually positioned with respect to the overall origin
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {array} glyphs - array of objects as described above.
+ */
+static JSVAL context_show_glyphs(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    Handle<Array>glyphs = Handle<Array>::Cast(args[1]->ToObject());
+    int num_glyphs = glyphs->Length();
+    cairo_glyph_t *c_glyphs = new cairo_glyph_t[num_glyphs];
+    // 
+    Local<String>index = String::New("index");
+    Local<String>x = String::New("x");
+    Local<String>y = String::New("y");
+    
+    for (int i=0; i<num_glyphs; i++) {
+        JSOBJ o = glyphs->Get(i)->ToObject();
+        c_glyphs[i].index = o->Get(index)->IntegerValue();
+        c_glyphs[i].x = o->Get(x)->NumberValue();
+        c_glyphs[i].y = o->Get(y)->NumberValue();
+    }
+    cairo_show_glyphs(context, c_glyphs, num_glyphs);
+    delete c_glyphs;
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_show_text_glyphs
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_show_text_glyphs(context, text, glyphs, clusters, cluster_flags);
+ * 
+ * This operation has rendering effects similar to cairo.context_show_glyphs() but, if the target surface supports it, uses the provided text and cluster mapping to embed the text for the glyphs shown in the output. 
+ * 
+ * If the target does not support the extended attributes, this function acts like the basic cairo.context_show_glyphs() as if it had been passed glyphs.
+ * 
+ * The mapping between text and glyphs is provided by an array of clusters. Each cluster covers a number of text bytes and glyphs, and neighboring clusters cover neighboring areas of text and glyphs. The clusters should collectively cover text and glyphs in entirety.
+ * 
+ * The first cluster always covers bytes from the beginning of text. If cluster_flags do not have the cairo.TEXT_CLUSTER_FLAG_BACKWARD set, the first cluster also covers the beginning of glyphs, otherwise it covers the end of the glyphs array and following clusters move backward.
+ * 
+ * The glyphs argument is an array of objects of the following form:
+ * 
+ * + {int} index - glyph index in the font.  The exact interpretation of the glyph index depends on the font technology being used.
+ * + {number} x - the offset in the x direction between the origin used for drawing or measuring the string and the origin of this glyph.
+ * + {number} y - the offset in the y direction between the origin used for drawing or measuring the string and the origin of this glyph.
+ * 
+ * The above structure holds information about a single glyph when drawing or measuring text. A font is (in simple terms) a collection of shapes used to draw text. A glyph is one of these shapes. There can be multiple glyphs for a single character (alternates to be used in different contexts, for example), or a glyph can be a ligature of multiple characters. Cairo doesn't expose any way of converting input text into glyphs, so in order to use the Cairo interfaces that take arrays of glyphs, you must directly access the appropriate underlying font system.
+ * 
+ * Note that the offsets given by x and y are not cumulative. When drawing or measuring text, each glyph is individually positioned with respect to the overall origin
+ * 
+ * The clusters argument is an array of objects of the following form:
+ * + {int} num_bytes - the number of bytes of UTF-8 text covered by this cluster.
+ * + {int} num_glyphs - the number of glyphs covered by this cluster.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {string} text - a string of text encoded in UTF-8.
+ * @param {array} glyphs - array of glyph objects, described above.
+ * @param {array} clusters - array of objects, cluster mapping information as described above.
+ * @param {int} cluster_flags - currently 0 or cairo.TEXT_CLUSTER_FLAG_BACKWARD.
+ */
+static JSVAL context_show_text_glyphs(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    String::Utf8Value text(args[1]->ToString());
+    Handle<Array>glyphs = Handle<Array>::Cast(args[2]->ToObject());
+    int num_glyphs = glyphs->Length();
+    cairo_glyph_t *c_glyphs = new cairo_glyph_t[num_glyphs];
+    // 
+    Local<String>index = String::New("index");
+    Local<String>_x = String::New("x");
+    Local<String>_y = String::New("y");
+    
+    for (int i=0; i<num_glyphs; i++) {
+        JSOBJ o = glyphs->Get(i)->ToObject();
+        c_glyphs[i].index = o->Get(index)->IntegerValue();
+        c_glyphs[i].x = o->Get(_x)->NumberValue();
+        c_glyphs[i].y = o->Get(_y)->NumberValue();
+    }
+    
+    Handle<Array>clusters = Handle<Array>::Cast(args[3]->ToObject());
+    int num_clusters = clusters->Length();
+    cairo_text_cluster_t *c_clusters = new cairo_text_cluster_t[num_clusters];
+    Local<String>_num_bytes = String::New("num_bytes");
+    Local<String>_num_glyphs = String::New("num_glyphs");
+    for (int i=0; i<num_clusters; i++) {
+        JSOBJ o = clusters->Get(i)->ToObject();
+        c_clusters[i].num_bytes = o->Get(_num_bytes)->NumberValue();
+        c_clusters[i].num_glyphs = o->Get(_num_glyphs)->NumberValue();
+    }
+    cairo_show_text_glyphs(context, *text, -1, c_glyphs, num_glyphs, c_clusters, num_clusters, (cairo_text_cluster_flags_t)args[4]->IntegerValue());
+    delete c_clusters;
+    delete c_glyphs;
+    return Undefined();
+}
+
+/**
+ * @function cairo.context_font_extents
+ * 
+ * ### Synopsis
+ * 
+ * var extents = cairo.context_font_extents(context);
+ * 
+ * Gets the font extents for the currently selected font.
+ * 
+ * The object returned has the following members:
+ * 
+ * + {number} ascent - the distance that the font extends above the baseline. Note that this is not always exactly equal to the maximum of the extents of all the glyphs in the font, but rather is picked to express the font designer's intent as to how the font should align with elements above it.
+ * + {number} descent - the distance that the font extends below the baseline. This value is positive for typical fonts that include portions below the baseline. Note that this is not always exactly equal to the maximum of the extents of all the glyphs in the font, but rather is picked to express the font designer's intent as to how the font should align with elements below it.
+ * + {number} height - the recommended vertical distance between baselines when setting consecutive lines of text with the font. This is greater than ascent+descent by a quantity known as the line spacing or external leading. When space is at a premium, most fonts can be set with only a distance of ascent+descent between lines.
+ * + {number} max_x_advance - the maximum distance in the X direction that the origin is advanced for any glyph in the font.
+ * + {number} max_y_advance - the maximum distance in the Y direction that the origin is advanced for any glyph in the font. This will be zero for normal fonts used for horizontal writing. (The scripts of East Asia are sometimes written vertically.)
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} extents - object as described above.
+ */
+static JSVAL context_font_extents(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_font_extents_t extents;
+    cairo_font_extents(context, &extents);
+    JSOBJ o = Object::New();
+    o->Set(String::New("ascent"), Number::New(extents.ascent));
+    o->Set(String::New("descent"), Number::New(extents.descent));
+    o->Set(String::New("height"), Number::New(extents.height));
+    o->Set(String::New("max_x_advance"), Number::New(extents.max_x_advance));
+    o->Set(String::New("max_y_advance"), Number::New(extents.max_y_advance));
+    return o;
+}
+
+/**
+ * @function cairo.context_text_extents
+ * 
+ * ### Synopsis
+ * 
+ * var extents = cairo.context_text_extents(context, text);
+ * 
+ * Gets the extents for a string of text. The extents describe a user-space rectangle that encloses the "inked" portion of the text, (as it would be drawn by cairo.context_show_text()). 
+ * 
+ * Additionally, the x_advance and y_advance values indicate the amount by which the current point would be advanced by cairo.context_show_text().
+ * 
+ * Note that whitespace characters do not directly contribute to the size of the rectangle (extents.width and extents.height). They do contribute indirectly by changing the position of non-whitespace characters. In particular, trailing whitespace characters are likely to not affect the size of the rectangle, though they will affect the x_advance and y_advance values.
+ * 
+ * The object returned has the following members:
+ * 
+ * + {number} x_bearing - the horizontal distance from the origin to the leftmost part of the glyphs as drawn. Positive if the glyphs lie entirely to the right of the origin.
+ * + {number} y_bearing - the vertical distance from the origin to the topmost part of the glyphs as drawn. Positive only if the glyphs lie completely below the origin; will usually be negative.
+ * + {number} width - width of the glyphs as drawn.
+ * + {number} height - height of the glyphs as drawn.
+ * + {number} x_advance - distance to advance in the X direction after drawing these glyphs.
+ * + {number} y_advance - distance to advance in the Y direction after drawing these glyphs. Will typically be zero except for vertical text layout as found in East-Asian languages.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {string} text - a strng of text encoded in UTF8.
+ * @return {object} extents - object as described above.
+ */
+static JSVAL context_text_extents(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    String::Utf8Value text(args[1]->ToString());
+    cairo_text_extents_t extents;
+    cairo_text_extents(context, *text, &extents);
+    JSOBJ o = Object::New();
+    o->Set(String::New("x_bearing"), Number::New(extents.x_bearing));
+    o->Set(String::New("y_bearing"), Number::New(extents.y_bearing));
+    o->Set(String::New("width"), Number::New(extents.width));
+    o->Set(String::New("height"), Number::New(extents.height));
+    o->Set(String::New("x_advance"), Number::New(extents.x_advance));
+    o->Set(String::New("y_advance"), Number::New(extents.y_advance));
+    return o;
+}
+
+/**
+ * @function cairo.context_glyph_extents
+ * 
+ * ### Synopsis
+ * 
+ * var extents = cairo.context_glyph_extents(context, glyphs);
+ * 
+ * Gets the extents for an array of glyphs. 
+ * 
+ * The extents describe a user-space rectangle that encloses the "inked" portion of the glyphs, (as they would be drawn by cairo.context_show_glyphs()). 
+ * 
+ * Additionally, the x_advance and y_advance values indicate the amount by which the current point would be advanced by cairo.context_show_glyphs().
+ * 
+ * Note that whitespace glyphs do not contribute to the size of the rectangle (extents.width and extents.height).
+ * 
+ * The glyphs argument is an array of objects of the following form:
+ * 
+ * + {int} index - glyph index in the font.  The exact interpretation of the glyph index depends on the font technology being used.
+ * + {number} x - the offset in the x direction between the origin used for drawing or measuring the string and the origin of this glyph.
+ * + {number} y - the offset in the y direction between the origin used for drawing or measuring the string and the origin of this glyph.
+ * 
+ * The above structure holds information about a single glyph when drawing or measuring text. A font is (in simple terms) a collection of shapes used to draw text. A glyph is one of these shapes. There can be multiple glyphs for a single character (alternates to be used in different contexts, for example), or a glyph can be a ligature of multiple characters. Cairo doesn't expose any way of converting input text into glyphs, so in order to use the Cairo interfaces that take arrays of glyphs, you must directly access the appropriate underlying font system.
+ * 
+ * Note that the offsets given by x and y are not cumulative. When drawing or measuring text, each glyph is individually positioned with respect to the overall origin
+ * 
+ * The object returned has the following members:
+ * 
+ * + {number} x_bearing - the horizontal distance from the origin to the leftmost part of the glyphs as drawn. Positive if the glyphs lie entirely to the right of the origin.
+ * + {number} y_bearing - the vertical distance from the origin to the topmost part of the glyphs as drawn. Positive only if the glyphs lie completely below the origin; will usually be negative.
+ * + {number} width - width of the glyphs as drawn.
+ * + {number} height - height of the glyphs as drawn.
+ * + {number} x_advance - distance to advance in the X direction after drawing these glyphs.
+ * + {number} y_advance - distance to advance in the Y direction after drawing these glyphs. Will typically be zero except for vertical text layout as found in East-Asian languages.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {array} glyphs - array of objects as described above.
+ * @return {object} extents - object as described above.
+ */
+static JSVAL context_glyph_extents(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    Handle<Array>glyphs = Handle<Array>::Cast(args[2]->ToObject());
+    int num_glyphs = glyphs->Length();
+    cairo_glyph_t *c_glyphs = new cairo_glyph_t[num_glyphs];
+    // 
+    Local<String>index = String::New("index");
+    Local<String>_x = String::New("x");
+    Local<String>_y = String::New("y");
+    
+    for (int i=0; i<num_glyphs; i++) {
+        JSOBJ o = glyphs->Get(i)->ToObject();
+        c_glyphs[i].index = o->Get(index)->IntegerValue();
+        c_glyphs[i].x = o->Get(_x)->NumberValue();
+        c_glyphs[i].y = o->Get(_y)->NumberValue();
+    }
+    
+    cairo_text_extents_t extents;
+    cairo_glyph_extents(context, c_glyphs, num_glyphs, &extents);
+    delete [] c_glyphs;
+
+    JSOBJ o = Object::New();
+    o->Set(String::New("x_bearing"), Number::New(extents.x_bearing));
+    o->Set(String::New("y_bearing"), Number::New(extents.y_bearing));
+    o->Set(String::New("width"), Number::New(extents.width));
+    o->Set(String::New("height"), Number::New(extents.height));
+    o->Set(String::New("x_advance"), Number::New(extents.x_advance));
+    o->Set(String::New("y_advance"), Number::New(extents.y_advance));
+    return o;
+}
+
+/**
+ * @function cairo.toy_font_face_create
+ * 
+ * ### Synopsis
+ * 
+ * var font_face = cairo.toy_font_face_create(family, slant, weight);
+ * 
+ * Creates a font face from a triplet of family, slant, and weight. 
+ * 
+ * These font faces are used in implementation of the the cairo_t "toy" font API.
+ * 
+ * If family is the zero-length string "", the platform-specific default family is assumed. The default family then can be queried using cairo.toy_font_face_get_family().
+ * 
+ * The cairo.context_select_font_face() function uses this to create font faces. See that function for limitations and other details of toy font faces.
+ * 
+ * The slant argument may be one of:
+ * 
+ * + cairo.FONT_SLANT_NORMAL - Upright font style
+ * + cairo.FONT_SLANT_ITALIC - Italic font style
+ * + cairo.FONT_SLANT_OBLIQUE - Oblique font style
+ * 
+ * The weight argument may be one of:
+ * 
+ * + cairo.FONT_WEIGHT_NORMAL - Normal font weight.
+ * + cairo.FONT_WEIGHT_BOLD - Bold font weight.
+ * 
+ * A cairo font_face specifies all aspects of a font other than the size or font matrix (a font matrix is used to distort a font by shearing it or scaling it unequally in the two directions) . A font face can be set on a context by using cairo.context_set_font_face(); the size and font matrix are set with cairo.context_set_font_size() and cairo.context_set_font_matrix().
+ * 
+ * There are various types of font faces, depending on the font backend they use. The type of a font face can be queried using cairo.font_face_get_type().
+ * 
+ * Memory management of cairo font_faces is done with cairo.font_face_reference() and cairo.font_face_destroy().
+ * 
+ * See also the font_face methods.
+ * 
+ * AVAILABLE IN CAIRO 1.8 OR NEWER
+ * 
+ * @param {string} family - font family name.
+ * @param {int} slant - the slant for the font.
+ * @param {int} weight - the font weight for the font.
+ * @return {object} font_face - opaque handle to a cairo font face object.
+ */
+#if CAIRO_VERSION_MINOR >= 8
+static JSVAL toy_font_face_create(JSARGS args) {
+    String::Utf8Value family(args[0]->ToString());
+    cairo_font_face_t *font_face = cairo_toy_font_face_create(*family, (cairo_font_slant_t)args[1]->IntegerValue(), (cairo_font_weight_t)args[2]->IntegerValue());
+    return External::New(font_face);
+}
+#endif
+
+/**
+ * @function cairo.toy_font_face_get_family
+ * 
+ * ### Synopsis
+ * 
+ * var family = cairo.toy_font_face_get_family(font_face);
+ * 
+ * Gets the family name of a toy font.
+ * 
+ * A cairo font_face specifies all aspects of a font other than the size or font matrix (a font matrix is used to distort a font by shearing it or scaling it unequally in the two directions) . A font face can be set on a context by using cairo.context_set_font_face(); the size and font matrix are set with cairo.context_set_font_size() and cairo.context_set_font_matrix().
+ * 
+ * There are various types of font faces, depending on the font backend they use. The type of a font face can be queried using cairo.font_face_get_type().
+ * 
+ * Memory management of cairo font_faces is done with cairo.font_face_reference() and cairo.font_face_destroy().
+ * 
+ * See also the font_face methods.
+ * 
+ * AVAILABLE IN CAIRO 1.8 OR NEWER
+ * 
+ * @param {object} font_face - opaque handle to a cairo font face object.
+ * @return {string} family - The family name.
+ */
+#if CAIRO_VERSION_MINOR >= 8
+static JSVAL toy_font_face_get_family(JSARGS args) {
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    return String::New(cairo_toy_font_face_get_family(font_face));
+}
+#endif
+
+/**
+ * @function cairo.toy_font_face_get_slant
+ * 
+ * ### Synopsis
+ * 
+ * var slant = cairo.toy_font_face_get_slant(font_face);
+ * 
+ * Gets the slant of a toy font.
+ * 
+ * The slant returned may be one of:
+ * 
+ * + cairo.FONT_SLANT_NORMAL - Upright font style
+ * + cairo.FONT_SLANT_ITALIC - Italic font style
+ * + cairo.FONT_SLANT_OBLIQUE - Oblique font style
+ * 
+ * A cairo font_face specifies all aspects of a font other than the size or font matrix (a font matrix is used to distort a font by shearing it or scaling it unequally in the two directions) . A font face can be set on a context by using cairo.context_set_font_face(); the size and font matrix are set with cairo.context_set_font_size() and cairo.context_set_font_matrix().
+ * 
+ * There are various types of font faces, depending on the font backend they use. The type of a font face can be queried using cairo.font_face_get_type().
+ * 
+ * Memory management of cairo font_faces is done with cairo.font_face_reference() and cairo.font_face_destroy().
+ * 
+ * See also the font_face methods.
+ * 
+ * AVAILABLE IN CAIRO 1.8 OR NEWER
+ * 
+ * @param {object} font_face - opaque handle to a cairo font face object.
+ * @return {int} slant - The family name.
+ */
+#if CAIRO_VERSION_MINOR >= 8
+static JSVAL toy_font_face_get_slant(JSARGS args) {
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    return Integer::New(cairo_toy_font_face_get_slant(font_face));
+}
+#endif
+
+/**
+ * @function cairo.toy_font_face_get_weight
+ * 
+ * ### Synopsis
+ * 
+ * var weight = cairo.toy_font_face_get_weight(font_face);
+ * 
+ * Gets the slant of a toy font.
+ * 
+ * The weight returned may be one of:
+ * 
+ * + cairo.FONT_WEIGHT_NORMAL - Normal font weight.
+ * + cairo.FONT_WEIGHT_BOLD - Bold font weight.
+ * 
+ * A cairo font_face specifies all aspects of a font other than the size or font matrix (a font matrix is used to distort a font by shearing it or scaling it unequally in the two directions) . A font face can be set on a context by using cairo.context_set_font_face(); the size and font matrix are set with cairo.context_set_font_size() and cairo.context_set_font_matrix().
+ * 
+ * There are various types of font faces, depending on the font backend they use. The type of a font face can be queried using cairo.font_face_get_type().
+ * 
+ * Memory management of cairo font_faces is done with cairo.font_face_reference() and cairo.font_face_destroy().
+ * 
+ * See also the font_face methods.
+ * 
+ * AVAILABLE IN CAIRO 1.8 OR NEWER
+ * 
+ * @param {object} font_face - opaque handle to a cairo font face object.
+ * @return {int} weight - font weight.
+ */
+#if CAIRO_VERSION_MINOR >= 8
+static JSVAL toy_font_face_get_weight(JSARGS args) {
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    return Integer::New(cairo_toy_font_face_get_weight(font_face));
+}
+#endif
+
+////////////////////////// FONT FACES
+
+/**
+ * @function cairo.font_face_reference
+ * 
+ * ### Synopsis
+ * 
+ * var font_face = cairo.font_face_reference(font_face);
+ * 
+ * Increases the reference count on font_face by one. 
+ * 
+ * This prevents font_face from being destroyed until a matching call to cairo.font_face_destroy() is made.
+ * 
+ * The number of references to a cairo font_face can be get using cairo.font_face_get_reference_count().
+ * 
+ * @param {object} font_face - opaque handle to a cairo font face object.
+ * @return {object} font_face - opaque handle to the referenced cairo font face object.
+ */
+static JSVAL font_face_reference(JSARGS args) {
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    return External::New(cairo_font_face_reference(font_face));
+}
+
+/**
+ * @function cairo.font_face_destroy
+ * 
+ * ### Synopsis
+ * 
+ * cairo.font_face_destroy(font_face);
+ * 
+ * Decreases the reference count on font_face by one. 
+ * 
+ * If the result is zero, then font_face and all associated resources are freed. See cairo.font_face_reference().
+ * 
+ * @param {object} font_face - opaque handle to a cairo font face object.
+ */
+static JSVAL font_face_destroy(JSARGS args) {
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    cairo_font_face_destroy(font_face);
+    return Undefined();
+}
+
+/**
+ * @function cairo.font_face_status
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.font_face_status(font_face);
+ * 
+ * Checks whether an error has previously occurred for this font face
+ * 
+ * @param {object} font_face - opaque handle to a cairo font face object.
+ * @return {int} status - cairo.STATUS_SUCCESS or another error such as cairo.STATUS_NO_MEMORY.
+ */
+static JSVAL font_face_status(JSARGS args) {
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    return Integer::New(cairo_font_face_status(font_face));
+}
+
+/**
+ * @function cairo.font_face_get_type
+ * 
+ * ### Synopsis
+ * 
+ * var type = cairo.font_face_get_type(font_face);
+ * 
+ * This function returns the type of the backend used to create a font face.
+ * 
+ * The font types are also known as "font backends" within cairo.
+ * 
+ * The type of a font face is determined by the function used to create it, which will generally be of the form cairo.type_font_face_create(). The font face type can be queried with cairo.font_face_get_type()
+ * 
+ * The various cairo font_face functions can be used with a font face of any type.
+ * 
+ * The type of a scaled font is determined by the type of the font face passed to cairo.scaled_font_create(). The scaled font type can be queried with cairo.scaled_font_get_type().
+ * 
+ * The various cairo scaled_font functions can be used with scaled fonts of any type, but some font backends also provide type-specific functions that must only be called with a scaled font of the appropriate type. These functions have names that begin with cairo.type_scaled_font() such as cairo.ft_scaled_font_lock_face().
+ * 
+ * The behavior of calling a type-specific function with a scaled font of the wrong type is undefined.
+ * 
+ * New entries may be added in future versions.
+ * 
+ * cairo.FONT_TYPE_TOY - The font was created using cairo's toy font API (Since: 1.2).
+ * cairo.FONT_TYPE_FT - The font is of type FreeType (Since: 1.2).
+ * cairo.FONT_TYPE_WIN32 - The font is of type Win32 (Since: 1.2).
+ * cairo.FONT_TYPE_QUARTZ - The font is of type Quartz (Since: 1.6, in 1.2 and 1.4 it was named cairo.FONT_TYPE_ATSUI).
+ * cairo.FONT_TYPE_ATSUI - The font is of type Quartz (since 1.2, backward compatibility for cairo.FONT_TYPE_ATSUI).
+ * cairo.FONT_TYPE_USER - The font was create using cairo's user font API (Since: 1.8).
+ * 
+ * @param {object} font_face - opaque handle to a cairo font face object.
+ * @return {int} type - one of the above types.
+ */
+static JSVAL font_face_get_type(JSARGS args) {
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    return Integer::New(cairo_font_face_get_type(font_face));
+}
+
+/**
+ * @function cairo.font_face_get_reference_count
+ * 
+ * ### Synopsis
+ * 
+ * var count = cairo.font_face_get_reference_count(font_face);
+ * 
+ * Get the current reference count of font_face.
+ * 
+ * @param {object} font_face - opaque handle to a cairo font face object.
+ * @return {int} count - current reference count of font_face.  If a nil font_face, 0 will be returned.
+ */
+static JSVAL font_face_get_reference_count(JSARGS args) {
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    return Integer::New(cairo_font_face_get_reference_count(font_face));
+}
+
+////////////////////////// SCALED FONTS
+
+/**
+ * @function cairo.scaled_font_create
+ * 
+ * ### Synopsis
+ * 
+ * var scaled_font = cairo.scaled_font_create(font_face, font_matrix, ctm, options);
+ * 
+ * Create a cairo scaled_font object from a font_face and matrices that describe the size of the font and the environment in which it will be used.
+ * 
+ * A cairo scaled_font is a font scaled to a particular size and device resolution. A cairo scaled_font is most useful for low-level font usage where a library or application wants to cache a reference to a scaled font to speed up the computation of metrics.
+ * 
+ * There are various types of scaled fonts, depending on the font backend they use. The type of a scaled font can be queried using cairo.scaled_font_get_type().
+ * 
+ * Memory management of cairo scaled_font is done with cairo.scaled_font_reference() and cairo.scaled_font_destroy().
+ * 
+ * The font_matrix argument is a font space to user space transformation matrix for the font. In the simplest case of a N point font, this matrix is just a scale by N, but it can also be used to shear the font or stretch it unequally along the two axes. See cairo.context_set_font_matrix().
+ * 
+ * The options object is an opaque structure holding all options that are used when rendering fonts.
+ * 
+ * Individual features of a cairo font_options object can be set or accessed using functions named cairo.font_options_set_feature_name() and cairo.font_options_get_feature_name(), like cairo.font_options_set_antialias() and cairo.font_options_get_antialias().
+ * 
+ * New features may be added to a cairo font_options object in the future. For this reason, cairo.font_options_copy(), cairo.font_options_equal(), cairo.font_options_merge(), and cairo.font_options_hash() should be used to copy, check for equality, merge, or compute a hash value of cairo font_options objects. 
+ * 
+ * @param {object} font_face - opaque handle to a cairo font face object.
+ * @param {object} font_matrix - opaque handle to a cairo matrix, described above.
+ * @param {object} ctm - opaque handle to a cairo matrix; user to device transformation matrix with which the font will be used.
+ * @param {object} options - opaque handle to a cairo font options object.
+ * @return {object} scaled_font - opaque handle to a scaled font.
+ */
+static JSVAL scaled_font_create(JSARGS args) {
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    cairo_matrix_t *font_matrix = (cairo_matrix_t *) JSEXTERN(args[1]);
+    cairo_matrix_t *ctm = (cairo_matrix_t *) JSEXTERN(args[2]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[3]);
+    return External::New(cairo_scaled_font_create(font_face, font_matrix, ctm, options));
+}
+
+/**
+ * @function cairo.scaled_font_reference
+ * 
+ * ### Synopsis
+ * 
+ * cairo.scaled_font_reference(scaled_font);
+ * 
+ * Increases the reference count on scaled_font by one. 
+ * 
+ * This prevents scaled_font from being destroyed until a matching call to cairo.scaled_font_destroy() is made.
+ * 
+ * The number of references to a scaled_font can be get using cairo.scaled_font_get_reference_count().
+ * 
+ * @param {object} scaled_font - opaque handle to a scaled font.
+ * @return {object} scaled_font - opaque handle to referenced scaled font.
+ */
+static JSVAL scaled_font_reference(JSARGS args) {
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    return External::New(cairo_scaled_font_reference(scaled_font));
+}
+
+/**
+ * @function cairo.scaled_font_destroy
+ * 
+ * ### Synopsis
+ * 
+ * cairo.scaled_font_destroy(scaled_font);
+ * 
+ * Decreases the reference count on scaled_font by one. 
+ * 
+ * If the result is zero, then scaled_font and all associated resources are freed. See cairo.scaled_font_reference().
+ * 
+ * @param {object} scaled_font - opaque handle to a cairo scaled_font object.
+ */
+static JSVAL scaled_font_destroy(JSARGS args) {
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_scaled_font_destroy(scaled_font);
+    return Undefined();
+}
+
+/**
+ * @function cairo.scaled_font_get_reference_count
+ * 
+ * ### Synopsis
+ * 
+ * var count = cairo.scaled_font_get_reference_count(scaled_font);
+ * 
+ * Get the current reference count of scaled_font.
+ * 
+ * @param {object} scaled_font - opaque handle to a cairo scaled_font object.
+ * @return {int} count - current reference count of scaled_font.  If a nil scaled_font, 0 will be returned.
+ */
+#if CAIRO_VERSION_MINOR >= 4
+static JSVAL scaled_font_get_reference_count(JSARGS args) {
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    return Integer::New(cairo_scaled_font_get_reference_count(scaled_font));
+}
+#endif
+
+/**
+ * @function cairo.scaled_font_status
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.scaled_font_status(scaled_font);
+ * 
+ * Checks whether an error has previously occurred for this scaled_font.
+ * 
+ * @param {object} scaled_font - opaque handle to a cairo scaled_font object.
+ * @return {int} status - cairo.STATUS_SUCCESS or another error such as cairo.STATUS_NO_MEMORY.
+ */
+static JSVAL scaled_font_status(JSARGS args) {
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    return Integer::New(cairo_scaled_font_status(scaled_font));
+}
+
+/**
+ * @function cairo.scaled_font_extents
+ * 
+ * ### Synopsis
+ * 
+ * var extents = cairo.scaled_font_extents(scaled_font);
+ * 
+ * Gets the font extents for scaled_font.
+ * 
+ * The object returned has the following members:
+ * 
+ * + {number} ascent - the distance that the font extends above the baseline. Note that this is not always exactly equal to the maximum of the extents of all the glyphs in the font, but rather is picked to express the font designer's intent as to how the font should align with elements above it.
+ * + {number} descent - the distance that the font extends below the baseline. This value is positive for typical fonts that include portions below the baseline. Note that this is not always exactly equal to the maximum of the extents of all the glyphs in the font, but rather is picked to express the font designer's intent as to how the font should align with elements below it.
+ * + {number} height - the recommended vertical distance between baselines when setting consecutive lines of text with the font. This is greater than ascent+descent by a quantity known as the line spacing or external leading. When space is at a premium, most fonts can be set with only a distance of ascent+descent between lines.
+ * + {number} max_x_advance - the maximum distance in the X direction that the origin is advanced for any glyph in the font.
+ * + {number} max_y_advance - the maximum distance in the Y direction that the origin is advanced for any glyph in the font. This will be zero for normal fonts used for horizontal writing. (The scripts of East Asia are sometimes written vertically.)
+ * 
+ * @param {object} scaled_font - opaque handle to a cairo scaled_font object.
+ * @return {object} extents - object as described above.
+ */
+static JSVAL scaled_font_extents(JSARGS args) {
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_font_extents_t extents;
+    cairo_scaled_font_extents(scaled_font, &extents);
+    JSOBJ o = Object::New();
+    o->Set(String::New("ascent"), Number::New(extents.ascent));
+    o->Set(String::New("descent"), Number::New(extents.descent));
+    o->Set(String::New("height"), Number::New(extents.height));
+    o->Set(String::New("max_x_advance"), Number::New(extents.max_x_advance));
+    o->Set(String::New("max_y_advance"), Number::New(extents.max_y_advance));
+    return o;
+}
+
+/**
+ * @function cairo.scaled_font_text_extents
+ * 
+ * ### Synopsis
+ * 
+ * var extents = cairo.scaled_font_text_extents(scaled_font, text);
+ * 
+ * Gets the extents for a string of text. The extents describe a user-space rectangle that encloses the "inked" portion of the text, (as it would be drawn by cairo.context_show_text()). 
+ * 
+ * Additionally, the x_advance and y_advance values indicate the amount by which the current point would be advanced by cairo.context_show_text().
+ * 
+ * Note that whitespace characters do not directly contribute to the size of the rectangle (extents.width and extents.height). They do contribute indirectly by changing the position of non-whitespace characters. In particular, trailing whitespace characters are likely to not affect the size of the rectangle, though they will affect the x_advance and y_advance values.
+ * 
+ * The object returned has the following members:
+ * 
+ * + {number} x_bearing - the horizontal distance from the origin to the leftmost part of the glyphs as drawn. Positive if the glyphs lie entirely to the right of the origin.
+ * + {number} y_bearing - the vertical distance from the origin to the topmost part of the glyphs as drawn. Positive only if the glyphs lie completely below the origin; will usually be negative.
+ * + {number} width - width of the glyphs as drawn.
+ * + {number} height - height of the glyphs as drawn.
+ * + {number} x_advance - distance to advance in the X direction after drawing these glyphs.
+ * + {number} y_advance - distance to advance in the Y direction after drawing these glyphs. Will typically be zero except for vertical text layout as found in East-Asian languages.
+ * 
+ * @param {object} scaled_font - opaque handle to a cairo scaled_font object.
+ * @param {string} text - a stirng of text encoded in UTF8.
+ * @return {object} extents - object as described above.
+ */
+#if CAIRO_VERSION_MINOR >= 2
+static JSVAL scaled_font_text_extents(JSARGS args) {
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    String::Utf8Value text(args[1]->ToString());
+    cairo_text_extents_t extents;
+    cairo_scaled_font_text_extents(scaled_font, *text, &extents);
+    JSOBJ o = Object::New();
+    o->Set(String::New("x_bearing"), Number::New(extents.x_bearing));
+    o->Set(String::New("y_bearing"), Number::New(extents.y_bearing));
+    o->Set(String::New("width"), Number::New(extents.width));
+    o->Set(String::New("height"), Number::New(extents.height));
+    o->Set(String::New("x_advance"), Number::New(extents.x_advance));
+    o->Set(String::New("y_advance"), Number::New(extents.y_advance));
+    return o;
+}
+#endif
+
+/**
+ * @function cairo.scaled_font_glyph_extents
+ * 
+ * ### Synopsis
+ * 
+ * var extents = cairo.scaled_font_glyph_extents(scaled_font, glyphs);
+ * 
+ * Gets the extents for an array of glyphs. 
+ * 
+ * The extents describe a user-space rectangle that encloses the "inked" portion of the glyphs, (as they would be drawn by cairo.context_show_glyphs()). 
+ * 
+ * Additionally, the x_advance and y_advance values indicate the amount by which the current point would be advanced by cairo.context_show_glyphs().
+ * 
+ * Note that whitespace glyphs do not contribute to the size of the rectangle (extents.width and extents.height).
+ * 
+ * The glyphs argument is an array of objects of the following form:
+ * 
+ * + {int} index - glyph index in the font.  The exact interpretation of the glyph index depends on the font technology being used.
+ * + {number} x - the offset in the x direction between the origin used for drawing or measuring the string and the origin of this glyph.
+ * + {number} y - the offset in the y direction between the origin used for drawing or measuring the string and the origin of this glyph.
+ * 
+ * The above structure holds information about a single glyph when drawing or measuring text. A font is (in simple terms) a collection of shapes used to draw text. A glyph is one of these shapes. There can be multiple glyphs for a single character (alternates to be used in different contexts, for example), or a glyph can be a ligature of multiple characters. Cairo doesn't expose any way of converting input text into glyphs, so in order to use the Cairo interfaces that take arrays of glyphs, you must directly access the appropriate underlying font system.
+ * 
+ * Note that the offsets given by x and y are not cumulative. When drawing or measuring text, each glyph is individually positioned with respect to the overall origin
+ * 
+ * The object returned has the following members:
+ * 
+ * + {number} x_bearing - the horizontal distance from the origin to the leftmost part of the glyphs as drawn. Positive if the glyphs lie entirely to the right of the origin.
+ * + {number} y_bearing - the vertical distance from the origin to the topmost part of the glyphs as drawn. Positive only if the glyphs lie completely below the origin; will usually be negative.
+ * + {number} width - width of the glyphs as drawn.
+ * + {number} height - height of the glyphs as drawn.
+ * + {number} x_advance - distance to advance in the X direction after drawing these glyphs.
+ * + {number} y_advance - distance to advance in the Y direction after drawing these glyphs. Will typically be zero except for vertical text layout as found in East-Asian languages.
+ * 
+ * @param {object} scaled_font - opaque handle to a cairo scaled_font.
+ * @param {array} glyphs - array of objects as described above.
+ * @return {object} extents - object as described above.
+ */
+static JSVAL scaled_font_glyph_extents(JSARGS args) {
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    Handle<Array>glyphs = Handle<Array>::Cast(args[2]->ToObject());
+    int num_glyphs = glyphs->Length();
+    cairo_glyph_t *c_glyphs = new cairo_glyph_t[num_glyphs];
+    // 
+    Local<String>index = String::New("index");
+    Local<String>_x = String::New("x");
+    Local<String>_y = String::New("y");
+    
+    for (int i=0; i<num_glyphs; i++) {
+        JSOBJ o = glyphs->Get(i)->ToObject();
+        c_glyphs[i].index = o->Get(index)->IntegerValue();
+        c_glyphs[i].x = o->Get(_x)->NumberValue();
+        c_glyphs[i].y = o->Get(_y)->NumberValue();
+    }
+    
+    cairo_text_extents_t extents;
+    cairo_scaled_font_glyph_extents(scaled_font, c_glyphs, num_glyphs, &extents);
+    delete [] c_glyphs;
+
+    JSOBJ o = Object::New();
+    o->Set(String::New("x_bearing"), Number::New(extents.x_bearing));
+    o->Set(String::New("y_bearing"), Number::New(extents.y_bearing));
+    o->Set(String::New("width"), Number::New(extents.width));
+    o->Set(String::New("height"), Number::New(extents.height));
+    o->Set(String::New("x_advance"), Number::New(extents.x_advance));
+    o->Set(String::New("y_advance"), Number::New(extents.y_advance));
+    return o;
+}
+
+/**
+ * @function cairo.scaled_font_get_font_face
+ * 
+ * ### Synopsis
+ * 
+ * var font_face = cairo.scaled_font_get_font_face(scaled_font);
+ * 
+ * Gets the font face that this scaled font uses. 
+ * 
+ * This might be the font face passed to cairo.scaled_font_create(), but this does not hold true for all possible cases.
+ * 
+ * @param {object} scaled_font - opaque handle to a cairo scaled_font.
+ * @return {object} font_face  - opaque handle to a cairo font face object.
+ */
+#if CAIRO_VERSION_MINOR >= 2
+static JSVAL scaled_font_get_font_face(JSARGS args) {
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    return External::New(cairo_scaled_font_get_font_face(scaled_font));
+}
+#endif
+
+/**
+ * @function cairo.scaled_font_get_font_options
+ * 
+ * ### Synopsis
+ * 
+ * var options = cairo.scaled_font_get_font_options(context);
+ * 
+ * Get the font options with which scaled_font was created.
+ * 
+ * NOTE: the resulting options object should be freed with cairo.font_options_destroy().
+ * 
+ * The options object returned is an opaque structure holding all options that are used when rendering fonts.
+ * 
+ * Individual features of a cairo font_options object can be set or accessed using functions named cairo.font_options_set_feature_name() and cairo.font_options_get_feature_name(), like cairo.font_options_set_antialias() and cairo.font_options_get_antialias().
+ * 
+ * New features may be added to a cairo font_options object in the future. For this reason, cairo.font_options_copy(), cairo.font_options_equal(), cairo.font_options_merge(), and cairo.font_options_hash() should be used to copy, check for equality, merge, or compute a hash value of cairo font_options objects. 
+ * 
+ * @param {object} scaled_font - opaque handle to a cairo scaled_font.
+ * @return {object} options - opaque handle to a cairo font options object.
+ */
+#if CAIRO_VERSION_MINOR >= 2
+static JSVAL scaled_font_get_font_options(JSARGS args) {
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_font_options_t *options = cairo_font_options_create();
+    cairo_scaled_font_get_font_options(scaled_font, options);
+    return External::New(options);
+}
+#endif
+
+/**
+ * @function cairo.scaled_font_get_font_matrix
+ * 
+ * ### Synopsis
+ * 
+ * var matrix = cairo.scaled_font_get_font_matrix(scaled_font);
+ * 
+ * Gets the font matrix with which scaled_font was created.
+ * 
+ * The matrix returned is owned by the caller and must be released by calling cairo.matrix_destroy() when it is no longer needed.
+ * 
+ * @param {object} scaled_font - opaque handle to a cairo scaled_font.
+ * @return {object} matrix - opaque handle to a cairo matrix.
+ */
+#if CAIRO_VERSION_MINOR >= 2
+static JSVAL scaled_font_get_font_matrix(JSARGS args) {
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = new cairo_matrix_t;
+    cairo_scaled_font_get_font_matrix(scaled_font, matrix);
+    return External::New(matrix);
+}
+#endif
+
+/**
+ * @function cairo.scaled_font_get_ctm
+ * 
+ * ### Synopsis
+ * 
+ * var matrix = cairo.scaled_font_get_ctm(scaled_font);
+ * 
+ * Gets the CTM with which scaled_font was created. 
+ * 
+ * Note that the translation offsets (x0, y0) of the CTM are ignored by cairo.scaled_font_create(). So, the matrix this function returns always has 0,0 as x0,y0.
+ * 
+ * The matrix returned is owned by the caller and must be released by calling cairo.matrix_destroy() when it is no longer needed.
+ * 
+ * @param {object} scaled_font - opaque handle to a cairo scaled_font.
+ * @return {object} matrix - opaque handle to a cairo matrix.
+ */
+#if CAIRO_VERSION_MINOR >= 2
+static JSVAL scaled_font_get_ctm(JSARGS args) {
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = new cairo_matrix_t;
+    cairo_scaled_font_get_ctm(scaled_font, matrix);
+    return External::New(matrix);
+}
+#endif
+
+/**
+ * @function cairo.scaled_font_get_scale_matrix
+ * 
+ * ### Synopsis
+ * 
+ * var matrix = cairo.scaled_font_get_scale_matrix(scaled_font);
+ * 
+ * Stores the scale matrix of scaled_font into matrix. 
+ * 
+ * The scale matrix is product of the font matrix and the ctm associated with the scaled font, and hence is the matrix mapping from font space to device space.
+ * 
+ * The matrix returned is owned by the caller and must be released by calling cairo.matrix_destroy() when it is no longer needed.
+ * 
+ * AVAILABLE IN CAIRO 1.8 OR NEWER
+ * 
+ * @param {object} scaled_font - opaque handle to a cairo scaled_font.
+ * @return {object} matrix - opaque handle to a cairo matrix.
+ */
+#if CAIRO_VERSION_MINOR >= 8
+static JSVAL scaled_font_get_scale_matrix(JSARGS args) {
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = new cairo_matrix_t;
+    cairo_scaled_font_get_scale_matrix(scaled_font, matrix);
+    return External::New(matrix);
+}
+#endif
+
+/**
+ * @function cairo.scaled_font_get_type
+ * 
+ * ### Synopsis
+ * 
+ * var type = cairo.scaled_font_get_type(scaled_font);
+ * 
+ * This function returns the type of the backend used to create a scaled font. 
+ * 
+ * The font types are also known as "font backends" within cairo.
+ * 
+ * The type of a font face is determined by the function used to create it, which will generally be of the form cairo.type_font_face_create(). The font face type can be queried with cairo.font_face_get_type()
+ * 
+ * The various cairo font_face functions can be used with a font face of any type.
+ * 
+ * The type of a scaled font is determined by the type of the font face passed to cairo.scaled_font_create(). The scaled font type can be queried with cairo.scaled_font_get_type().
+ * 
+ * The various cairo scaled_font functions can be used with scaled fonts of any type, but some font backends also provide type-specific functions that must only be called with a scaled font of the appropriate type. These functions have names that begin with cairo.type_scaled_font() such as cairo.ft_scaled_font_lock_face().
+ * 
+ * The behavior of calling a type-specific function with a scaled font of the wrong type is undefined.
+ * 
+ * New entries may be added in future versions.
+ * 
+ * cairo.FONT_TYPE_FT - The font is of type FreeType (Since: 1.2).
+ * cairo.FONT_TYPE_WIN32 - The font is of type Win32 (Since: 1.2).
+ * cairo.FONT_TYPE_QUARTZ - The font is of type Quartz (Since: 1.6, in 1.2 and 1.4 it was named cairo.FONT_TYPE_ATSUI).
+ * cairo.FONT_TYPE_ATSUI - The font is of type Quartz (since 1.2, backward compatibility for cairo.FONT_TYPE_ATSUI).
+ * cairo.FONT_TYPE_USER - The font was create using cairo's user font API (Since: 1.8).
+ * 
+ * _This function never returns cairo.FONT_TYPE_TOY._
+ * 
+ * @param {object} scaled_font - opaque handle to a cairo scaled_font object.
+ * @return {int} type - one of the above types.
+ */
+#if CAIRO_VERSION_MINOR >= 2
+static JSVAL scaled_font_get_type(JSARGS args) {
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    return Integer::New(cairo_scaled_font_get_type(scaled_font));
+}
+#endif
+
+
+
+////////////////////////// FONT OPTIONS
+
+/**
+ * @function cairo.font_options_create
+ * 
+ * ### Synopsis
+ * 
+ * var options = cairo.font_options_create();
+ * 
+ * Allocates a new font options object with all options initialized to default values.
+ * 
+ * Free the returned object with cairo.font_options_destroy(). 
+ * 
+ * This function always returns a valid pointer; if memory cannot be allocated, then a special error object is returned where all operations on the object do nothing. You can check for this with cairo.font_options_status().
+ * 
+ * @return {object} options - opaque handle to a font options object.
+ */
+static JSVAL font_options_create(JSARGS args) {
+    return External::New(cairo_font_options_create());
+}
+
+/**
+ * @function cairo.font_options_copy
+ * 
+ * ### Synopsis
+ * 
+ * var copy = cairo.font_options_copy(original);
+ * 
+ * Allocates a new font options object copying the option values from original.
+ * 
+ * Free the returned object with cairo.font_options_destroy(). 
+ * 
+ * This function always returns a valid pointer; if memory cannot be allocated, then a special error object is returned where all operations on the object do nothing. You can check for this with cairo.font_options_status().
+ * 
+ * @param {object} original- opaque handle to a font options object.
+ * @return {object} copy - opaque handle to a copy of the original font options object.
+ */
+static JSVAL font_options_copy(JSARGS args) {
+    cairo_font_options_t *original = (cairo_font_options_t *)JSEXTERN(args[0]);
+    return External::New(cairo_font_options_copy(original));
+}
+
+/**
+ * @functino cairo.font_options_destroy
+ * 
+ * ### Synopsis
+ * 
+ * cairo.font_options_destroy(options);
+ * 
+ * Destroys a cairo font_options object created with cairo.font_options_create() or cairo.font_options_copy().
+ * 
+ * @return {object} options - opaque handle to a font options object.
+ * @return 
+ */
+static JSVAL font_options_destroy(JSARGS args) {
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_destroy(options);
+    return Undefined();
+}
+
+/**
+ * @function cairo.font_options_status
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.font_options_status(options);
+ * 
+ * Checks whether an error has previously occurred for this font options object
+ * 
+ * @param {object} options - opaque handle to a font options object.
+ * @return {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
+ */
+static JSVAL font_options_status(JSARGS args) {
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    return Integer::New(cairo_font_options_status(options));
+}
+
+/**
+ * @function cairo.font_options_merge
+ * 
+ * ### Synopsis
+ * 
+ * cairo.font_options_merge(options, other);
+ * 
+ * Merges non-default options from other into options, replacing existing values. 
+ * 
+ * This operation can be thought of as somewhat similar to compositing other onto options with the operation of cairo.OPERATOR_OVER.
+ * 
+ * @param {object} options - opaque handle to a font options object.
+ * @param {object} other - opaque handle to a font options object.
+ */
+static JSVAL font_options_merge(JSARGS args) {
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_t *other = (cairo_font_options_t *)JSEXTERN(args[1]);
+    cairo_font_options_merge(options, other);
+    return Undefined();
+}
+
+/**
+ * @function cairo.font_options_hash
+ * 
+ * ### Synopsis
+ * 
+ * var hash = cairo.font_options_hash(options);
+ * 
+ * Compute a hash for the font options object; this value will be useful when storing an object containing a cairo font_options in a hash table.
+ * 
+ * @return {object} options - opaque handle to a font options object.
+ * @return {int} hash - the hash value for the font options object, cast to a 32-bit value.
+ */
+static JSVAL font_options_hash(JSARGS args) {
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    return Integer::New(cairo_font_options_hash(options));
+}
+
+/**
+ * @function cairo.font_options_equal
+ * 
+ * ### Synopsis
+ * 
+ * var is_equal = cairo.font_options_equal(options, other);
+ * 
+ * Compare two font options objects for equality.
+ * 
+ * @param {object} options - opaque handle to a font options object.
+ * @param {object} other - opaque handle to a font options object.
+ * @return {boolean} is_equal - true if the two font options objects are equal.
+ */
+static JSVAL font_options_equal(JSARGS args) {
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_t *other = (cairo_font_options_t *)JSEXTERN(args[1]);
+    return cairo_font_options_equal(options, other) ? True() : False();
+}
+
+/**
+ * @function cairo.font_options_set_antialias
+ * 
+ * Synopsis:
+ * 
+ * cairo.font_options_set_antialias(options, mode);
+ * 
+ * Sets the antialiasing mode for the font options object. 
+ * 
+ * This specifies the type of antialiasing to do when rendering text.
+ * 
+ * Valid modes are:
+ * 
+ * + cairo.ANTIALIAS_DEFAULT - use the default antialiasing for the subsystem and target device.
+ * + cairo.ANTIALIAS_NONE - use a bilevel alpha mask.
+ * + cairo.ANTIALIAS_GRAY - perform single-color antialiasing (using shades of gray for black text on a white background, for example).
+ * + cairo.ANTIALIAS_SUBPIXEL - perform antialiasing by taking advantage of the order of subpixel elements on devices such as LCD panels.
+ * + cairo_ANTIALIAS_FAST - Hint that the backend should perform some antialiasing but prefer speed over quality, since 1.12.
+ * + cairo.ANTIALIAS_GOOD - The backend should balance quality against performance, since 1.12.
+ * + CAIRO_ANTIALIAS_BEST - Hint that the backend should render at the highest quality, sacrificing speed if necessary, since 1.12
+* 
+ * @param {object} options - opaque handle to a font options object.
+ * @param {int} mode - one of the above modes.
+ */
+static JSVAL font_options_set_antialias(JSARGS args) {
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_set_antialias(options, (cairo_antialias_t)args[1]->IntegerValue());
+    return Undefined();
+}
+/**
+ * @function cairo.font_options_get_antialias
+ * 
+ * Synopsis:
+ * 
+ * var mode = cairo.font_options_get_antialias(options);
+ * 
+ * Gets the antialiasing mode for the font options object. 
+ * 
+ * Valid modes are:
+ * 
+ * + cairo.ANTIALIAS_DEFAULT - use the default antialiasing for the subsystem and target device.
+ * + cairo.ANTIALIAS_NONE - use a bilevel alpha mask.
+ * + cairo.ANTIALIAS_GRAY - perform single-color antialiasing (using shades of gray for black text on a white background, for example).
+ * + cairo.ANTIALIAS_SUBPIXEL - perform antialiasing by taking advantage of the order of subpixel elements on devices such as LCD panels.
+ * + cairo_ANTIALIAS_FAST - Hint that the backend should perform some antialiasing but prefer speed over quality, since 1.12.
+ * + cairo.ANTIALIAS_GOOD - The backend should balance quality against performance, since 1.12.
+ * + CAIRO_ANTIALIAS_BEST - Hint that the backend should render at the highest quality, sacrificing speed if necessary, since 1.12
+ * 
+ * @param {object} options - opaque handle to a font options object.
+ * @return {int} mode - one of the above modes.
+ */
+static JSVAL font_options_get_antialias(JSARGS args) {
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    return Integer::New(cairo_font_options_get_antialias(options));
+}
+
+/**
+ * @function cairo.font_options_set_subpixel_order
+ * 
+ * ### Synopsis
+ * 
+ * cairo.font_options_set_subpixel_order(options, subpixel_order);
+ * 
+ * Sets the subpixel order for the font options object. 
+ * 
+ * The subpixel order specifies the order of color elements within each pixel on the display device when rendering with an antialiasing mode of cairo.ANTIALIAS_SUBPIXEL.
+ * 
+ * The value of subpixel_order may be one of the following:
+ * 
+ * + cairo.SUBPIXEL_ORDER_DEFAULT - Use the default subpixel order for for the target device.
+ * + cairo.SUBPIXEL_ORDER_RGB - Subpixel elements are arranged horizontally with red at the left.
+ * + cairo.SUBPIXEL_ORDER_BGR - Subpixel elements are arranged horizontally with blue at the left.
+ * + cairo.SUBPIXEL_ORDER_VRGB - Subpixel elements are arranged vertically with red at the top.
+ * + cairo.SUBPIXEL_ORDER_VBGR - Subpixel elements are arranged vertically with blue at the top.
+ * 
+ * @param {object} options - opaque handle to a font options object.
+ * @return {int} subpixel_order - one of the above values.
+ */
+static JSVAL font_options_set_subpixel_order(JSARGS args) {
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_set_subpixel_order(options, (cairo_subpixel_order_t)args[1]->IntegerValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.font_options_get_subpixel_order
+ * 
+ * ### Synopsis
+ * 
+ * var subpixel_order = cairo.font_options_get_subpixel_order(options);
+ * 
+ * Get the subpixel order for the font options object.
+ * 
+ * The return value may be one of:
+ * 
+ * + cairo.SUBPIXEL_ORDER_DEFAULT - Use the default subpixel order for for the target device.
+ * + cairo.SUBPIXEL_ORDER_RGB - Subpixel elements are arranged horizontally with red at the left.
+ * + cairo.SUBPIXEL_ORDER_BGR - Subpixel elements are arranged horizontally with blue at the left.
+ * + cairo.SUBPIXEL_ORDER_VRGB - Subpixel elements are arranged vertically with red at the top.
+ * + cairo.SUBPIXEL_ORDER_VBGR - Subpixel elements are arranged vertically with blue at the top.
+ * 
+ * @param {object} options - opaque handle to a font options object.
+ * @return {int} subpixel_order - one of the above values.
+ */
+static JSVAL font_options_get_subpixel_order(JSARGS args) {
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    return Integer::New(cairo_font_options_get_subpixel_order(options));
+}
+
+/**
+ * @function cairo.font_options_set_hint_style
+ * 
+ * ### Synopsis
+ * 
+ * cairo.font_options_set_hint_style(options, hint_style);
+ * 
+ * Sets the hint style for font outlines for the font options object. 
+ * 
+ * This controls whether to fit font outlines to the pixel grid, and if so, whether to optimize for fidelity or contrast. 
+ * 
+ * The value of hint_style may be one of the following:
+ * 
+ * + cairo.HINT_STYLE_DEFAULT - Use the default hint style for font backend and target device.
+ * + cairo.HINT_STYLE_NONE - Do not hint outlines.
+ * + cairo.HINT_STYLE_SLIGHT - Hint outlines slightly to improve contrast while retaining good fidelity to the original shapes.
+ * + cairo.HINT_STYLE_MEDIUM - Hint outlines with medium strength giving a compromise between fidelity to the original shapes and contrast.
+ * + cairo.HINT_STYLE_FULL - Hint outlines to maximize contrast.
+ * 
+ * @param {object} options - opaque handle to a font options object.
+ * @return {int} hint_style - one of the above values.
+ */
+static JSVAL font_options_set_hint_style(JSARGS args) {
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_set_hint_style(options, (cairo_hint_style_t)args[1]->IntegerValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.font_options_get_hint_style
+ * 
+ * ### Synopsis
+ * 
+ * var hint_style = cairo.font_options_get_hint_style(options);
+ * 
+ * Get the hint style for the font options object.
+ * 
+ * The return value may be one of:
+ * 
+ * + cairo.HINT_STYLE_DEFAULT - Use the default hint style for font backend and target device.
+ * + cairo.HINT_STYLE_NONE - Do not hint outlines.
+ * + cairo.HINT_STYLE_SLIGHT - Hint outlines slightly to improve contrast while retaining good fidelity to the original shapes.
+ * + cairo.HINT_STYLE_MEDIUM - Hint outlines with medium strength giving a compromise between fidelity to the original shapes and contrast.
+ * + cairo.HINT_STYLE_FULL - Hint outlines to maximize contrast.
+ * 
+ * @param {object} options - opaque handle to a font options object.
+ * @return {int} hint_style - one of the above values.
+ */
+static JSVAL font_options_get_hint_style(JSARGS args) {
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    return Integer::New(cairo_font_options_get_hint_style(options));
+}
+
+/**
+ * @function cairo.font_options_set_hint_metrics
+ * 
+ * ### Synopsis
+ * 
+ * cairo.font_options_set_hint_metrics(options, hint_metrics);
+ * 
+ * Sets the metrics hinting mode for the font options object. 
+ * 
+ * This controls whether metrics are quantized to integer values in device units.
+ * 
+ * Hinting font metrics means quantizing them so that they are integer values in device space. Doing this improves the consistency of letter and line spacing, however it also means that text will be laid out differently at different zoom factors.
+ * 
+ * The value of hint_metrics may be one of the following:
+ * 
+ * + cairo.HINT_METRICS_DEFAULT - Hint metrics in the default manner for the font backend and target device.
+ * + cairo.HINT_METRICS_OFF - Do not hint font metrics.
+ * + cairo.HINT_METRICS_ON - Hint font metrics.
+ * 
+ * @param {object} options - opaque handle to a font options object.
+ * @return {int} hint_metrics - one of the above values.
+ */
+static JSVAL font_options_set_hint_metrics(JSARGS args) {
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_set_hint_metrics(options, (cairo_hint_metrics_t)args[1]->IntegerValue());
+    return Undefined();
+}
+
+/**
+ * @function cairo.font_options_get_hint_metrics
+ * 
+ * ### Synopsis
+ * 
+ * var hint_metrics = cairo.font_options_get_hint_metrics(options);
+ * 
+ * Get the hint metrics for the font options object.
+ * 
+ * The return value may be one of:
+ * 
+ * + cairo.HINT_METRICS_DEFAULT - Hint metrics in the default manner for the font backend and target device.
+ * + cairo.HINT_METRICS_OFF - Do not hint font metrics.
+ * + cairo.HINT_METRICS_ON - Hint font metrics.
+ * 
+ * @param {object} options - opaque handle to a font options object.
+ * @return {int} hint_metrics - one of the above values.
+ */
+static JSVAL font_options_get_hint_metrics(JSARGS args) {
+    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    return Integer::New(cairo_font_options_get_hint_metrics(options));
+}
+
+////////////////////////// PNG SUPPORT
+
+/**
+ * @function cairo.image_surface_create_from_png
+ * 
+ * ### Synopsis
+ * 
+ * var surface = cairo.image_surface_create_from_png(filename);
+ * 
+ * Creates a new image surface and initializes the contents to the given PNG file.
+ * 
+ * If an error occurs, this function returns a "nil" surface.  A nil surface can be checked for with cairo.surface_status(surface) which may return one of the following values: cairo.STATUS_NO_MEMORY, cairo.STATUS_FILE_NOT_FOUND, or  cairo.STATUS_READ_ERROR.
+ * 
+ * Alternatively, you can allow errors to propagate through the drawing operations and check the status on the context upon completion using cairo.context_status()..
+ * 
+ * @param {string} filename - name of PNG file to load.
+ * @return {object} surface - opaque handle to a newly created surface.
+ */
+static JSVAL image_surface_create_from_png(JSARGS args) {
+    String::Utf8Value filename(args[0]->ToString());
+    return External::New(cairo_image_surface_create_from_png(*filename));
+}
+
+/**
+ * @function cairo.surface_write_to_png
+ * 
+ * ### Synopsis
+ * 
+ * var status = cairo.surface_write_to_png(surface, filename);
+ * 
+ * Writes the contents of surface to a new file filename as a PNG image.
+ * 
+ * If an error occurs, the value returned may be:
+ * 
+ * + cairo.STATUS_NO_MEMORY if memory could not be allocated for the operation.
+ * + cairo.STATUS_SURFACE_TYPE_MISMATCH if the surface does not have pixel contents.
+ * + cairo.STATUS_WRITE_ERROR if an I/O error occurs while attempting to write the file..
+ * 
+ * @param {object} surface - opaque handle to a cairo surface.
+ * @return {int} status - either cairo.STATUS_SUCCESS, or one of the above values if an error occurred.
+ */
+static JSVAL surface_write_to_png(JSARGS args) {
+    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    String::Utf8Value filename(args[1]->ToString());
+    return Integer::New(cairo_surface_write_to_png(surface, *filename));
+}
 
 ////////////////////////// PATTERNS
 // http://www.cairographics.org/manual/cairo-cairo-pattern-t.html
@@ -2923,6 +4602,7 @@ static JSVAL pattern_get_stop_color_count(JSARGS args) {
         return Integer::New(count);
     }
     ThrowException(String::New(cairo_status_to_string(status)));
+    return Undefined();
 }
 
 /**
@@ -3923,11 +5603,15 @@ static JSVAL matrix_destroy(JSARGS args) {
  * 
  * This function always returns a valid object; if memory cannot be allocated, then a special error object is returned where all operations on the object do nothing. You can check for this with cairo.region_status().
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @return {object} region - opaque handle to a region
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_create(JSARGS args) {
     return External::New(cairo_region_create());
 }
+#endif
 
 /**
  * @function cairo.region_create_rectangle
@@ -3951,9 +5635,12 @@ static JSVAL region_create(JSARGS args) {
  * 
  * This function always returns a valid object; if memory cannot be allocated, then a special error object is returned where all operations on the object do nothing. You can check for this with cairo.region_status().
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} rectangle - object of the above form.
  * @return {object} region - opaque handle to a region
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_create_rectangle(JSARGS args) {
     Local<String>_x = String::New("x");
     Local<String>_y = String::New("y");
@@ -3968,6 +5655,7 @@ static JSVAL region_create_rectangle(JSARGS args) {
     };
     return External::New(cairo_region_create_rectangle(&rect));
 }
+#endif
 
 /**
  * @function cairo.region_create_rectangles
@@ -3991,9 +5679,12 @@ static JSVAL region_create_rectangle(JSARGS args) {
  * 
  * This function always returns a valid object; if memory cannot be allocated, then a special error object is returned where all operations on the object do nothing. You can check for this with cairo.region_status().
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {array} rectangles - array of rectangle objects of the above form.
  * @return {object} region - opaque handle to a region
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_create_rectangles(JSARGS args) {
     Handle<Array>rectangles = Handle<Array>::Cast(args[0]->ToObject());
     int numRectangles = rectangles->Length();
@@ -4016,6 +5707,7 @@ static JSVAL region_create_rectangles(JSARGS args) {
     return External::New(region);
     
 }
+#endif
 
 /**
  * @function cairo.region_copy
@@ -4032,14 +5724,17 @@ static JSVAL region_create_rectangles(JSARGS args) {
  * 
  * This function always returns a valid object; if memory cannot be allocated, then a special error object is returned where all operations on the object do nothing. You can check for this with cairo.region_status().
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} original - opaque handle to a region.
  * @return {object} copy - opaque handle to a copy of the original.
- * 
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_copy(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     return External::New(cairo_region_copy(region));
 }
+#endif
 
 /**
  * @function cairo.region_reference
@@ -4052,14 +5747,17 @@ static JSVAL region_copy(JSARGS args) {
  * 
  * This prevents region from being destroyed until a matching call to cairo.region_destroy() is made.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} region - opaque handle to a region.
  * @return {object} region - opaque handle to the referenced region.
- * 
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_reference(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     return External::New(cairo_region_reference(region));
 }
+#endif
 
 /**
  * @function cairo.region_destroy
@@ -4070,13 +5768,17 @@ static JSVAL region_reference(JSARGS args) {
  * 
  * Destroys a region created with cairo.region_create(), cairo.region_copy(), or cairo.region_create_rectangle(), etc.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} region - opaque handle to a region.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_destroy(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_region_destroy(region);
     return Undefined();
 }
+#endif
 
 /**
  * @function cairo.region_status
@@ -4087,13 +5789,17 @@ static JSVAL region_destroy(JSARGS args) {
  * 
  * Checks whether an error has previously occurred for this region object.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} region - opaque handle to a region.
  * @return {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_status(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     return Integer::New(cairo_region_status(region));
 }
+#endif
 
 /**
  * @function cairo.region_get_extents
@@ -4111,9 +5817,12 @@ static JSVAL region_status(JSARGS args) {
  * + width: width of resulting extents.
  * + height: height of resulting extents.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} region - opaque handle to a region.
  * @return {object} extents - see object description above.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_get_extents(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_rectangle_int_t rect;
@@ -4125,8 +5834,8 @@ static JSVAL region_get_extents(JSARGS args) {
     o->Set(String::New("width"), Number::New(rect.width));
     o->Set(String::New("height"), Number::New(rect.height));
     return o;
-    
 }
+#endif
 
 /**
  * @function cairo.region_num_rectangles
@@ -4137,13 +5846,17 @@ static JSVAL region_get_extents(JSARGS args) {
  * 
  * Get the number of rectangles contained in region.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} region - opaque handle to a region.
  * @return {int} num - number of rectangles contained in region.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_num_rectangles(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     return Integer::New(cairo_region_num_rectangles(region));
 }
+#endif
 
 /**
  * @function cairo.region_get_rectangle
@@ -4161,9 +5874,12 @@ static JSVAL region_num_rectangles(JSARGS args) {
  * + width: width of resulting extents.
  * + height: height of resulting extents.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} region - opaque handle to a region.
  * @return {object} rectangle - see object description above.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_get_rectangle(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     int nth = args[1]->IntegerValue();
@@ -4177,6 +5893,7 @@ static JSVAL region_get_rectangle(JSARGS args) {
     o->Set(String::New("height"), Number::New(rect.height));
     return o;
 }
+#endif
 
 /**
  * @function cairo.region_is_empty
@@ -4187,13 +5904,17 @@ static JSVAL region_get_rectangle(JSARGS args) {
  * 
  * Determine if a region is empty.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} region - opaque handle to a region.
  * @return {boolean} is_empty - true if region is empty, false if not.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_is_empty(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     return cairo_region_is_empty(region) ? True() : False();
 }
+#endif
 
 /**
  * @function cairo.region_contains_poinrt
@@ -4204,15 +5925,19 @@ static JSVAL region_is_empty(JSARGS args) {
  * 
  * Determine if the region contains the specified point (x,y).
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} region - opaque handle to a region.
  * @param {int} x - x coordinate of the point.
  * @param {int} y - y coordinate of the point.
  * @return {boolean} is_empty - true if region is empty, false if not.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_contains_point(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     return cairo_region_contains_point(region, args[1]->IntegerValue(), args[1]->IntegerValue()) ? True() : False();
 }
+#endif
 
 /**
  * @function cairo.region_contains_rectangle
@@ -4236,10 +5961,13 @@ static JSVAL region_contains_point(JSARGS args) {
  * cairo.REGION_OVERLAP_OUT - rectangle is completely outside region.
  * cairo.REGION_OVERLAP_PART - rectiangle is partially inside and partially outside region.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} region - opaque handle to a region
  * @param {object} rectangle - object of the above form.
  * @return {int} overlap - one of the above values.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_contains_rectangle(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     Local<String>_x = String::New("x");
@@ -4255,6 +5983,7 @@ static JSVAL region_contains_rectangle(JSARGS args) {
     };
     return Integer::New(cairo_region_contains_rectangle(region, &rect));
 }
+#endif
 
 /**
  * @function cairo.region_equal
@@ -4265,15 +5994,19 @@ static JSVAL region_contains_rectangle(JSARGS args) {
  * 
  * Determine wither two regions are equivalent.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} a - opaque handle to a region.
  * @param {object} b - opaque handle to a region.
  * @return {boolean} is_equal - true if both regions contain the same coverage, false if not.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_equal(JSARGS args) {
     cairo_region_t *a = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_region_t *b = (cairo_region_t *) JSEXTERN(args[1]);
     return cairo_region_equal(a, b) ? True() : False();
 }
+#endif
 
 /**
  * @function cairo.region_translate
@@ -4284,15 +6017,19 @@ static JSVAL region_equal(JSARGS args) {
  * 
  * Translate region by (dx,dy).
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} region - opaque handle to a region
  * @param {int} dx - amount to translate in the x direction.
  * @param {int} dy - amount to translate in the y direction.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_translate(JSARGS args) {
     cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_region_translate(region, args[1]->IntegerValue(), args[2]->IntegerValue());
     return Undefined();
 }
+#endif
 
 /**
  * @function cairo.region_intersect
@@ -4303,15 +6040,19 @@ static JSVAL region_translate(JSARGS args) {
  * 
  * Computes the intersection of dst with other and places the result in dst.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} other - opaque handle to a region.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_intersect(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
     return Integer::New(cairo_region_intersect(dst, other));
 }
+#endif
 
 /**
  * @function cairo.region_intersect_rectangle
@@ -4329,10 +6070,13 @@ static JSVAL region_intersect(JSARGS args) {
  * + {int} width - width of rectangle.
  * + {int} height - height of rectangle.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} rectangle - object of the above form.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_intersect_rectangle(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     Local<String>_x = String::New("x");
@@ -4348,6 +6092,7 @@ static JSVAL region_intersect_rectangle(JSARGS args) {
     };
     return Integer::New(cairo_region_intersect_rectangle(dst, &rect));
 }
+#endif
 
 /**
  * @function cairo.region_subtract
@@ -4358,15 +6103,19 @@ static JSVAL region_intersect_rectangle(JSARGS args) {
  * 
  * Subtracts other from dst and places the result in dst.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} other - opaque handle to a region.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_subtract(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
     return Integer::New(cairo_region_subtract(dst, other));
 }
+#endif
 
 /**
  * @function cairo.region_subtract_rectangle
@@ -4384,10 +6133,13 @@ static JSVAL region_subtract(JSARGS args) {
  * + {int} width - width of rectangle.
  * + {int} height - height of rectangle.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} rectangle - object of the above form.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_subtract_rectangle(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     Local<String>_x = String::New("x");
@@ -4403,6 +6155,7 @@ static JSVAL region_subtract_rectangle(JSARGS args) {
     };
     return Integer::New(cairo_region_subtract_rectangle(dst, &rect));
 }
+#endif
 
 /**
  * @function cairo.region_union
@@ -4413,15 +6166,19 @@ static JSVAL region_subtract_rectangle(JSARGS args) {
  * 
  * Computes the union of dst with other and places the result in dst.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} other - opaque handle to a region.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_union(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
     return Integer::New(cairo_region_union(dst, other));
 }
+#endif
 
 /**
  * @function cairo.region_union_rectangle
@@ -4439,10 +6196,13 @@ static JSVAL region_union(JSARGS args) {
  * + {int} width - width of rectangle.
  * + {int} height - height of rectangle.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} rectangle - object of the above form.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_union_rectangle(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     Local<String>_x = String::New("x");
@@ -4458,6 +6218,7 @@ static JSVAL region_union_rectangle(JSARGS args) {
     };
     return Integer::New(cairo_region_union_rectangle(dst, &rect));
 }
+#endif
 
 /**
  * @function cairo.region_xor
@@ -4470,15 +6231,19 @@ static JSVAL region_union_rectangle(JSARGS args) {
  * 
  * That is, dst will be set to contain all areas that are either in dst or in other, but not in both.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} other - opaque handle to a region.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_xor(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
     return Integer::New(cairo_region_xor(dst, other));
 }
+#endif
 
 /**
  * @function cairo.region_xor_rectangle
@@ -4498,10 +6263,13 @@ static JSVAL region_xor(JSARGS args) {
  * + {int} width - width of rectangle.
  * + {int} height - height of rectangle.
  * 
+ * AVAILABLE IN CAIRO 1.10 OR NEWER
+ * 
  * @param {object} dst - opaque handle to a region.
  * @param {object} rectangle - object of the above form.
  * @param {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
+#if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_xor_rectangle(JSARGS args) {
     cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
     Local<String>_x = String::New("x");
@@ -4517,6 +6285,7 @@ static JSVAL region_xor_rectangle(JSARGS args) {
     };
     return Integer::New(cairo_region_xor_rectangle(dst, &rect));
 }
+#endif
 
 
 //\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\///\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//\\//
@@ -4530,7 +6299,9 @@ static JSVAL region_xor_rectangle(JSARGS args) {
 void init_cairo_object () {
     Handle<ObjectTemplate>cairo = ObjectTemplate::New();
 
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("FORMAT_INVALID"), Integer::New(CAIRO_FORMAT_INVALID));
+#endif
     cairo->Set(String::New("FORMAT_ARGB32"), Integer::New(CAIRO_FORMAT_ARGB32));
     cairo->Set(String::New("FORMAT_RGB24"), Integer::New(CAIRO_FORMAT_RGB24));
     cairo->Set(String::New("FORMAT_A8"), Integer::New(CAIRO_FORMAT_A8));
@@ -4569,11 +6340,12 @@ void init_cairo_object () {
     cairo->Set(String::New("STATUS_INVALID_CLUSTERS"), Integer::New(CAIRO_STATUS_INVALID_CLUSTERS));
     cairo->Set(String::New("STATUS_INVALID_SLANT"), Integer::New(CAIRO_STATUS_INVALID_SLANT));
     cairo->Set(String::New("STATUS_INVALID_WEIGHT"), Integer::New(CAIRO_STATUS_INVALID_WEIGHT));
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("STATUS_INVALID_SIZE"), Integer::New(CAIRO_STATUS_INVALID_SIZE));
     cairo->Set(String::New("STATUS_USER_FONT_NOT_IMPLEMENTED"), Integer::New(CAIRO_STATUS_USER_FONT_NOT_IMPLEMENTED));
     cairo->Set(String::New("STATUS_DEVICE_TYPE_MISMATCH"), Integer::New(CAIRO_STATUS_DEVICE_TYPE_MISMATCH));
     cairo->Set(String::New("STATUS_DEVICE_ERROR"), Integer::New(CAIRO_STATUS_DEVICE_ERROR));
-
+#endif
     cairo->Set(String::New("CONTENT_COLOR"), Integer::New(CAIRO_CONTENT_COLOR));
     cairo->Set(String::New("CONTENT_ALPHA"), Integer::New(CAIRO_CONTENT_ALPHA));
     cairo->Set(String::New("CONTENT_COLOR_ALPHA"), Integer::New(CAIRO_CONTENT_COLOR_ALPHA));
@@ -4592,6 +6364,7 @@ void init_cairo_object () {
     cairo->Set(String::New("SURFACE_TYPE_OS2"), Integer::New(CAIRO_SURFACE_TYPE_OS2));
     cairo->Set(String::New("SURFACE_TYPE_WIN32_PRINTING"), Integer::New(CAIRO_SURFACE_TYPE_WIN32_PRINTING));
     cairo->Set(String::New("SURFACE_TYPE_QUARTZ_IMAGE"), Integer::New(CAIRO_SURFACE_TYPE_QUARTZ_IMAGE));
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("SURFACE_TYPE_SCRIPT"), Integer::New(CAIRO_SURFACE_TYPE_SCRIPT));
     cairo->Set(String::New("SURFACE_TYPE_QT"), Integer::New(CAIRO_SURFACE_TYPE_QT));
     cairo->Set(String::New("SURFACE_TYPE_RECORDING"), Integer::New(CAIRO_SURFACE_TYPE_RECORDING));
@@ -4602,17 +6375,41 @@ void init_cairo_object () {
     cairo->Set(String::New("SURFACE_TYPE_XML"), Integer::New(CAIRO_SURFACE_TYPE_XML));
     cairo->Set(String::New("SURFACE_TYPE_SKIA"), Integer::New(CAIRO_SURFACE_TYPE_SKIA));
     cairo->Set(String::New("SURFACE_TYPE_SUBSURFACE"), Integer::New(CAIRO_SURFACE_TYPE_SUBSURFACE));
-
+#endif
+    
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("MIME_TYPE_JPEG"), String::New(CAIRO_MIME_TYPE_JPEG));
     cairo->Set(String::New("MIME_TYPE_PNG"), String::New(CAIRO_MIME_TYPE_PNG));
     cairo->Set(String::New("MIME_TYPE_JP2"), String::New(CAIRO_MIME_TYPE_JP2));
     cairo->Set(String::New("MIME_TYPE_URI"), String::New(CAIRO_MIME_TYPE_URI));
-
+#endif
+    
     cairo->Set(String::New("ANTIALIAS_DEFAULT"), Integer::New(CAIRO_ANTIALIAS_DEFAULT));
     cairo->Set(String::New("ANTIALIAS_NONE"), Integer::New(CAIRO_ANTIALIAS_NONE));
     cairo->Set(String::New("ANTIALIAS_GRAY"), Integer::New(CAIRO_ANTIALIAS_GRAY));
     cairo->Set(String::New("ANTIALIAS_SUBPIXEL"), Integer::New(CAIRO_ANTIALIAS_SUBPIXEL));
-
+#if CAIRO_VERSION_MINOR >= 12
+    cairo->Set(String::New("ANTIALIAS_FAST"), Integer::New(CAIRO_ANTIALIAS_FAST));
+    cairo->Set(String::New("ANTIALIAS_GOOD"), Integer::New(CAIRO_ANTIALIAS_GOOD));
+    cairo->Set(String::New("ANTIALIAS_BEST"), Integer::New(CAIRO_ANTIALIAS_BEST));
+#endif
+    
+    cairo->Set(String::New("SUBPIXEL_ORDER_DEFAULT"), Integer::New(CAIRO_SUBPIXEL_ORDER_DEFAULT));
+    cairo->Set(String::New("SUBPIXEL_ORDER_RGB"), Integer::New(CAIRO_SUBPIXEL_ORDER_RGB));
+    cairo->Set(String::New("SUBPIXEL_ORDER_BGR"), Integer::New(CAIRO_SUBPIXEL_ORDER_BGR));
+    cairo->Set(String::New("SUBPIXEL_ORDER_VRGB"), Integer::New(CAIRO_SUBPIXEL_ORDER_VRGB));
+    cairo->Set(String::New("SUBPIXEL_ORDER_VBGR"), Integer::New(CAIRO_SUBPIXEL_ORDER_VBGR));
+    
+    cairo->Set(String::New("HINT_STYLE_DEFAULT"), Integer::New(CAIRO_HINT_STYLE_DEFAULT));
+    cairo->Set(String::New("HINT_STYLE_NONE"), Integer::New(CAIRO_HINT_STYLE_NONE));
+    cairo->Set(String::New("HINT_STYLE_SLIGHT"), Integer::New(CAIRO_HINT_STYLE_SLIGHT));
+    cairo->Set(String::New("HINT_STYLE_MEDIUM"), Integer::New(CAIRO_HINT_STYLE_MEDIUM));
+    cairo->Set(String::New("HINT_STYLE_FULL"), Integer::New(CAIRO_HINT_STYLE_FULL));
+    
+    cairo->Set(String::New("HINT_METRICS_DEFAULT"), Integer::New(CAIRO_HINT_METRICS_DEFAULT));
+    cairo->Set(String::New("HINT_METRICS_OFF"), Integer::New(CAIRO_HINT_METRICS_OFF));
+    cairo->Set(String::New("HINT_METRICS_ON"), Integer::New(CAIRO_HINT_METRICS_ON));
+    
     cairo->Set(String::New("LINE_CAP_BUTT"), Integer::New(CAIRO_LINE_CAP_BUTT));
     cairo->Set(String::New("LINE_CAP_ROUND"), Integer::New(CAIRO_LINE_CAP_ROUND));
     cairo->Set(String::New("LINE_CAP_SQUARE"), Integer::New(CAIRO_LINE_CAP_SQUARE));
@@ -4638,6 +6435,7 @@ void init_cairo_object () {
     cairo->Set(String::New("OPERATOR_XOR"), Integer::New(CAIRO_OPERATOR_XOR));
     cairo->Set(String::New("OPERATOR_ADD"), Integer::New(CAIRO_OPERATOR_ADD));
     cairo->Set(String::New("OPERATOR_SATURATE"), Integer::New(CAIRO_OPERATOR_SATURATE));
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("OPERATOR_MULTIPLY"), Integer::New(CAIRO_OPERATOR_MULTIPLY));
     cairo->Set(String::New("OPERATOR_SCREEN"), Integer::New(CAIRO_OPERATOR_SCREEN));
     cairo->Set(String::New("OPERATOR_OVERLAY"), Integer::New(CAIRO_OPERATOR_OVERLAY));
@@ -4653,7 +6451,7 @@ void init_cairo_object () {
     cairo->Set(String::New("OPERATOR_HSL_SATURATION"), Integer::New(CAIRO_OPERATOR_HSL_SATURATION));
     cairo->Set(String::New("OPERATOR_HSL_COLOR"), Integer::New(CAIRO_OPERATOR_HSL_COLOR));
     cairo->Set(String::New("OPERATOR_HSL_LUMINOSITY"), Integer::New(CAIRO_OPERATOR_HSL_LUMINOSITY));
-
+#endif
     cairo->Set(String::New("EXTEND_NONE"), Integer::New(CAIRO_EXTEND_NONE));
     cairo->Set(String::New("EXTEND_REPEAT"), Integer::New(CAIRO_EXTEND_REPEAT));
     cairo->Set(String::New("EXTEND_REFLECT"), Integer::New(CAIRO_EXTEND_REFLECT));
@@ -4672,13 +6470,268 @@ void init_cairo_object () {
     cairo->Set(String::New("PATTERN_TYPE_RADIAL"), Integer::New(CAIRO_PATTERN_TYPE_RADIAL));
     
     
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("REGION_OVERLAP_IN"), Integer::New(CAIRO_REGION_OVERLAP_IN));
     cairo->Set(String::New("REGION_OVERLAP_OUT"), Integer::New(CAIRO_REGION_OVERLAP_OUT));
     cairo->Set(String::New("REGION_OVERLAP_PART"), Integer::New(CAIRO_REGION_OVERLAP_PART));
+#endif
     
+    cairo->Set(String::New("FONT_SLANT_NORMAL"), Integer::New(CAIRO_FONT_SLANT_NORMAL));
+    cairo->Set(String::New("FONT_SLANT_ITALIC"), Integer::New(CAIRO_FONT_SLANT_ITALIC));
+    cairo->Set(String::New("FONT_SLANT_OBLIQUE"), Integer::New(CAIRO_FONT_SLANT_OBLIQUE));
     
+    cairo->Set(String::New("FONT_WEIGHT_NORMAL"), Integer::New(CAIRO_FONT_WEIGHT_NORMAL));
+    cairo->Set(String::New("FONT_WEIGHT_BOLD"), Integer::New(CAIRO_FONT_WEIGHT_BOLD));
+
+    cairo->Set(String::New("TEXT_CLUSTER_FLAG_BACKWARD"), Integer::New(CAIRO_TEXT_CLUSTER_FLAG_BACKWARD));
+    
+#if CAIRO_VERSION_MINOR >= 2
+    cairo->Set(String::New("FONT_TYPE_TOY"), Integer::New(CAIRO_FONT_TYPE_TOY));
+    cairo->Set(String::New("FONT_TYPE_FT"), Integer::New(CAIRO_FONT_TYPE_FT));
+    cairo->Set(String::New("FONT_TYPE_WIN32"), Integer::New(CAIRO_FONT_TYPE_WIN32));
+#endif
+    
+#if CAIRO_VERSION_MINOR >= 6
+    cairo->Set(String::New("FONT_TYPE_QUARTZ"), Integer::New(CAIRO_FONT_TYPE_QUARTZ));
+    cairo->Set(String::New("FONT_TYPE_ATSUI"), Integer::New(CAIRO_FONT_TYPE_QUARTZ));
+#else
+#if CAIRO_VERSION_MINOR >= 2
+    cairo->Set(String::New("FONT_TYPE_QUARTZ"), Integer::New(CAIRO_FONT_TYPE_ATSUI));
+    cairo->Set(String::New("FONT_TYPE_ATSUI"), Integer::New(CAIRO_FONT_TYPE_ATSUI));
+#endif
+#endif
+#if CAIRO_VERSION_MINOR >= 8
+    cairo->Set(String::New("FONT_TYPE_USER"), Integer::New(CAIRO_FONT_TYPE_USER));
+#endif    
     
 //    net->Set(String::New("sendFile"), FunctionTemplate::New(net_sendfile));
 
+    cairo->Set(String::New("status_to_string"), FunctionTemplate::New(status_to_string));
+    cairo->Set(String::New("surface_create_similar"), FunctionTemplate::New(surface_create_similar));
+    cairo->Set(String::New("surface_reference"), FunctionTemplate::New(surface_reference));
+    cairo->Set(String::New("surface_status"), FunctionTemplate::New(surface_status));
+    cairo->Set(String::New("surface_destroy"), FunctionTemplate::New(surface_destroy));
+    cairo->Set(String::New("surface_finish"), FunctionTemplate::New(surface_finish));
+    cairo->Set(String::New("surface_flush"), FunctionTemplate::New(surface_flush));
+    cairo->Set(String::New("surface_get_device"), FunctionTemplate::New(surface_get_device));
+    cairo->Set(String::New("surface_get_font_options"), FunctionTemplate::New(surface_get_font_options));
+    cairo->Set(String::New("surface_get_content"), FunctionTemplate::New(surface_get_content));
+    cairo->Set(String::New("surface_mark_dirty"), FunctionTemplate::New(surface_mark_dirty));
+    cairo->Set(String::New("surface_mark_dirty_rectangle"), FunctionTemplate::New(surface_mark_dirty_rectangle));
+    cairo->Set(String::New("surface_set_device_offset"), FunctionTemplate::New(surface_set_device_offset));
+    cairo->Set(String::New("surface_get_device_offset"), FunctionTemplate::New(surface_get_device_offset));
+    cairo->Set(String::New("surface_set_fallback_resolution"), FunctionTemplate::New(surface_set_fallback_resolution));
+    cairo->Set(String::New("surface_get_fallback_resolution"), FunctionTemplate::New(surface_get_fallback_resolution));
+    cairo->Set(String::New("surface_get_type"), FunctionTemplate::New(surface_get_type));
+    cairo->Set(String::New("surface_get_reference_count"), FunctionTemplate::New(surface_get_reference_count));
+    cairo->Set(String::New("surface_copy_page"), FunctionTemplate::New(surface_copy_page));
+    cairo->Set(String::New("surface_show_page"), FunctionTemplate::New(surface_show_page));
+    cairo->Set(String::New("surface_has_show_text_glyphs"), FunctionTemplate::New(surface_has_show_text_glyphs));
+    cairo->Set(String::New("image_surface_create"), FunctionTemplate::New(image_surface_create));
+    cairo->Set(String::New("image_surface_get_format"), FunctionTemplate::New(image_surface_get_format));
+    cairo->Set(String::New("image_surface_get_width"), FunctionTemplate::New(image_surface_get_width));
+    cairo->Set(String::New("image_surface_get_height"), FunctionTemplate::New(image_surface_get_height));
+    cairo->Set(String::New("context_create"), FunctionTemplate::New(context_create));
+    cairo->Set(String::New("context_reference"), FunctionTemplate::New(context_reference));
+    cairo->Set(String::New("context_get_reference_count"), FunctionTemplate::New(context_get_reference_count));
+    cairo->Set(String::New("context_destroy"), FunctionTemplate::New(context_destroy));
+    cairo->Set(String::New("context_status"), FunctionTemplate::New(context_status));
+    cairo->Set(String::New("context_save"), FunctionTemplate::New(context_save));
+    cairo->Set(String::New("context_restore"), FunctionTemplate::New(context_restore));
+    cairo->Set(String::New("context_get_target"), FunctionTemplate::New(context_get_target));
+    cairo->Set(String::New("context_push_group"), FunctionTemplate::New(context_push_group));
+    cairo->Set(String::New("context_push_group_with_content"), FunctionTemplate::New(context_push_group_with_content));
+    cairo->Set(String::New("context_pop_group"), FunctionTemplate::New(context_pop_group));
+    cairo->Set(String::New("context_pop_group_to_source"), FunctionTemplate::New(context_pop_group_to_source));
+    cairo->Set(String::New("context_get_group_target"), FunctionTemplate::New(context_get_group_target));
+    cairo->Set(String::New("context_set_source_rgb"), FunctionTemplate::New(context_set_source_rgb));
+    cairo->Set(String::New("context_set_source_rgba"), FunctionTemplate::New(context_set_source_rgba));
+    cairo->Set(String::New("context_set_source"), FunctionTemplate::New(context_set_source));
+    cairo->Set(String::New("context_set_source_surface"), FunctionTemplate::New(context_set_source_surface));
+    cairo->Set(String::New("context_get_source"), FunctionTemplate::New(context_get_source));
+    cairo->Set(String::New("context_set_antialias"), FunctionTemplate::New(context_set_antialias));
+    cairo->Set(String::New("context_get_antialias"), FunctionTemplate::New(context_get_antialias));
+    cairo->Set(String::New("context_set_dash"), FunctionTemplate::New(context_set_dash));
+    cairo->Set(String::New("context_get_dash_count"), FunctionTemplate::New(context_get_dash_count));
+    cairo->Set(String::New("context_get_dash"), FunctionTemplate::New(context_get_dash));
+    cairo->Set(String::New("context_set_fill_rule"), FunctionTemplate::New(context_set_fill_rule));
+    cairo->Set(String::New("context_get_fill_rule"), FunctionTemplate::New(context_get_fill_rule));
+    cairo->Set(String::New("context_set_line_cap"), FunctionTemplate::New(context_set_line_cap));
+    cairo->Set(String::New("context_get_line_cap"), FunctionTemplate::New(context_get_line_cap));
+    cairo->Set(String::New("context_set_line_join"), FunctionTemplate::New(context_set_line_join));
+    cairo->Set(String::New("context_get_line_join"), FunctionTemplate::New(context_get_line_join));
+    cairo->Set(String::New("context_set_line_width"), FunctionTemplate::New(context_set_line_width));
+    cairo->Set(String::New("context_get_line_width"), FunctionTemplate::New(context_get_line_width));
+    cairo->Set(String::New("context_set_miter_limit"), FunctionTemplate::New(context_set_miter_limit));
+    cairo->Set(String::New("context_get_miter_limit"), FunctionTemplate::New(context_get_miter_limit));
+    cairo->Set(String::New("context_set_operator"), FunctionTemplate::New(context_set_operator));
+    cairo->Set(String::New("context_get_operator"), FunctionTemplate::New(context_get_operator));
+    cairo->Set(String::New("context_set_tolerance"), FunctionTemplate::New(context_set_tolerance));
+    cairo->Set(String::New("context_get_tolerance"), FunctionTemplate::New(context_get_tolerance));
+    cairo->Set(String::New("context_clip"), FunctionTemplate::New(context_clip));
+    cairo->Set(String::New("context_clip_preserve"), FunctionTemplate::New(context_clip_preserve));
+    cairo->Set(String::New("context_clip_extents"), FunctionTemplate::New(context_clip_extents));
+    cairo->Set(String::New("context_in_clip"), FunctionTemplate::New(context_in_clip));
+    cairo->Set(String::New("context_reset_clip"), FunctionTemplate::New(context_reset_clip));
+    cairo->Set(String::New("context_fill"), FunctionTemplate::New(context_fill));
+    cairo->Set(String::New("context_fill_preserve"), FunctionTemplate::New(context_fill_preserve));
+    cairo->Set(String::New("context_fill_extents"), FunctionTemplate::New(context_fill_extents));
+    cairo->Set(String::New("context_in_fill"), FunctionTemplate::New(context_in_fill));
+    cairo->Set(String::New("context_mask"), FunctionTemplate::New(context_mask));
+    cairo->Set(String::New("context_mask_surface"), FunctionTemplate::New(context_mask_surface));
+    cairo->Set(String::New("context_paint"), FunctionTemplate::New(context_paint));
+    cairo->Set(String::New("context_paint_with_alpha"), FunctionTemplate::New(context_paint_with_alpha));
+    cairo->Set(String::New("context_stroke"), FunctionTemplate::New(context_stroke));
+    cairo->Set(String::New("context_stroke_preserve"), FunctionTemplate::New(context_stroke_preserve));
+    cairo->Set(String::New("context_stroke_extents"), FunctionTemplate::New(context_stroke_extents));
+    cairo->Set(String::New("context_in_stroke"), FunctionTemplate::New(context_in_stroke));
+    cairo->Set(String::New("context_copy_page"), FunctionTemplate::New(context_copy_page));
+    cairo->Set(String::New("context_show_page"), FunctionTemplate::New(context_show_page));
+    cairo->Set(String::New("context_translate"), FunctionTemplate::New(context_translate));
+    cairo->Set(String::New("context_scale"), FunctionTemplate::New(context_scale));
+    cairo->Set(String::New("context_rotate"), FunctionTemplate::New(context_rotate));
+    cairo->Set(String::New("context_transform"), FunctionTemplate::New(context_transform));
+    cairo->Set(String::New("context_set_matrix"), FunctionTemplate::New(context_set_matrix));
+    cairo->Set(String::New("context_get_matrix"), FunctionTemplate::New(context_get_matrix));
+    cairo->Set(String::New("context_identity_matrix"), FunctionTemplate::New(context_identity_matrix));
+    cairo->Set(String::New("context_user_to_device"), FunctionTemplate::New(context_user_to_device));
+    cairo->Set(String::New("context_user_to_device_distance"), FunctionTemplate::New(context_user_to_device_distance));
+    cairo->Set(String::New("context_device_to_user"), FunctionTemplate::New(context_device_to_user));
+    cairo->Set(String::New("context_device_to_user_distance"), FunctionTemplate::New(context_device_to_user_distance));
+    cairo->Set(String::New("context_has_current_point"), FunctionTemplate::New(context_has_current_point));
+    cairo->Set(String::New("context_get_current_point"), FunctionTemplate::New(context_get_current_point));
+    cairo->Set(String::New("context_new_path"), FunctionTemplate::New(context_new_path));
+    cairo->Set(String::New("context_new_sub_path"), FunctionTemplate::New(context_new_sub_path));
+    cairo->Set(String::New("context_close_path"), FunctionTemplate::New(context_close_path));
+    cairo->Set(String::New("context_arc"), FunctionTemplate::New(context_arc));
+    cairo->Set(String::New("context_arc_negative"), FunctionTemplate::New(context_arc_negative));
+    cairo->Set(String::New("context_curve_to"), FunctionTemplate::New(context_curve_to));
+    cairo->Set(String::New("context_line_to"), FunctionTemplate::New(context_line_to));
+    cairo->Set(String::New("context_move_to"), FunctionTemplate::New(context_move_to));
+    cairo->Set(String::New("context_rectangle"), FunctionTemplate::New(context_rectangle));
+    cairo->Set(String::New("context_glyph_path"), FunctionTemplate::New(context_glyph_path));
+    cairo->Set(String::New("context_text_path"), FunctionTemplate::New(context_text_path));
+    cairo->Set(String::New("context_rel_curve_to"), FunctionTemplate::New(context_rel_curve_to));
+    cairo->Set(String::New("context_rel_line_to"), FunctionTemplate::New(context_rel_line_to));
+    cairo->Set(String::New("context_rel_move_to"), FunctionTemplate::New(context_rel_move_to));
+    cairo->Set(String::New("context_path_extents"), FunctionTemplate::New(context_path_extents));
+    cairo->Set(String::New("context_select_font_face"), FunctionTemplate::New(context_select_font_face));
+    cairo->Set(String::New("context_set_font_size"), FunctionTemplate::New(context_set_font_size));
+    cairo->Set(String::New("context_set_font_matrix"), FunctionTemplate::New(context_set_font_matrix));
+    cairo->Set(String::New("context_get_font_matrix"), FunctionTemplate::New(context_get_font_matrix));
+    cairo->Set(String::New("context_set_font_options"), FunctionTemplate::New(context_set_font_options));
+    cairo->Set(String::New("context_get_font_options"), FunctionTemplate::New(context_get_font_options));
+    cairo->Set(String::New("context_set_font_face"), FunctionTemplate::New(context_set_font_face));
+    cairo->Set(String::New("context_get_font_face"), FunctionTemplate::New(context_get_font_face));
+    cairo->Set(String::New("context_set_scaled_font"), FunctionTemplate::New(context_set_scaled_font));
+    cairo->Set(String::New("context_get_scaled_font"), FunctionTemplate::New(context_get_scaled_font));
+    cairo->Set(String::New("context_show_text"), FunctionTemplate::New(context_show_text));
+    cairo->Set(String::New("context_show_glyphs"), FunctionTemplate::New(context_show_glyphs));
+    cairo->Set(String::New("context_show_text_glyphs"), FunctionTemplate::New(context_show_text_glyphs));
+    cairo->Set(String::New("context_font_extents"), FunctionTemplate::New(context_font_extents));
+    cairo->Set(String::New("context_text_extents"), FunctionTemplate::New(context_text_extents));
+    cairo->Set(String::New("context_glyph_extents"), FunctionTemplate::New(context_glyph_extents));
+    cairo->Set(String::New("toy_font_face_create"), FunctionTemplate::New(toy_font_face_create));
+    cairo->Set(String::New("toy_font_face_get_family"), FunctionTemplate::New(toy_font_face_get_family));
+    cairo->Set(String::New("toy_font_face_get_slant"), FunctionTemplate::New(toy_font_face_get_slant));
+    cairo->Set(String::New("toy_font_face_get_weight"), FunctionTemplate::New(toy_font_face_get_weight));
+    cairo->Set(String::New("font_face_reference"), FunctionTemplate::New(font_face_reference));
+    cairo->Set(String::New("font_face_destroy"), FunctionTemplate::New(font_face_destroy));
+    cairo->Set(String::New("font_face_status"), FunctionTemplate::New(font_face_status));
+    cairo->Set(String::New("font_face_get_type"), FunctionTemplate::New(font_face_get_type));
+    cairo->Set(String::New("font_face_get_reference_count"), FunctionTemplate::New(font_face_get_reference_count));
+    cairo->Set(String::New("scaled_font_create"), FunctionTemplate::New(scaled_font_create));
+    cairo->Set(String::New("scaled_font_reference"), FunctionTemplate::New(scaled_font_reference));
+    cairo->Set(String::New("scaled_font_destroy"), FunctionTemplate::New(scaled_font_destroy));
+    cairo->Set(String::New("scaled_font_get_reference_count"), FunctionTemplate::New(scaled_font_get_reference_count));
+    cairo->Set(String::New("scaled_font_status"), FunctionTemplate::New(scaled_font_status));
+    cairo->Set(String::New("scaled_font_extents"), FunctionTemplate::New(scaled_font_extents));
+    cairo->Set(String::New("scaled_font_text_extents"), FunctionTemplate::New(scaled_font_text_extents));
+    cairo->Set(String::New("scaled_font_glyph_extents"), FunctionTemplate::New(scaled_font_glyph_extents));
+    cairo->Set(String::New("scaled_font_get_font_face"), FunctionTemplate::New(scaled_font_get_font_face));
+    cairo->Set(String::New("scaled_font_get_font_options"), FunctionTemplate::New(scaled_font_get_font_options));
+    cairo->Set(String::New("scaled_font_get_font_matrix"), FunctionTemplate::New(scaled_font_get_font_matrix));
+    cairo->Set(String::New("scaled_font_get_ctm"), FunctionTemplate::New(scaled_font_get_ctm));
+    cairo->Set(String::New("scaled_font_get_scale_matrix"), FunctionTemplate::New(scaled_font_get_scale_matrix));
+    cairo->Set(String::New("scaled_font_get_type"), FunctionTemplate::New(scaled_font_get_type));
+    cairo->Set(String::New("font_options_create"), FunctionTemplate::New(font_options_create));
+    cairo->Set(String::New("font_options_copy"), FunctionTemplate::New(font_options_copy));
+    cairo->Set(String::New("font_options_destroy"), FunctionTemplate::New(font_options_destroy));
+    cairo->Set(String::New("font_options_status"), FunctionTemplate::New(font_options_status));
+    cairo->Set(String::New("font_options_merge"), FunctionTemplate::New(font_options_merge));
+    cairo->Set(String::New("font_options_hash"), FunctionTemplate::New(font_options_hash));
+    cairo->Set(String::New("font_options_equal"), FunctionTemplate::New(font_options_equal));
+    cairo->Set(String::New("font_options_set_antialias"), FunctionTemplate::New(font_options_set_antialias));
+    cairo->Set(String::New("font_options_get_antialias"), FunctionTemplate::New(font_options_get_antialias));
+    cairo->Set(String::New("font_options_set_subpixel_order"), FunctionTemplate::New(font_options_set_subpixel_order));
+    cairo->Set(String::New("font_options_get_subpixel_order"), FunctionTemplate::New(font_options_get_subpixel_order));
+    cairo->Set(String::New("font_options_set_hint_style"), FunctionTemplate::New(font_options_set_hint_style));
+    cairo->Set(String::New("font_options_get_hint_style"), FunctionTemplate::New(font_options_get_hint_style));
+    cairo->Set(String::New("font_options_set_hint_metrics"), FunctionTemplate::New(font_options_set_hint_metrics));
+    cairo->Set(String::New("font_options_get_hint_metrics"), FunctionTemplate::New(font_options_get_hint_metrics));
+    cairo->Set(String::New("image_surface_create_from_png"), FunctionTemplate::New(image_surface_create_from_png));
+    cairo->Set(String::New("surface_write_to_png"), FunctionTemplate::New(surface_write_to_png));
+    cairo->Set(String::New("pattern_add_color_stop_rgb"), FunctionTemplate::New(pattern_add_color_stop_rgb));
+    cairo->Set(String::New("pattern_add_color_stop_rgba"), FunctionTemplate::New(pattern_add_color_stop_rgba));
+    cairo->Set(String::New("pattern_get_stop_color_count"), FunctionTemplate::New(pattern_get_stop_color_count));
+    cairo->Set(String::New("pattern_get_color_stop_rgba"), FunctionTemplate::New(pattern_get_color_stop_rgba));
+    cairo->Set(String::New("pattern_create_rgb"), FunctionTemplate::New(pattern_create_rgb));
+    cairo->Set(String::New("pattern_create_rgba"), FunctionTemplate::New(pattern_create_rgba));
+    cairo->Set(String::New("pattern_get_rgba"), FunctionTemplate::New(pattern_get_rgba));
+    cairo->Set(String::New("pattern_create_for_surface"), FunctionTemplate::New(pattern_create_for_surface));
+    cairo->Set(String::New("pattern_get_surface"), FunctionTemplate::New(pattern_get_surface));
+    cairo->Set(String::New("pattern_create_linear"), FunctionTemplate::New(pattern_create_linear));
+    cairo->Set(String::New("pattern_get_linear_points"), FunctionTemplate::New(pattern_get_linear_points));
+    cairo->Set(String::New("pattern_create_radial"), FunctionTemplate::New(pattern_create_radial));
+    cairo->Set(String::New("pattern_get_radial_circles"), FunctionTemplate::New(pattern_get_radial_circles));
+    cairo->Set(String::New("pattern_reference"), FunctionTemplate::New(pattern_reference));
+    cairo->Set(String::New("pattern_status"), FunctionTemplate::New(pattern_status));
+    cairo->Set(String::New("pattern_set_extend"), FunctionTemplate::New(pattern_set_extend));
+    cairo->Set(String::New("pattern_get_extend"), FunctionTemplate::New(pattern_get_extend));
+    cairo->Set(String::New("pattern_set_filter"), FunctionTemplate::New(pattern_set_filter));
+    cairo->Set(String::New("pattern_get_filter"), FunctionTemplate::New(pattern_get_filter));
+    cairo->Set(String::New("pattern_set_matrix"), FunctionTemplate::New(pattern_set_matrix));
+    cairo->Set(String::New("pattern_get_matrix"), FunctionTemplate::New(pattern_get_matrix));
+    cairo->Set(String::New("pattern_get_type"), FunctionTemplate::New(pattern_get_type));
+    cairo->Set(String::New("pattern_get_reference_count"), FunctionTemplate::New(pattern_get_reference_count));
+    cairo->Set(String::New("matrix_create"), FunctionTemplate::New(matrix_create));
+    cairo->Set(String::New("matrix_init"), FunctionTemplate::New(matrix_init));
+    cairo->Set(String::New("matrix_clone"), FunctionTemplate::New(matrix_clone));
+    cairo->Set(String::New("matrix_init_identity"), FunctionTemplate::New(matrix_init_identity));
+    cairo->Set(String::New("matrix_init_translate"), FunctionTemplate::New(matrix_init_translate));
+    cairo->Set(String::New("matrix_init_scale"), FunctionTemplate::New(matrix_init_scale));
+    cairo->Set(String::New("matrix_init_rotate"), FunctionTemplate::New(matrix_init_rotate));
+    cairo->Set(String::New("matrix_translate"), FunctionTemplate::New(matrix_translate));
+    cairo->Set(String::New("matrix_scale"), FunctionTemplate::New(matrix_scale));
+    cairo->Set(String::New("matrix_rotate"), FunctionTemplate::New(matrix_rotate));
+    cairo->Set(String::New("matrix_invert"), FunctionTemplate::New(matrix_invert));
+    cairo->Set(String::New("matrix_multiply"), FunctionTemplate::New(matrix_multiply));
+    cairo->Set(String::New("matrix_transform_distance"), FunctionTemplate::New(matrix_transform_distance));
+    cairo->Set(String::New("matrix_transform_point"), FunctionTemplate::New(matrix_transform_point));
+    cairo->Set(String::New("matrix_destroy"), FunctionTemplate::New(matrix_destroy));
+    cairo->Set(String::New("region_create"), FunctionTemplate::New(region_create));
+    cairo->Set(String::New("region_create_rectangle"), FunctionTemplate::New(region_create_rectangle));
+    cairo->Set(String::New("region_create_rectangles"), FunctionTemplate::New(region_create_rectangles));
+    cairo->Set(String::New("region_copy"), FunctionTemplate::New(region_copy));
+    cairo->Set(String::New("region_reference"), FunctionTemplate::New(region_reference));
+    cairo->Set(String::New("region_destroy"), FunctionTemplate::New(region_destroy));
+    cairo->Set(String::New("region_status"), FunctionTemplate::New(region_status));
+    cairo->Set(String::New("region_get_extents"), FunctionTemplate::New(region_get_extents));
+    cairo->Set(String::New("region_num_rectangles"), FunctionTemplate::New(region_num_rectangles));
+    cairo->Set(String::New("region_get_rectangle"), FunctionTemplate::New(region_get_rectangle));
+    cairo->Set(String::New("region_is_empty"), FunctionTemplate::New(region_is_empty));
+    cairo->Set(String::New("region_contains_point"), FunctionTemplate::New(region_contains_point));
+    cairo->Set(String::New("region_contains_rectangle"), FunctionTemplate::New(region_contains_rectangle));
+    cairo->Set(String::New("region_equal"), FunctionTemplate::New(region_equal));
+    cairo->Set(String::New("region_translate"), FunctionTemplate::New(region_translate));
+    cairo->Set(String::New("region_intersect"), FunctionTemplate::New(region_intersect));
+    cairo->Set(String::New("region_intersect_rectangle"), FunctionTemplate::New(region_intersect_rectangle));
+    cairo->Set(String::New("region_subtract"), FunctionTemplate::New(region_subtract));
+    cairo->Set(String::New("region_subtract_rectangle"), FunctionTemplate::New(region_subtract_rectangle));
+    cairo->Set(String::New("region_union"), FunctionTemplate::New(region_union));
+    cairo->Set(String::New("region_union_rectangle"), FunctionTemplate::New(region_union_rectangle));
+    cairo->Set(String::New("region_xor"), FunctionTemplate::New(region_xor));
+    cairo->Set(String::New("region_xor_rectangle"), FunctionTemplate::New(region_xor_rectangle));
+    
     builtinObject->Set(String::New("cairo"), cairo);
 }

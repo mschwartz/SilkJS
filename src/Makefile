@@ -26,7 +26,7 @@ CFLAGS = -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-sections -
 	g++ $(CFLAGS) -c $(INCDIRS) -o $*.o $*.cpp
 
 silkjs: $(V8DIR) $(V8) $(CORE) $(OBJ) SilkJS.h Makefile
-	g++ $(CFLAGS) -o silkjs $(CORE) $(OBJ) $(LIBDIRS) -lv8_base -lv8_snapshot -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lmemcached 
+	g++ $(CFLAGS) -o silkjs $(CORE) $(OBJ) $(LIBDIRS) -lv8_base -lv8_snapshot -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lmemcached -lcairo
 
 	
 debug:	    CFLAGS += -g

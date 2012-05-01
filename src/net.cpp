@@ -114,10 +114,10 @@ static JSVAL net_listen (JSARGS args) {
         backlog = args[1]->IntegerValue();
     }
     int listenAddress = INADDR_ANY;
-    char *listenAddressString = (char *)'0.0.0.0';
+//    char *listenAddressString = (char *)"0.0.0.0";
     if (args.Length() > 2) {
         String::AsciiValue addr(args[2]);
-        listenAddressString = *addr;
+//        listenAddressString = *addr;
         listenAddress = inet_addr(*addr);
     }
     int sock = socket(AF_INET, SOCK_STREAM, 0);

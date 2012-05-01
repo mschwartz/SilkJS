@@ -22,7 +22,7 @@
 //    gotsig = i;
 //}
 
-static bool initialized = false;
+//static bool initialized = false;
 
 static JSVAL editline_gets (JSARGS args) {
     HandleScope scope;
