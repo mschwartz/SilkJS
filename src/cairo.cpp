@@ -2099,7 +2099,7 @@ static JSVAL context_rotate(JSARGS args) {
  * 
  * ### Synopsis
  * 
- * cairo.context_transform(pattern, matrix);
+ * cairo.context_transform(context, matrix);
  * 
  * Modifies the current transformation matrix (CTM) by applying matrix as an additional transformation. 
  * 
