@@ -6513,7 +6513,9 @@ void init_cairo_object () {
     cairo->Set(String::New("surface_destroy"), FunctionTemplate::New(surface_destroy));
     cairo->Set(String::New("surface_finish"), FunctionTemplate::New(surface_finish));
     cairo->Set(String::New("surface_flush"), FunctionTemplate::New(surface_flush));
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("surface_get_device"), FunctionTemplate::New(surface_get_device));
+#endif    
     cairo->Set(String::New("surface_get_font_options"), FunctionTemplate::New(surface_get_font_options));
     cairo->Set(String::New("surface_get_content"), FunctionTemplate::New(surface_get_content));
     cairo->Set(String::New("surface_mark_dirty"), FunctionTemplate::New(surface_mark_dirty));
@@ -6571,7 +6573,9 @@ void init_cairo_object () {
     cairo->Set(String::New("context_clip"), FunctionTemplate::New(context_clip));
     cairo->Set(String::New("context_clip_preserve"), FunctionTemplate::New(context_clip_preserve));
     cairo->Set(String::New("context_clip_extents"), FunctionTemplate::New(context_clip_extents));
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("context_in_clip"), FunctionTemplate::New(context_in_clip));
+#endif
     cairo->Set(String::New("context_reset_clip"), FunctionTemplate::New(context_reset_clip));
     cairo->Set(String::New("context_fill"), FunctionTemplate::New(context_fill));
     cairo->Set(String::New("context_fill_preserve"), FunctionTemplate::New(context_fill_preserve));
@@ -6709,6 +6713,7 @@ void init_cairo_object () {
     cairo->Set(String::New("matrix_transform_distance"), FunctionTemplate::New(matrix_transform_distance));
     cairo->Set(String::New("matrix_transform_point"), FunctionTemplate::New(matrix_transform_point));
     cairo->Set(String::New("matrix_destroy"), FunctionTemplate::New(matrix_destroy));
+#if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("region_create"), FunctionTemplate::New(region_create));
     cairo->Set(String::New("region_create_rectangle"), FunctionTemplate::New(region_create_rectangle));
     cairo->Set(String::New("region_create_rectangles"), FunctionTemplate::New(region_create_rectangles));
@@ -6732,6 +6737,6 @@ void init_cairo_object () {
     cairo->Set(String::New("region_union_rectangle"), FunctionTemplate::New(region_union_rectangle));
     cairo->Set(String::New("region_xor"), FunctionTemplate::New(region_xor));
     cairo->Set(String::New("region_xor_rectangle"), FunctionTemplate::New(region_xor_rectangle));
-    
+#endif    
     builtinObject->Set(String::New("cairo"), cairo);
 }

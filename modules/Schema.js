@@ -7,6 +7,8 @@
 
 "use strict";
 
+/*global SQL */
+
 /**
  * @class
  *
@@ -67,7 +69,7 @@
  *	});
  * </pre>
  */
-Schema = function() {
+var Schema = function() {
 	var phpjs = require('phpjs'),
 		empty = phpjs.empty;
 

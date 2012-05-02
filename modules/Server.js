@@ -29,7 +29,7 @@ var Server = (function() {
     /** @scope Server */
     return {
         /**
-		 * Add a function to be called when Helma first starts.
+		 * Add a function to be called when the server first starts.
 		 *
 		 * @param {mixed} config Config object containing name and func key/values
 		 * @returns {void} nothing
