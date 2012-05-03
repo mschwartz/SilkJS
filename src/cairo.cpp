@@ -6299,6 +6299,8 @@ static JSVAL region_xor_rectangle(JSARGS args) {
 void init_cairo_object () {
     Handle<ObjectTemplate>cairo = ObjectTemplate::New();
 
+    cairo->Set(String::New("VERSION_MINOR"), Integer::New(CAIRO_VERSION_MINOR));
+
 #if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("FORMAT_INVALID"), Integer::New(CAIRO_FORMAT_INVALID));
 #endif
