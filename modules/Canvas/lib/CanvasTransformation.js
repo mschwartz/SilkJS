@@ -1,5 +1,7 @@
 /** @ignore */
 
+"use strict";
+
 function CanvasTransformation(context) {
     this._context = context;
 }
@@ -32,4 +34,6 @@ CanvasTransformation.prototype.extend({
     }
 });
 
-exports = CanvasTransformation;
+exports.extend({
+    CanvasTransformation: CanvasTransformation
+});

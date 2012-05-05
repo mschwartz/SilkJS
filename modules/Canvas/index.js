@@ -2,5 +2,4 @@
 
 // http://www.w3.org/TR/2dcontext/
 
-exports = require('lib/Canvas');
-
+exports.Canvas = require('lib/Canvas').Canvas;

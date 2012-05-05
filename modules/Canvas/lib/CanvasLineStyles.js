@@ -1,5 +1,7 @@
 /** @ignore */
 
+"use strict";
+
 var cairo = require('builtin/cairo');
 
 function CanvasLineStyles(context) {
@@ -71,4 +73,6 @@ CanvasLineStyles.prototype.extend({
     }
 });
 
-exports = CanvasLineStyles;
+exports.extend({
+    CanvasLineStyles: CanvasLineStyles
+});

@@ -1,5 +1,7 @@
 /** @ignore */
 
+"use strict";
+
 function CanvasPathMethods(context) {
     this._context = context;
 }
@@ -46,7 +48,7 @@ CanvasPathMethods.extend({
             return;
         }
         var p1p0 = { x: p0.x - p1.x, y: p0.y - p1.y },
-            p1p2 = { x: p2.x - p1.x, y: p2.y - p1.y }
+            p1p2 = { x: p2.x - p1.x, y: p2.y - p1.y },
             p1p0_length = Math.sqrt(p1p0.x * p1p0.x + p1p0.y * p1p0.y),
             p1p2_length = Math.sqrt(p1p2.x * p1p2.x + p1p2.y * p1p2.y),
             cos_phi = (p1p0.x * p1p2.x + p1p0.y * p1p2.y) / (p1p0_length * p1p2_length);
@@ -65,7 +67,7 @@ CanvasPathMethods.extend({
             return;
         }
         
-        var tangent = radius / tan(Math.acos(cos_phi) / 2),
+        var tangent = radius / Math.tan(Math.acos(cos_phi) / 2),
             factor_p1p0 = tangent / p1p0_length,
             t_p1p0 = {x: p1.x + factor_p1p0 * p1p0.x, y: p1.y + factor_p1p0 * p1p0.y };
             
@@ -135,3 +137,6 @@ CanvasPathMethods.extend({
     }
 });
 
+exports.extend({
+    CanvasPathMethods: CanvasPathMethods
+});

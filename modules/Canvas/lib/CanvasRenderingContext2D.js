@@ -1,11 +1,17 @@
 /** @ignore */
 
-var cairo = require('builtin/cairo'),
-    CanvasTransformation = require('CanvasTransformation'),
-    CanvasLineStyles = require('CanvasLineStyles'),
-    CanvasPathMethods = require('CanvasPathMethods'),
-    CanvasText = require('CanvasText');
+"use strict";
 
+var cairo = require('builtin/cairo'),
+    CanvasTransformation = require('CanvasTransformation').CanvasTransformation,
+    CanvasPathMethods = require('CanvasPathMethods').CanvasPathMethods,
+    CanvasGradient = require('CanvasGradient').CanvasGradient,
+    CanvasPattern = require('CanvasGradient').CanvasPattern,
+    CanvasLineStyles = require('CanvasLineStyles').CanvasLineStyles,
+    CanvasText = require('CanvasText').CanvasText,
+    Image = require('Image').Image;
+
+/*global exports */
 
 function setTextPath(context, str, x, y) {
     var ctx = context._context,
@@ -92,6 +98,9 @@ function CanvasRenderingContext2D(canvas) {
     this._context = cairo.context_create(canvas.surface);
     this._globalAlpha = 1;
     this._globalCompositeOperation = 'source-over';
+    this._strokeStyle = null;
+    this._fillStyle = null;
+    this._patternQuality = 'good'
     CanvasTransformation.call(this, arguments);
     CanvasLineStyles.call(this, arguments);
     CanvasPathMethods.call(this, arguments);
@@ -131,29 +140,62 @@ CanvasRenderingContext2D.prototype.extend({
     },
     // colors and styles
     get strokeStyle() {
-
+        return this._strokeStyle;
     },
     set strokeStyle(value) {
         if (!value) {
             return;
         }
-//        if ('C')
-
+        if (this._strokeStyle && typeof this._strokeStyle !== 'string') {
+            this._strokeStyle.destroy();
+        }
+        this._strokeStyle = value;
+        if (typeof this._strokeStyle !== 'string') {
+            cairo.pattern_reference(value);
+        }
     },
     get fillStyle() {
-        
+        return this._fillStyle;
     },
     set fillStyle(value) {
-        
+        if (!value) {
+            return;
+        }
+        if (this._fillStyle && typeof this._fillStyle !== 'string') {
+            this._fillStyle.destroy();
+        }
+        this._fillStyle = value;
+        if (typeof this._fillStyle !== 'string') {
+            cairo.pattern_reference(value);
+        }
+    },
+    get patternQuality() {
+        return this._patternQuality;
+    },
+    set patternQuality(value) {
+        if (value === 'fast' || value === 'good' || value === 'best') {
+            this._patternQuality = value;
+        }
     },
     createLinearGradient: function(x0,y0, x1,y1) {
-        
+        var pattern = cairo.pattern_create_linear(x0,y0, x1,y1);
+        return new CanvasGradient(this, pattern);
     },
     createRadialGradient: function(x0, y0, r0, x1, y1, r1) {
-        
+        var pattern = cairo.pattern_create_radial(x0,y0,r0, x1,y1,r1);
+        return new CanvasGradient(this, pattern);
     },
-    createPattern: function(element) {
-        
+    /**
+     * @function CanvasRenderingContext2D.createPattern
+     *
+     * ### Synopsis
+     *
+     * var pattern = ctx.createPattern(image);
+     *
+     * @param {object} image - canvas or image
+     */
+    createPattern: function(image) {
+        return image.getPattern();
     },
     // shadows
     get shadowOffsetX() {
@@ -194,6 +236,7 @@ CanvasRenderingContext2D.prototype.extend({
     beingPath: function() {
         
     },
+    // fill and apply shadow
     fill: function(path) {
         
     },
@@ -253,6 +296,10 @@ CanvasRenderingContext2D.prototype.extend({
     },
     putImageData: function(imagedata, dx,dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight) {
         
+    },
+    //
+    destroy: function() {
+
     }
 });
 CanvasRenderingContext2D.prototype.extend(CanvasTransformation.prototype);
@@ -260,4 +307,7 @@ CanvasRenderingContext2D.prototype.extend(CanvasLineStyles.prototype);
 CanvasRenderingContext2D.prototype.extend(CanvasPathMethods.prototype);
 CanvasRenderingContext2D.prototype.extend(CanvasText.prototype);
 
-exports = CanvasRenderingContext2D;
+exports.extend({
+    CanvasRenderingContext2D: CanvasRenderingContext2D
+});
+

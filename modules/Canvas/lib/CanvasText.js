@@ -1,5 +1,8 @@
 /** @ignore */
 
+
+"use strict";
+
 var cairo = require('builtin/cairo');
 
 var cache = {};
@@ -80,14 +83,14 @@ CanvasText.prototype.extend({
             cairo.context_set_font_size(ctx, font.size);
             switch (font.style) {
                 case 'italic':
-                    cairo.context_select_font_face(ctx, family, cairo.FONT_SLANT_ITALIC, font.weight === 'bold' ? cairo.FONT_WEIGHT_BOLD : cairo.FONT_WEIGHT_NORMAL);
+                    cairo.context_select_font_face(ctx, font.family, cairo.FONT_SLANT_ITALIC, font.weight === 'bold' ? cairo.FONT_WEIGHT_BOLD : cairo.FONT_WEIGHT_NORMAL);
                     break;
                 case 'oblique':
-                    cairo.context_select_font_face(ctx, family, cairo.FONT_SLANT_OBLIQUE, font.weight === 'bold' ? cairo.FONT_WEIGHT_BOLD : cairo.FONT_WEIGHT_NORMAL);
+                    cairo.context_select_font_face(ctx, font.family, cairo.FONT_SLANT_OBLIQUE, font.weight === 'bold' ? cairo.FONT_WEIGHT_BOLD : cairo.FONT_WEIGHT_NORMAL);
                     break;
                 case 'normal':
                 default:
-                    cairo.context_select_font_face(ctx, family, cairo.FONT_SLANT_NORMAL, font.weight === 'bold' ? cairo.FONT_WEIGHT_BOLD : cairo.FONT_WEIGHT_NORMAL);
+                    cairo.context_select_font_face(ctx, font.family, cairo.FONT_SLANT_NORMAL, font.weight === 'bold' ? cairo.FONT_WEIGHT_BOLD : cairo.FONT_WEIGHT_NORMAL);
                     break;
             }
         }
@@ -110,4 +113,8 @@ CanvasText.prototype.extend({
     }
 });
 
-exports = CanvasText;
+exports.extend({
+    CanvasText: CanvasText,
+    parseFont: parseFont
+});
+
