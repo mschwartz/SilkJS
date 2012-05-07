@@ -1,3 +1,16 @@
+/**
+ * @Module XMLParser
+ *
+ * ### Synopsis
+ *
+ * XML Parsing functionality for SilkJS
+ *
+ * var xml = require('XMLParser');
+ * var o = xml.toObject(some_xml_text);
+ * var json = xml.toJson(some_xml_text);
+ *
+ * Parses XML text to a JavaScript object or JSON.
+ */
 var expat = require('builtin/expat'),
     console = require('console');
 
@@ -52,9 +65,30 @@ XmlToObject.prototype.extend({
 });
 
 exports.extend({
+    /**
+     * @function xml.toObjecct
+     *
+     * ### Synopsis
+     *
+     * var o = xml.toObject(some_xml_text);
+     *
+     * Parses XML and returns it as an object.
+     *
+     * @param {string} some_xml_text - string containing a valid XML document.
+     * @return {object} o - object parsed from XML.
+     */
     toObject: function(xml) {
         return new XmlToObject(xml);
     },
+
+    /**
+     * @function xml.toJson
+     *
+     * ### Synopsis
+     *
+     * @param {string} some_xml_text - string containing a valid XML document.
+     * @return {string} json - XML parsed to JSON
+     */
     toJson: function(xml) {
         return JSON.stringify(new XmlToObject(xml));
     }

@@ -1,3 +1,13 @@
+/**
+ * @namespace builtin/expat
+ *
+ * ### Synopsis
+ *
+ * var expat = require('builtin.expat');
+ *
+ * Low level interface to libexpat.
+ *
+ */
 #include "SilkJS.h"
 #include <expat.h>
 
@@ -35,7 +45,7 @@ void charHandler(void *data, const char *txt, int txtlen) {
  * 
  * ### Synopsis
  * 
- * var parser = expat.parser(thisObj, startFn, endFn);
+ * var parser = expat.parser(thisObj, startFn, endFn, textFn);
  * 
  * Instantiate an XML parser.
  * 
@@ -44,9 +54,21 @@ void charHandler(void *data, const char *txt, int txtlen) {
  * The startFn function is called with an element name and attributes object when an open tag is encountered.
  * 
  * The endFn function is called with an element name when a close tag is encountered.
- * 
- * @param args
- * @return 
+ *
+ * The textFn function is called with the value between the tags.
+ *
+ * ### Callback Signatures
+ *
+ * startFn(name, attr); // {string} name, {object} attr
+ * endFn(name); // {string} name
+ * textFn(text); // {string} text
+ *
+ * @param {object} thisObj - object to be passed as "this" to startFn, endFn, and textFn
+ * @param {function} startFn - function to be called when a start tag is encountered during parsing.
+ * @param {function} endFn - function to be called when an end tag is encountered during parsing.
+ * @param {function} textFn - function to be called with the text (value) between start/end tags during parsing.
+ *
+ * @return {object} parser - opaque handle to an expat parser.
  */
 static JSVAL parser(JSARGS args) {
     p *ptr = new p;
@@ -61,6 +83,19 @@ static JSVAL parser(JSARGS args) {
     return External::New(ptr);
 }
 
+
+/**
+ * @function expat.destroy
+ * 
+ * ### Synopsis
+ * 
+ * expat.destroy(parser);
+ * 
+ * Destroy (free memory and resources used by) a expat parser.
+ * 
+ * @param {object} parser - opaque handle to a parser, as returned by expat.parser(). 
+ * @return 
+ */
 static JSVAL destroy(JSARGS args) {
     p *ptr = (p *)JSEXTERN(args[0]);
     ptr->end.Dispose();
@@ -72,6 +107,24 @@ static JSVAL destroy(JSARGS args) {
     delete ptr;
     return Undefined();
 }
+
+/**
+ * @function expat.parse
+ * 
+ * ### Synopsis
+ * 
+ * var success = expat.parse(parser, xml);
+ * 
+ * Parse XML using this parser.
+ * 
+ * @param {object} parser - opaque handle to parser to use.
+ * @param {string} xml - xml document to parse
+ * @return {int} success - 1 if document was successfully parsed.
+ * 
+ * ### Note
+ * 
+ * When you created the expat parser, you provided callback functions to handle processing the parsed XML file.
+ */
 
 static JSVAL parse(JSARGS args) {
     p *ptr = (p *)JSEXTERN(args[0]);
