@@ -85,7 +85,11 @@ exports.extend({
      * @function xml.toJson
      *
      * ### Synopsis
-     *
+     * 
+     * var json = xml.toJson(some_xml_text);
+     * 
+     * Parse XML object to JSON string.
+     * 
      * @param {string} some_xml_text - string containing a valid XML document.
      * @return {string} json - XML parsed to JSON
      */
