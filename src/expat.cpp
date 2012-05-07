@@ -94,7 +94,6 @@ static JSVAL parser(JSARGS args) {
  * Destroy (free memory and resources used by) a expat parser.
  * 
  * @param {object} parser - opaque handle to a parser, as returned by expat.parser(). 
- * @return 
  */
 static JSVAL destroy(JSARGS args) {
     p *ptr = (p *)JSEXTERN(args[0]);
