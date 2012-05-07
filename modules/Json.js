@@ -87,6 +87,7 @@ var Json = function() {
                     res.write('<textarea>' + ret + '</textarea>');
                 }
                 else {
+                    res.contentType = 'application/json';
                     res.write(ret);
                 }
             }
@@ -131,6 +132,10 @@ var Json = function() {
         * @param {string} message - message to send
         */        
         failure: function(msg) {
+            var responseObj = {
+                success: false,
+                message: msg
+            };
             var contentType = req.getHeader('content-type') || '';
             if (contentType && !contentType.indexOf('multipart/form-data') != -1) {
                 res.write('<textarea>' + Json.encode(responseObj) + '</textarea>');

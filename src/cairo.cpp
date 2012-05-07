@@ -2099,7 +2099,7 @@ static JSVAL context_rotate(JSARGS args) {
  * 
  * ### Synopsis
  * 
- * cairo.context_transform(pattern, matrix);
+ * cairo.context_transform(context, matrix);
  * 
  * Modifies the current transformation matrix (CTM) by applying matrix as an additional transformation. 
  * 
@@ -6298,6 +6298,8 @@ static JSVAL region_xor_rectangle(JSARGS args) {
 
 void init_cairo_object () {
     Handle<ObjectTemplate>cairo = ObjectTemplate::New();
+
+    cairo->Set(String::New("VERSION_MINOR"), Integer::New(CAIRO_VERSION_MINOR));
 
 #if CAIRO_VERSION_MINOR >= 10
     cairo->Set(String::New("FORMAT_INVALID"), Integer::New(CAIRO_FORMAT_INVALID));
