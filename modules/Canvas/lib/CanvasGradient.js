@@ -2,7 +2,8 @@
 
 "use strict";
 
-var cairo = require('builtin/cairo');
+var cairo = require('builtin/cairo'),
+    console = require('console');
 
 var namedColors = [
 //  name                     RRGGBBAA
@@ -218,7 +219,7 @@ function parseColorRgb(s) {
     if (s.substr(0, 4) !== 'rgb(') {
         return false;
     }
-    var colors = s.substr(4).replace(')', '').split(/\s+,\s+/);
+    var colors = s.substr(4).replace(')', '').split(/\s*,\s*/);
     try {
         return {
             r: parseDec(colors[0]),
@@ -236,7 +237,7 @@ function parseColorRgba(s) {
     if (s.substr(0, 5) !== 'rgba(') {
         return false;
     }
-    var colors = s.substr(5).replace(')', '').split(/\s+,\s+/);
+    var colors = s.substr(5).replace(')', '').split(/\s*,\s*/);
     try {
         return {
             r: parseDec(colors[0]),
@@ -275,15 +276,16 @@ function CanvasGradient(context, pattern) {
     this._context = context;
     this._pattern = pattern;
 }
-CanvasGradient.prototype.extend({
+CanvasGradient.proto = {}.extend({
     addColorStop: function(offset, color) {
-        color = parseColor(color);
-        cairo.pattern_add_color_stop_rgba(this._pattern, offset, color.r, color.g, color.b, color.a);
+        var oColor = parseColor(color);
+        cairo.pattern_add_color_stop_rgba(this._pattern, offset, oColor.r/255, oColor.g/255, oColor.b/255, oColor.a/255);
     },
     destroy: function() {
         cairo.pattern_destroy(this._pattern);
     }
 });
+CanvasGradient.prototype.extend(CanvasGradient.proto);
 
 exports.extend({
     CanvasGradient: CanvasGradient,

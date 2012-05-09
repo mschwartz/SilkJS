@@ -2,10 +2,9 @@
 
 "use strict";
 
-function CanvasTransformation(context) {
-    this._context = context;
-}
-CanvasTransformation.prototype.extend({
+var cairo = require('builtin/cairo');
+
+var CanvasTransformation = {
     // transformations (default transform is the identity matrix)
     scale: function(x, y) {
         cairo.context_scale(this._context, x, y);
@@ -32,7 +31,7 @@ CanvasTransformation.prototype.extend({
     resetTransform: function() {
         cairo.context_identity_matrix(this._context);
     }
-});
+};
 
 exports.extend({
     CanvasTransformation: CanvasTransformation

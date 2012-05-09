@@ -96,8 +96,22 @@ function test4() {
     cairo.surface_write_to_png (surface, "setsourcergba.png");
     cairo.context_destroy (cr);
     cairo.surface_destroy (surface);
-    
+}
+
+function test5() {
+    var surface = cairo.image_surface_create (cairo.FORMAT_ARGB32, 640, 400);
+    var cr = cairo.context_create (surface);
+    var img = cairo.image_surface_create_from_png('watermark3.png')    ;
+    cairo.context_save(cr);
+    cairo.context_set_source_surface(cr, img, 10, 10);
+    cairo.context_paint_with_alpha(cr, 1);
+//    cairo.context_paint(cr);
+    cairo.context_restore(cr);
+	/* Write output and clean up */
+    cairo.surface_write_to_png (surface, "test5.png");
+    cairo.context_destroy (cr);
+    cairo.surface_destroy (surface);
 }
 function main() {
-    test1();
+    test5();
 }
