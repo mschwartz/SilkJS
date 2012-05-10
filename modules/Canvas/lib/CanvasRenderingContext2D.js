@@ -266,12 +266,12 @@ CanvasRenderingContext2D.prototype.extend({
     createLinearGradient: function(x0,y0, x1,y1) {
         debug('createLinearGradient ' + [x0,y0,x1,y1].join(','));
         var pattern = cairo.pattern_create_linear(x0,y0, x1,y1);
-        return new CanvasGradient(this, pattern);
+        return this.canvas.addPattern(new CanvasGradient(this, pattern));
     },
     createRadialGradient: function(x0, y0, r0, x1, y1, r1) {
         debug('createRadialGradient');
         var pattern = cairo.pattern_create_radial(x0,y0,r0, x1,y1,r1);
-        return new CanvasGradient(this, pattern);
+        return this.canvas.addPattern(new CanvasGradient(this, pattern));
     },
     /**
      * @function CanvasRenderingContext2D.createPattern
@@ -582,7 +582,6 @@ CanvasRenderingContext2D.prototype.extend({
     // pixel manipulation
     createImageData: function(sw, dh) {
         throw 'Not implemented';
-        
     },
     getImageData: function(sx, sy, sw, sh) {
         debug('getImageData ' + [sx,sy,sw,sh].join(','));

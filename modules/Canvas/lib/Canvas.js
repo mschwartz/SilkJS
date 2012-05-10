@@ -15,6 +15,7 @@ function Canvas(width, height) {
     this.height = height;
     this.surface = cairo.image_surface_create (cairo.FORMAT_ARGB32, width, height);
     this._context = null;
+    this._patterns = [];
 }
 Canvas.prototype.extend({
     getContext: function(type) {
@@ -36,7 +37,24 @@ Canvas.prototype.extend({
         cairo.surface_write_to_png(this.surface, filename);
 
     },
+    addPattern: function(pattern) {
+        this._patterns.push(pattern);
+        return pattern;
+    },
+    destroyPattern: function(pattern) {
+        var newPatterns = [];
+        this._patterns.each(function(pat) {
+            if (pattern !== pat) {
+                newPatterns.push(pat);
+            }
+        });
+        this._patterns = newPatterns;
+        pattern.destroy();
+    },
     destroy: function() {
+        this._patterns.each(function(pattern) {
+            pattern.destroy();
+        });
         if (this._context) {
             this._context.destroy();
         }
