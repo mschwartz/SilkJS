@@ -125,8 +125,9 @@ HttpChild = (function() {
         if (!fs.exists(fn)) {
             throw 'Cannot find included .jst file ' + fn;
         }
-		var jst = jst_cache[fn];
-		if (!jst || fs.stat(fn).mtime < jst.mtime) {
+		var jst = jst_cache[fn],
+            mtime = fs.fileModified(fn);
+		if (!jst || mtime > jst.mtime) {
 			var source = fs.readFile(fn);
 			jst = {
 				mtime: fs.stat(fn).mtime,
@@ -138,10 +139,21 @@ HttpChild = (function() {
 	}
 
 	function includeJst(fn) {
-        if (fn[0] !== '/') {
-            fn = '/' + fn;
-        }
-		var jst = getCachedJst(Config.documentRoot + fn);
+        var jstFile = Config.jstPath;
+        jstFile += jstFile ? '/' : '';
+        jstFile += fn;
+        jstFile = jstFile.replace(/\/\//g, '/');
+        include.path.each(function(path) {
+            var filename = path;
+            filename += '/';
+            filename += fn;
+            filename = filename.replace(/\/\//g, '/');
+            if (fs.exists(filename)) {
+                jstFile = filename;
+                return false;
+            }
+        });
+		var jst = getCachedJst(jstFile);
 		return Jst.includeParsed(jst, {
 			include: includeJst
 		});

@@ -29,6 +29,7 @@ Config = {
 		'index.md',
 		'index.html'
 	],
+    jstPath: '',    // can set this to where include() within JST pages searches for included files.
     // you can set up a default MySQL credentials/db here.  The HttpChild will automatically create a connection, if this is configured, as global SQL variable.
 //	mysql: {
 //		host: 'localhost',
