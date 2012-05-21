@@ -363,7 +363,7 @@ var commands = {
         }
     },
     listDownloads: {
-        help: 'listDownloads [user/]repo - list downloads for a repo',
+        help: 'listDownloads [user/]repo [sha] - list downloads for a repo',
         fn: function(args) {
             var parts = args.split(/\s+/);
             var repo = parts.shift();
@@ -394,6 +394,66 @@ var commands = {
             var repo = parts.shift();
             var id = parts.join(' ');
             console.dir(gh.deleteDownload(repo, id));
+        }
+    },
+    listForks: {
+        help: 'listForks [user/]repo [newest|oldest|watchers] - list forks of a repo, default sort is newest',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var sort = parts.join(' ');
+            var forks = gh.listForks(repo, sort);
+            console.dir(forks);
+            console.log(forks.length);
+        }
+    },
+    createFork:  {
+        help: 'createFork [user/]repo [org] - create a fork of the repo [into the organization]',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var org = parts.join(' ');
+            console.dir(gh.createFork(repo, org));
+        }
+    },
+    listRepoDeployKeys: {
+        help: 'listDeployKeys [user/]repo - list deploy keys for the repo',
+        fn: function(args) {
+            console.dir(gh.listRepoDeployKeys(args));
+        }
+    },
+    listWatchers: {
+        help: 'listWatchers [user/]repo - list watchers for the repo',
+        fn: function(args) {
+            var watchers = gh.listWatchers(args);
+            console.dir(watchers);
+            console.log(watchers.length);
+        }
+    },
+    listWatched: {
+        help: 'listWatched [user] - list repos watched [for the specified user]',
+        fn: function(args) {
+            var watched = gh.listWatched(args);
+            console.dir(watched);
+            console.log(watched.length);
+        }
+    },
+    amWatching: {
+        help: 'amWatching [user/]repo - determine if you are watching a repo',
+        fn: function(args) {
+            console.dir(gh.amWatching(args));
+        }
+    },
+    watch: {
+        help: 'watch [user/]repo - watch a repo',
+        fn: function(args) {
+            console.dir(gh.watch(args));
+        }
+    },
+    unwatch: {
+        help: 'unwatch [user/]repo - stop watching a repo',
+        fn: function(args) {
+            console.dir(gh.unwatch(args));
         }
     },
     cd: {
