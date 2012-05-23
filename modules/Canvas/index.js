@@ -4,16 +4,21 @@
  * ### Synopsis
  *
  * var Canvas = require('Canvas').Canvas;
- * var canvas = new Canvas(width, height);
- * var context = canvas.getContext('2d');
- * ...
- * canvas.writeToFile(path);
  *
  * Server-side implementation of Canvas rendering object.
  *
  * The browser side implementation of Canvas allows dynamic rendering to and interaction with images.  This server-side implementation allows for the rendering of static images using the same API.
  *
  * For complete details on the browser-side Canvas API, see http://www.w3.org/TR/2dcontext/.
+ *
+ * ### Example
+ *
+ * ```
+ * var canvas = new Canvas(width, height);
+ * var context = canvas.getContext('2d');
+ * ...
+ * canvas.writeToFile(path);
+ * ```
  *
  * ### Details
  *

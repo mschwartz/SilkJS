@@ -110,6 +110,11 @@ int main (int argc, char** argv) {
     if (startup[0] == '#' && startup[1] == '!') {
         startup[0] = startup[1] = '/';
     }
+    
+    // v8 command line switches
+    const char *switches = "--harmony-proxies";
+    V8::SetFlagsFromString(switches, strlen(switches));
+    
     {
         //		Isolate *isolate = Isolate::New();
         //		isolate->Enter();
