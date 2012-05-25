@@ -112,7 +112,7 @@ int main (int argc, char** argv) {
     }
     
     // v8 command line switches
-    const char *switches = "--harmony-proxies";
+    const char *switches = "--harmony";
     V8::SetFlagsFromString(switches, strlen(switches));
     
     {

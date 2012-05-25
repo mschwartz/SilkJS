@@ -463,7 +463,7 @@ var commands = {
                 console.log('*** error: ' + fs.error());
             }
             else {
-                console.log('local directroy now ' + fs.getcwd());
+                console.log('local directory now ' + fs.getcwd());
             }
         }
     },

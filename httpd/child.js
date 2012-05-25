@@ -385,11 +385,7 @@ HttpChild = (function() {
             handler.handler(fn);
         }
         else {
-//            if (!fs.exists(fn)) {
-//                log('error: ' + fs.error());
-//            }
             res.contentType = mimeTypes[extension] || 'text/plain';
-//            res.sendHeaders();
             res.sendFile(fn);
             res.stop();
         }
