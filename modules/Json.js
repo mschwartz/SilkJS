@@ -137,7 +137,7 @@ var Json = function() {
                 message: msg
             };
             var contentType = req.getHeader('content-type') || '';
-            if (contentType && !contentType.indexOf('multipart/form-data') != -1) {
+            if (contentType && contentType.indexOf('multipart/form-data') != -1) {
                 res.write('<textarea>' + Json.encode(responseObj) + '</textarea>');
             }
             else {
