@@ -36,7 +36,7 @@ function main() {
 		if (arg === '-d') {
             debugMode = true;
 			return false;
-        }		
+        }
 	});
 
 	if (debugMode) {
