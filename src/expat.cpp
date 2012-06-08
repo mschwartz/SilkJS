@@ -23,7 +23,7 @@ void start(void *data, const char *el, const XML_Char **attr) {
     p *ptr = (p *)data;
     JSOBJ o = Object::New();
     for (const XML_Char **a = attr; *a; a += 2) {
-        printf("%s = %s\n", a[0], a[1]);
+        // printf("%s = %s\n", a[0], a[1]);
         o->Set(String::New(a[0]), String::New(a[1]));
     }
     Handle<Value>argv[2] = { String::New(el), o };
