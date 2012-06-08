@@ -61,7 +61,7 @@ JSVAL _memcached_connect (JSARGS args) {
     String::Utf8Value options(args[0]);
     M *handle = memcached_create(NULL);
     S *servers = memcached_servers_parse(*options);
-    if (memcached_server_push(handle, servers)) {
+    if (memcached_server_push(handle, servers) != MEMCACHED_SUCCESS) {
         memcached_server_list_free(servers);
         memcached_free(handle);
         return scope.Close(False());
@@ -418,6 +418,27 @@ JSVAL _memcached_flush (JSARGS args) {
     return scope.Close(Integer::New(memcached_flush(handle, expiration)));
 }
 
+struct CTX {
+    int ndx;
+    Handle<Array>keys;
+};
+static memcached_return_t dump_fn(const memcached_st *ptr, const char *key, size_t key_length, void *context) {
+    CTX *ctx = (CTX *)context;
+    ctx->keys->Set(ctx->ndx++, String::New(key, key_length));
+    return MEMCACHED_SUCCESS;
+}
+
+JSVAL _memcached_keys (JSARGS args) {
+    M *handle = HANDLE(args[0]);
+    CTX ctx;
+    ctx.ndx = 0;
+    ctx.keys = Array::New();
+    memcached_dump_fn callbacks[1];
+    callbacks[0] = &dump_fn;
+    memcached_dump(handle, callbacks, &ctx, 1);
+    return ctx.keys;
+}
+
 void init_memcached_object () {
     HandleScope scope;
 
@@ -425,6 +446,7 @@ void init_memcached_object () {
     // constants
     memcached->Set(String::New("DEFAULT_PORT"), Integer::New(MEMCACHED_DEFAULT_PORT));
     memcached->Set(String::New("VERSION"), String::New(LIBMEMCACHED_VERSION_STRING));
+    memcached->Set(String::New("SUCCESS"), Integer::New(MEMCACHED_SUCCESS));
 
     // methods
     memcached->Set(String::New("connect"), FunctionTemplate::New(_memcached_connect));
@@ -440,6 +462,7 @@ void init_memcached_object () {
     memcached->Set(String::New("append"), FunctionTemplate::New(_memcached_append));
     memcached->Set(String::New("remove"), FunctionTemplate::New(_memcached_remove));
     memcached->Set(String::New("flush"), FunctionTemplate::New(_memcached_flush));
+    memcached->Set(String::New("keys"), FunctionTemplate::New(_memcached_keys));
 
     builtinObject->Set(String::New("memcached"), memcached);
 }
