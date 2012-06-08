@@ -1,6 +1,6 @@
-/* 
+/*
  * @module extensions
- * 
+ *
  * Provides handy extensions to builtin JS types
  */
 
@@ -19,11 +19,11 @@ String.prototype.endsWith = function(suffix) {
 };
 
 String.prototype.trim = function() {
-    return this.replace(/^\s+|\s+$/, ''); 
+    return this.replace(/^\s+|\s+$/, '');
 };
 
 String.prototype.capitalize = function(limit) {
-    if (limit == null) {
+    if (limit === null) {
         limit = 1;
     }
     var head = this.substring(0, limit);
@@ -57,14 +57,18 @@ String.prototype.replaceAll = function replaceAll(a, b) {
 	return s;
 };
 
-Object.prototype.extend = function() {
+Object.prototype.extend = Function.prototype.extend = function() {
     var me = this;
     arguments.each(function(o) {
         for (var key in o) {
             var g = o.__lookupGetter__(key), s = o.__lookupSetter__(key);
             if (g || s) {
-                g && me.__defineGetter__(key, g);
-                s && me.__defineSetter__(key, s);
+                if (g) {
+                    me.__defineGetter__(key, g);
+                }
+                if (s) {
+                    me.__defineSetter__(key, s);
+                }
             }
             else {
                 me[key] = o[key];
