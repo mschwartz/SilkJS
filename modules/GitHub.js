@@ -39,6 +39,9 @@ var cURL = require('cURL'),
 function GitHub(username, password) {
     this.username = username;
     this.password = password;
+    this.page = 1;
+    this.per_page = 100;
+    this.nextUrl = null;
     this.url = 'https://' + username + ':' + password + '@api.github.com';
     var response = cURL({
         url: this.url + '/users/'+username
@@ -59,6 +62,7 @@ GitHub.prototype.extend({
 
     /* private */
     _get: function(url) {
+        console.dir(url);
         var response = cURL({
             url: url
         });
@@ -67,25 +71,27 @@ GitHub.prototype.extend({
     },
 
     _getList: function(url) {
-        var page = 1;
-        var per_page = 100,
-            lastResults = 100;
-
-        var list = [];
-        while (per_page === lastResults) {
-            var response = cURL({
-                url: url + '?page='+page+'&per_page='+per_page
-            });
-            this.status = response.status;
-            if (this.status !== 200) {
-                break;
-            }
-            var result = Json.decode(response.responseText);
-            list = list.concat(result);
-            page++;
-            lastResults = result.length;
+        this.nextUrl = url;
+        var response = cURL({
+            url: url + '?page='+this.page+'&per_page='+this.per_page
+        });
+        this.status = response.status;
+        if (this.status !== 200) {
+            this.nextUrl = 0;
+            return false;
         }
+        var list = Json.decode(response.responseText);
+        this.nextPage = this.page+1;
         return list;
+    },
+    next: function() {
+        if (!this.nextUrl) {
+            return false;
+        }
+        this.page = this.nextPage;
+        var ret =  this._getList(this.nextUrl);
+        this.page = 1;
+        return ret;
     },
 
     _getBoolean: function(url) {
@@ -1222,24 +1228,135 @@ GitHub.prototype.extend({
         return this._delete(this.url + '/repos/' + this._repoName(repo) + '/keys/' + id);
     },
 
+    /**
+     * @function GitHub.listWatchers
+     *
+     * ### Synopsis
+     *
+     * var watchers = gh.listWatchers(repo);
+     *
+     * Lists watchers of a repository.
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @return {Array} watchers - array of watchers information
+     */
     listWatchers: function(repo) {
         return this._getList(this.url + '/repos/' + this._repoName(repo) + '/watchers');
     },
 
+    /**
+     * @function GitHub.listWatching
+     *
+     * ### Synopsis
+     *
+     * var repos = gh.listWatching(user);
+     *
+     * List repos being watched by a user.
+     *
+     * @param {string} user - GitHub user name.
+     * @return {Array} repos - array of repo information.
+     */
     listWatched: function(user) {
         return this._getList(this.url + (user ? ('/users/' + user + '/watched') : '/user/watched'));
     },
 
+    /**
+     * @function GitHub.amWatching
+     *
+     * ### Synopsis
+     *
+     * var amWatching = gh.amWatching(repo);
+     *
+     * Check if current user is watching a repo.
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @return {boolean} amWatching - true if user is watching the repo.
+     */
     amWatching: function(repo) {
         return this._getBoolean(this.url + '/user/watched/' + this._repoName(repo));
     },
 
+    /**
+     * @function GitHub.watch
+     *
+     * ### Synopsis
+     *
+     * var success = gh.watch(repo);
+     *
+     * Watch a repo.
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @return {boolean} success - true if watch request was successful.
+     */
     watch: function(repo) {
         return this._put(this.url + '/user/watched/' + this._repoName(repo));
     },
 
-    unwatch: function(repo) {
+    /**
+     * @function GitHub.stopWatching
+     *
+     * ### Synopsis
+     *
+     * var success = gh.stopWatching(repo);
+     *
+     * Stop watching a repo.
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @return {boolean} success - true if unwatch request was successful.
+     */
+    stopWatching: function(repo) {
         return this._delete(this.url + '/user/watched/' + this._repoName(repo));
+    },
+
+    /**
+     * @function GitHub.getBlob
+     *
+     * ### Synopsis
+     *
+     * var blob = gh.getBlob(repo, sha);
+     *
+     * Get a blob.
+     *
+     * The returned blob has the following members:
+     *
+     * + {string} content: content of the blob
+     * + {string} encoding: encoding of the blob (e.g. "utf-8")
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} sha - sha of the blob to get
+     * @return {Object} blob - object of the form described above.
+     */
+    getBlob: function(repo, sha) {
+        return this._get(this.url + '/repos/' + this._repoName(repo) + '/git/blobs/' + sha);
+    },
+
+    /**
+     * @function GitHub.createBlob
+     *
+     * ### Synopsis
+     *
+     * var sha = gh.createBlob(repo, obj);
+     *
+     * Create a blob.
+     *
+     * The obj parameter describes the blob to be created, and has the following members:
+     *
+     * + {string} content: content of the blob
+     * + {string} encoding: encoding of the blob (e.g. "utf-8")
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {object} obj - description of blob, see above.
+     * @return {string} sha - the sha of the created blob, or false if an error occurred.
+     */
+    createBlob: function(repo, o) {
+        return this._post(this.url + '/repos/' + this._repoName(repo) + 'git/blobs', o);
+    },
+
+    getTree: function(repo, sha, recursive) {
+        recursive = recursive ? '?recursive=1' : '';
+        var url = this.url + '/repos/' + this._repoName(repo) + '/git/trees/' + sha + recursive
+        console.log(url);
+        return this._get(url);
     }
 });
 

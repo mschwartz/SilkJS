@@ -321,15 +321,16 @@ var commands = {
     listCommits: {
         help: 'listCommits [user/]repo - list commits for a repository',
         fn: function(args) {
-            gh.listCommits(args).reverse().each(function(commit) {
+            gh.listCommits(args).each(function(commit) {
                 delete commit.patch;
-                console.log('commit  ' + commit.sha);
-                console.log('Author: ' + commit.commit.author.name + ' <' + commit.commit.author.email + '>');
-                console.log('Date:   ' + commit.commit.author.date);
-//                console.log(commit.commit.author.date + ' ' + commit.commit.author.email);
-                var message = '     ' + commit.commit.message.split('\n').join('\n     ');
-                console.log(message);
-                console.log('');
+                console.dir(commit);
+//                console.log('commit  ' + commit.sha);
+//                console.log('Author: ' + commit.commit.author.name + ' <' + commit.commit.author.email + '>');
+//                console.log('Date:   ' + commit.commit.author.date);
+////                console.log(commit.commit.author.date + ' ' + commit.commit.author.email);
+//                var message = '     ' + commit.commit.message.split('\n').join('\n     ');
+//                console.log(message);
+//                console.log('');
             });
         }
     },
@@ -453,7 +454,23 @@ var commands = {
     unwatch: {
         help: 'unwatch [user/]repo - stop watching a repo',
         fn: function(args) {
-            console.dir(gh.unwatch(args));
+            console.dir(gh.stopWatching(args));
+        }
+    },
+    getTree: {
+        help: 'getTree [user/]repo sha [recursive] - get tree for a repo',
+        fn: function(args) {
+            var parts = args.split(/\s+/);
+            var repo = parts.shift();
+            var sha = parts.shift();
+            var recursive = parts.join(' ');
+            console.dir(gh.getTree(repo, sha, recursive));
+        }
+    },
+    next: {
+        help: 'next - retrieve next page of results',
+        fn: function() {
+            console.dir(gh.next());
         }
     },
     cd: {
@@ -487,7 +504,7 @@ var commands = {
             });
         }
     }
-}
+};
 
 function main(username, password) {
     if (!username) {
