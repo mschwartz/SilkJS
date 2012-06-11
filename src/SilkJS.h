@@ -35,6 +35,7 @@
 #include <time.h>
 #include <dirent.h>
 #include <sys/stat.h>
+#include <utime.h>
 #ifndef __APPLE__
 #include <sys/sendfile.h>
 #endif
