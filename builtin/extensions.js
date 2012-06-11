@@ -23,11 +23,11 @@ String.prototype.trim = function() {
 };
 
 String.prototype.capitalize = function(limit) {
-    if (limit === null) {
+    if (limit === null || limit === undefined) {
         limit = 1;
     }
-    var head = this.substring(0, limit);
-    var tail = this.substring(limit, this.length);
+    var head = this.substr(0, limit);
+    var tail = this.substr(limit, this.length);
     return head.toUpperCase() + tail.toLowerCase();
 };
 
