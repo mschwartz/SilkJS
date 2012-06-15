@@ -112,10 +112,18 @@ static Handle<Value> Include (const Arguments& args) {
         if (!js_file) {
             strcpy(buf, *str);
             if (buf[0] != '/') {
+                strcpy(buf, "/usr/local/silkjs/");
+                strcat(buf, *str);
+            }
+            js_file = readFile(buf);
+        }
+        if (!js_file) {
+            strcpy(buf, *str);
+            if (buf[0] != '/') {
                 strcpy(buf, "/usr/share/silkjs/");
                 strcat(buf, *str);
-                js_file = readFile(buf);
             }
+            js_file = readFile(buf);
         }
         if (!js_file) {
             return ThrowException(String::Concat(String::New("include file not found "), args[i]->ToString()));

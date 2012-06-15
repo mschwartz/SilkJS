@@ -47,7 +47,7 @@
 			return false;
 		}
 		if (module.substr(0,1) == '/' || module.substr(0,2) == './' || module.substr(0,3) == '../') {
-			return tryFile(module) || tryFile(module + '.js' || tryFile(module + '.coffee'))
+			return tryFile(module) || tryFile(module + '.js' || tryFile(module + '.coffee'));
 		}
 		else {
 			var paths = require.path;
@@ -124,6 +124,9 @@
 	require.path = [
 		'./',
 		'modules',
+        '/usr/local/silkjs',
+        '/usr/local/silkjs/modules',
+        '/usr/local/silkjs/contrib',
 		'/usr/share/silkjs/modules'
 	];
 }());

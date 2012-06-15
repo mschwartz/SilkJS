@@ -96,7 +96,10 @@ int main (int argc, char** argv) {
     const char *progName;
 
     if (argc < 2) {
-        startup = readFile("/usr/share/silkjs/builtin/interpreter.js");
+        startup = readFile("/usr/local/silkjs/builtin/interpreter.js");
+        if (!startup) {
+            startup = readFile("/usr/share/silkjs/builtin/interpreter.js");
+        }
         progName = "interpreter";
     }
     else {

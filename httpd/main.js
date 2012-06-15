@@ -77,7 +77,7 @@ function main() {
         }
     }
 
-    var logMessage = 'SilkJS HTTP running with ' + Config.numChildren + ' children on port ' + Config.port;
+    var logMessage = 'SilkJS HTTP running with ' + Config.numChildren + ' children on port ' + Config.port + ' from documentRoot ' + Config.documentRoot;
     if (Config.listenIp !== '0.0.0.0') {
         logMessage += ' on IP ' + Config.listenIp;
     }

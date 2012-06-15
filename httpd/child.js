@@ -6,6 +6,8 @@ HttpChild = (function() {
     var mimeTypes = require('MimeTypes');
 
     function errorHandler(e) {
+        console.dir(e);
+        console.log(e.stack);
         var spaces = '                 ';
         function lineNumber(n) {
             n = '' + n;
@@ -114,7 +116,9 @@ HttpChild = (function() {
 
     function notFound() {
         res.reset();
-        global.notFound_action && global.notFound_action();
+        if (global.notFound_action) {
+            global.notFound_action();
+        }
         res.status = 404;
         res.write('<h1>Not Found</h1>');
         res.stop();
@@ -154,16 +158,15 @@ HttpChild = (function() {
             }
         });
         var jst = getCachedJst(jstFile);
-        return Jst.includeParsed(jst, {
-            include: includeJst
-        });
+        return Jst.includeParsed(jst, res.data.jst_global);
     }
 
     function runJst(fn) {
         var jst = getCachedJst(fn);
-        var out = Jst.executeParsed(jst, {
+        res.data.jst_global = {
             include: includeJst
-        });
+        };
+        var out = Jst.executeParsed(jst, res.data.jst_global);
         res.contentLength = out.length;
         res.write(out);
         res.stop();
@@ -218,7 +221,7 @@ HttpChild = (function() {
         if (!cached || mtime > cached.mtime) {
             var less = require('less-silkjs-1.2.2');
             var content = fs.readFile(fn);
-            var parser = new (less.Parser);
+            var parser = new less.Parser();
             parser.parse(content, function(e, root) {
                 if (e) {
                     console.dir(e);
@@ -251,8 +254,8 @@ HttpChild = (function() {
             var content = fs.readFile(fn);
             content = [
                 '(function() {',
-//				'    var print = res.write;',
-//				'	 var println = res.writeln;',
+                // '    var print = res.write;',
+                // '    var println = res.writeln;',
                 content,
                 '}());'
             ].join('\n');
@@ -284,23 +287,23 @@ HttpChild = (function() {
     }
 
     var dynamicHandlers = {
-        sjs:	{ contentType: 'text/html',							handler: runSJS },
-        less:	{ contentType: 'text/css',		                    handler: runLess },
-        coffee:	{ contentType: 'text/html',		                    handler: runCoffee },
-        jst:	{ contentType: 'text/html',                         handler: runJst },
-        md:		{ contentType: 'text/html',                         handler: runMarkdown }
-//		ogg:	{ contentType: 'audio/ogg',                         handler: sendFile },
-//		mp3:	{ contentType: 'audio/mpeg3',                       handler: sendFile },
-//		png:	{ contentType: 'image/png',                         handler: sendFile },
-//		ico:	{ contentType: 'image/ico',                         handler: sendFile },
-//		gif:	{ contentType: 'image/gif',                         handler: sendFile },
-//		jpg:	{ contentType: 'image/jpeg'                  ,      handler: sendFile },
-//		jpeg:	{ contentType: 'image/jpeg',                        handler: sendFile },
-//		html:	{ contentType: 'text/html',                         handler: sendFile },
-//		htm:	{ contentType: 'text/html',                         handler: sendFile },
-//		js:		{ contentType: 'text/javascript',                   handler: sendFile },
-//		css:	{ contentType: 'text/css',                          handler: sendFile },
-//		xml:	{ contentType: 'text/xml',                          handler: sendFile },
+        sjs:    { contentType: 'text/html',                         handler: runSJS },
+        less:   { contentType: 'text/css',                          handler: runLess },
+        coffee: { contentType: 'text/html',                         handler: runCoffee },
+        jst:    { contentType: 'text/html',                         handler: runJst },
+        md:     { contentType: 'text/html',                         handler: runMarkdown }
+//      ogg:    { contentType: 'audio/ogg',                         handler: sendFile },
+//      mp3:    { contentType: 'audio/mpeg3',                       handler: sendFile },
+//      png:    { contentType: 'image/png',                         handler: sendFile },
+//      ico:    { contentType: 'image/ico',                         handler: sendFile },
+//      gif:    { contentType: 'image/gif',                         handler: sendFile },
+//      jpg:    { contentType: 'image/jpeg'                  ,      handler: sendFile },
+//      jpeg:   { contentType: 'image/jpeg',                        handler: sendFile },
+//      html:   { contentType: 'text/html',                         handler: sendFile },
+//      htm:    { contentType: 'text/html',                         handler: sendFile },
+//      js:     { contentType: 'text/javascript',                   handler: sendFile },
+//      css:    { contentType: 'text/css',                          handler: sendFile },
+//      xml:    { contentType: 'text/xml',                          handler: sendFile },
 //        swf:    { contentType: 'application/ x-shockwave-flash',    handler: sendFile }
     };
 
@@ -321,7 +324,7 @@ HttpChild = (function() {
         req.script_path = req.uri;
         delete req.path_info;
         var parts = req.uri.substr(1).split('/');
-        if (parts[0].length == 0) {
+        if (parts[0].length === 0) {
             parts[0] = 'main';
         }
         var action = parts[0] + '_action';
@@ -358,7 +361,7 @@ HttpChild = (function() {
         }
         if (fs.isDir(fn)) {
             if (!req.uri.endsWith('/')) {
-//				log('redirect ' + req.uri + ' ' + fn + ' ' + fn.substr(fn.length-1, 1));
+//              log('redirect ' + req.uri + ' ' + fn + ' ' + fn.substr(fn.length-1, 1));
                 res.redirect(req.uri + '/');
             }
             var found = directoryIndex(fn);
@@ -393,8 +396,8 @@ HttpChild = (function() {
 
     // semaphore for locking around accept()
     var USE_FLOCK = true;
-    var lock = USE_FLOCK ? function(lockfd) { fs.flock(lockfd, fs.LOCK_EX) } : function(lockfd) { fs.lockf(lockfd, fs.F_LOCK); }
-    var unlock = USE_FLOCK ? function(lockfd) { fs.flock(lockfd, fs.LOCK_UN) } : function(lockfd) { fs.lockf(lockfd, fs.F_ULOCK); }
+    var lock = USE_FLOCK ? function(lockfd) { fs.flock(lockfd, fs.LOCK_EX); } : function(lockfd) { fs.lockf(lockfd, fs.F_LOCK); };
+    var unlock = USE_FLOCK ? function(lockfd) { fs.flock(lockfd, fs.LOCK_UN); } : function(lockfd) { fs.lockf(lockfd, fs.F_ULOCK); };
 
     return {
         requestHandler: null,   // called at start of each request
@@ -410,7 +413,9 @@ HttpChild = (function() {
                 Math.random();
             }
             var logfile = global.logfile;
-            HttpChild.onStart && HttpChild.onStart();
+            if (HttpChild.onStart) {
+                HttpChild.onStart();
+            }
             // onStart is a better way for apps to initialize SQL
             if (Config.mysql) {
                 SQL = new MySQL();
@@ -445,10 +450,12 @@ HttpChild = (function() {
                     catch (e) {
                         if (e !== 'RES.STOP') {
                             errorHandler(e);
-//							Error.exceptionHandler(e);
+//                          Error.exceptionHandler(e);
                         }
                     }
-                    endRequest && endRequest();
+                    if (endRequest) {
+                        endRequest();
+                    }
                     req.data = {};
                     res.data = {};
                     res.flush();
@@ -466,4 +473,4 @@ HttpChild = (function() {
         }
     };
 })();
-	
+    
