@@ -36,6 +36,19 @@ bootstrap:  CFLAGS += -DBOOTSTRAP_SILKJS
 
 bootstrap:  $(V8) $(CORE) SilkJS.h Makefile
 	g++ $(CFLAGS) -o bootstrap-silkjs $(CORE) -L$(V8LIB_DIR)/ -lv8_base -lv8_snapshot -lpthread
+
+install:	SilkJS
+	@rm -rf /usr/local/silkjs/builtin /usr/local/silkjs/bin /usr/local/silkjs/httpd /usr/local/silkjs/lib /usr/local/silkjs/modules /usr/local/silkjs/walkthrough /usr/local/silkjs/src
+	@mkdir -p /usr/local/bin /usr/local/silkjs /usr/local/silkjs/src /usr/local/silkjs/projects
+	cp -rp ../builtin ../examples ../httpd ../lib ../modules ../walkthrough /usr/local/silkjs
+	cp ../src/*.cpp ../src/*.h /usr/local/silkjs/src
+	mv /usr/local/silkjs/examples /usr/local/silkjs/bin
+	chmod 755 /usr/local/silkjs/bin/* /usr/local/silkjs/httpd/main.js
+	cp silkjs /usr/local/silkjs/bin
+	chgrp admin /usr/local /usr/local/bin 
+	chmod g+rwx /usr/local /usr/local/bin
+	ln -sf /usr/local/silkjs/bin/silkjs /usr/local/bin
+	ln -sf /usr/local/silkjs/httpd/main.js /usr/local/bin/httpd-silk.js
 	
 $(V8DIR):
 	echo "svn checkout"
