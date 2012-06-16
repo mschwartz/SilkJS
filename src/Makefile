@@ -25,10 +25,12 @@ CFLAGS = -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-sections -
 %.o: %.cpp SilkJS.h 
 	g++ $(CFLAGS) -c $(INCDIRS) -o $*.o $*.cpp
 
-silkjs: $(V8DIR) $(V8) $(CORE) $(OBJ) SilkJS.h Makefile
+silkjs: deps $(V8DIR) $(V8) $(CORE) $(OBJ) SilkJS.h Makefile
 	g++ $(CFLAGS) -o silkjs $(CORE) $(OBJ) $(LIBDIRS) -lv8_base -lv8_snapshot -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lmemcached -lcairo
 
-	
+deps: 
+	sudo apt-get -y install libmm-dev libmysqlclient-dev libmemcached-dev libgd2-xpm-dev libncurses5-dev libsqlite3-dev libcurl4-openssl-dev libssh2-1-dev libcairo2-dev
+
 debug:	    CFLAGS += -g
 debug:	    silkjs
 	
@@ -37,7 +39,9 @@ bootstrap:  CFLAGS += -DBOOTSTRAP_SILKJS
 bootstrap:  $(V8) $(CORE) SilkJS.h Makefile
 	g++ $(CFLAGS) -o bootstrap-silkjs $(CORE) -L$(V8LIB_DIR)/ -lv8_base -lv8_snapshot -lpthread
 
-install:	SilkJS
+install:	silkjs
+	@sudo chgrp sudo /usr/local /usr/local/bin 
+	@sudo chmod g+rwx /usr/local /usr/local/bin
 	@rm -rf /usr/local/silkjs/builtin /usr/local/silkjs/bin /usr/local/silkjs/httpd /usr/local/silkjs/lib /usr/local/silkjs/modules /usr/local/silkjs/walkthrough /usr/local/silkjs/src
 	@mkdir -p /usr/local/bin /usr/local/silkjs /usr/local/silkjs/src /usr/local/silkjs/projects
 	cp -rp ../builtin ../examples ../httpd ../lib ../modules ../walkthrough /usr/local/silkjs
@@ -45,8 +49,6 @@ install:	SilkJS
 	mv /usr/local/silkjs/examples /usr/local/silkjs/bin
 	chmod 755 /usr/local/silkjs/bin/* /usr/local/silkjs/httpd/main.js
 	cp silkjs /usr/local/silkjs/bin
-	chgrp sudo /usr/local /usr/local/bin 
-	chmod g+rwx /usr/local /usr/local/bin
 	ln -sf /usr/local/silkjs/bin/silkjs /usr/local/bin
 	ln -sf /usr/local/silkjs/httpd/main.js /usr/local/bin/httpd-silk.js
 	
