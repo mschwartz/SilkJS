@@ -45,7 +45,7 @@ install:	SilkJS
 	mv /usr/local/silkjs/examples /usr/local/silkjs/bin
 	chmod 755 /usr/local/silkjs/bin/* /usr/local/silkjs/httpd/main.js
 	cp silkjs /usr/local/silkjs/bin
-	chgrp admin /usr/local /usr/local/bin 
+	chgrp sudo /usr/local /usr/local/bin 
 	chmod g+rwx /usr/local /usr/local/bin
 	ln -sf /usr/local/silkjs/bin/silkjs /usr/local/bin
 	ln -sf /usr/local/silkjs/httpd/main.js /usr/local/bin/httpd-silk.js
