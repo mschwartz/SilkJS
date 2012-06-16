@@ -1,5 +1,13 @@
 ARCH := $(shell getconf LONG_BIT)
 
+RELEASE := $(shell lsb_release -sr)
+
+ifeq ($(RELEASE),12.04)
+	GROUP=sudo
+else
+	GROUP=admin
+endif
+
 CORE=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o v8.o http.o md5.o popen.o linenoise.o
 
 OBJ=	mysql.o memcached.o gd.o ncurses.o sem.o logfile.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o ftp.o ftplib.o editline.o cairo.o expat.o
@@ -39,9 +47,11 @@ bootstrap:  CFLAGS += -DBOOTSTRAP_SILKJS
 bootstrap:  $(V8) $(CORE) SilkJS.h Makefile
 	g++ $(CFLAGS) -o bootstrap-silkjs $(CORE) -L$(V8LIB_DIR)/ -lv8_base -lv8_snapshot -lpthread
 
-install:	silkjs
-	@sudo chgrp sudo /usr/local /usr/local/bin 
+perms:
+	@sudo chgrp $(GROUP)  /usr/local /usr/local/bin 
 	@sudo chmod g+rwx /usr/local /usr/local/bin
+
+install:	silkjs perms
 	@rm -rf /usr/local/silkjs/builtin /usr/local/silkjs/bin /usr/local/silkjs/httpd /usr/local/silkjs/lib /usr/local/silkjs/modules /usr/local/silkjs/walkthrough /usr/local/silkjs/src
 	@mkdir -p /usr/local/bin /usr/local/silkjs /usr/local/silkjs/src /usr/local/silkjs/projects
 	cp -rp ../builtin ../examples ../httpd ../lib ../modules ../walkthrough /usr/local/silkjs
