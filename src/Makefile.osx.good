@@ -24,44 +24,11 @@ LIBDIR = $(CURDIR)/osx_dependencies
 
 DEPENDENCIES = $(MYSQL) $(JPEG) $(GD2) $(MM) $(CURL) $(SSH2) $(MEMCACHED)
 
-STATICLIBS = $(LIBDIR)/lib/mysql/libmysqlclient.a \
-	v8-read-only/libv8.a \
-	$(LIBDIR)/lib/libcurl.a \
-	$(LIBDIR)/lib/libmm.a \
-	$(LIBDIR)/lib/libgd.a \
-	$(LIBDIR)/lib/libjpeg.a \
-	$(LIBDIR)/lib/libmemcached.a \
-	$(LIBDIR)/lib/libssh2.a
-
-
 %.o: %.cpp SilkJS.h Makefile
-	g++ $(CFLAGS) -c -I/usr/X11/include -I$(CURDIR)/osx_dependencies/include -I$(MYSQL)/include -I$(SSH2)/include -Iv8-read-only/include -o $*.o $*.cpp
-
-# SilkJS:	$(V8) $(V8_LIB) $(DEPENDENCIES) $(OBJ) SilkJS.h Makefile
-# 	g++ $(CFLAGS) -o silkjs $(OBJ) -Lv8-read-only -lv8 -L$(LIBDIR)/lib/mysql -lmysqlclient -L$(LIBDIR)/lib -lmm -ljpeg -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lmemcached -ledit -L/usr/X11/lib -lcairo -lexpat
+	g++ $(CFLAGS) -c -I/usr/X11/include -I$(CURDIR)/osx_dependencies/include -I$(MYSQL)/include -I$(SSH2)/include -Iv8-read-only/include -g -o $*.o $*.cpp
 
 SilkJS:	$(V8) $(V8_LIB) $(DEPENDENCIES) $(OBJ) SilkJS.h Makefile
-	g++ $(CFLAGS) -o silkjs $(OBJ) $(STATICLIBS) -lncurses -lpthread -lsqlite3  -L/usr/X11/lib -lcairo -lexpat -lz -lssl -lcrypto -lpng -lfreetype -lxpm -liconv -lfontconfig -lsasl2
-
-perms:
-	@sudo chgrp admin /usr/local /usr/local/bin 
-	@sudo chmod g+rwx /usr/local /usr/local/bin
-
-install:	SilkJS perms
-	@rm -rf /usr/local/silkjs/builtin /usr/local/silkjs/bin /usr/local/silkjs/httpd /usr/local/silkjs/lib /usr/local/silkjs/modules /usr/local/silkjs/walkthrough /usr/local/silkjs/src
-	@mkdir -p /usr/local/bin /usr/local/silkjs /usr/local/silkjs/src /usr/local/silkjs/projects
-	cp -rp ../builtin ../examples ../httpd ../lib ../modules ../walkthrough /usr/local/silkjs
-	cp ../src/*.cpp ../src/*.h /usr/local/silkjs/src
-	mv /usr/local/silkjs/examples /usr/local/silkjs/bin
-	chmod 755 /usr/local/silkjs/bin/* /usr/local/silkjs/httpd/main.js
-	cp silkjs /usr/local/silkjs/bin
-	chgrp admin /usr/local /usr/local/bin 
-	chmod g+rwx /usr/local /usr/local/bin
-	ln -sf /usr/local/silkjs/bin/silkjs /usr/local/bin
-	ln -sf /usr/local/silkjs/httpd/main.js /usr/local/bin/httpd-silk.js
-
-uninstall:
-	@rm -rf /usr/local/silkjs /usr/local/bin/httpd-silk.js /usr/local/bin/silkjs
+	g++ $(CFLAGS) -o silkjs $(OBJ) -Lv8-read-only -lv8 -L$(LIBDIR)/lib/mysql -lmysqlclient -L$(LIBDIR)/lib -lmm -ljpeg -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lmemcached -ledit -L/usr/X11/lib -lcairo -lexpat
 
 clean:
 	rm -rf silkjs *.o 
@@ -87,7 +54,7 @@ $(MYSQL):
 
 $(MEMCACHED):
 	tar xzvfp dependencies/libmemcached_0.44.orig.tar.gz
-	cd $(MEMCACHED) && ./configure --prefix $(LIBDIR) CFLAGS=-fPIC --disable-shared && make && make install
+	cd $(MEMCACHED) && ./configure --prefix $(LIBDIR) && make && make install
 
 $(JPEG):
 	tar xzvfp dependencies/libjpeg8_8b.orig.tar.gz
@@ -103,7 +70,7 @@ $(MM):
 
 $(CURL):
 	tar xzvfp dependencies/curl_7.21.6.orig.tar.gz
-	cd $(CURL) && ./configure --prefix $(LIBDIR) --disable-ldap && make && make install
+	cd $(CURL) && ./configure --prefix $(LIBDIR) && make && make install
 
 $(SSH2):
 	tar xzvfp dependencies/libssh2_1.2.8.orig.tar.gz

@@ -58,6 +58,7 @@ function isString(v) {
  * 
  * + status: HTTP status from server (e.g. 200 for OK, 404 for not found, etc.)
  * + contentType: the MIME type or content-type of the response.
+ * + responseHeaders: an object with key/value pairs; the key is the header name, the value is the value.
  * + responseText: the response from the server as a string.
  * 
  * @param {object} config - a config object as described above.
@@ -68,12 +69,12 @@ function isString(v) {
  */
 function cURL(config) {
     if (!config.url) {
-        error('url required');
+        throw new Error('url required');
     }
     var method = 'GET';
     
     if (config.params && config.form) {
-        error('Only one of params and form may be supplied');
+        throw new Error('Only one of params and form may be supplied');
     }
     
     var handle = c.init(config.url);
@@ -108,7 +109,7 @@ function cURL(config) {
             c.setCookie(handle, config.cookies);
         }
         else {
-            error('Invalid cookies config');
+            throw new Error('Invalid cookies config');
         }
     }
     if (config.params) {
@@ -127,7 +128,7 @@ function cURL(config) {
             paramString = config.params;
         }
         else {
-            error('Invalid params config');
+            throw new Error('Invalid params config');
         }
         if (method !== 'GET') {
             c.setPostFields(handle, paramString);
@@ -172,17 +173,30 @@ function cURL(config) {
             });
         }
         else {
-            error('Invalid headers config');
+            throw new Error('Invalid headers config');
         }
     }
 
     var errorCode = c.perform(handle, config.verbose || 0);
     if (errorCode) {
-        error(c.error(errorCode));
+        throw new Error(c.error(errorCode));
+    }
+    var responseHeaders = {};
+    var responseHeaderText = c.getResponseHeaders(handle).replace(/\r/igm, '');
+    if (responseHeaderText.length) {
+        responseHeaderText.split('\n').each(function(header) {
+            if (header.length) {
+                var parts = header.split(/: /);
+                if (parts[0] && parts[1]) {
+                    responseHeaders[parts[0].toLowerCase()] = parts[1];
+                }
+            }
+        });
     }
     var ret =  {
         status: c.getResponseCode(handle),
         contentType: c.getContentType(handle),
+        responseHeaders: responseHeaders,
         responseText: c.getResponseText(handle)
     };
     c.destroy(handle);

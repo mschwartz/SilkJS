@@ -24,3 +24,8 @@ clean:
 realclean:
 	cd src && make -f$(MAKEFILE) realclean
 
+install:
+	cd src && make -f$(MAKEFILE) install
+
+uninstall:
+	cd src && make -f$(MAKEFILE) uninstall

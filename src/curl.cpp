@@ -21,6 +21,8 @@ struct CHANDLE {
     CURL *curl;
     char *memory;
     size_t size;
+    char *headers;
+    size_t hsize;
     curl_slist *slist;
     curl_httppost *post;
     curl_httppost *last;
@@ -45,6 +47,23 @@ static size_t WriteMemoryCallback (void *contents, size_t size, size_t nmemb, vo
     memcpy(&w->memory[w->size], contents, realsize);
     w->size += realsize;
     w->memory[w->size] = '\0';
+    return realsize;
+}
+
+static size_t WriteHeaderCallback (void *contents, size_t size, size_t nmemb, void *userp) {
+    size_t realsize = size * nmemb;
+    char *s = (char *)contents;
+    if (s[0] == '\n') {
+        return realsize;
+    }
+    struct CHANDLE *w = (CHANDLE *) userp;
+    w->headers = (char *) realloc(w->headers, w->hsize + realsize + 1);
+    if (w->headers == NULL) {
+        return -1;
+    }
+    memcpy(&w->headers[w->hsize], contents, realsize);
+    w->hsize += realsize;
+    w->headers[w->hsize] = '\0';
     return realsize;
 }
 
@@ -81,25 +100,28 @@ static JSVAL error (JSARGS args) {
  * @return {object} handle - opaque handle
  */
 static JSVAL init (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value url(args[0]->ToString());
     CURL *curl = curl_easy_init();
     if (!curl) {
-        return scope.Close(String::New("Could not initialize CURL library"));
+        return String::New("Could not initialize CURL library");
     }
     struct CHANDLE *w = new CHANDLE;
     w->curl = curl;
     w->memory = (char *) malloc(1);
     w->size = 0;
+    w->headers = (char *) malloc(1);
+    w->hsize = 0;
     w->slist = NULL;
     w->post = NULL;
     w->last = NULL;
     curl_easy_setopt(curl, CURLOPT_URL, *url);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *) w);
+    curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, WriteHeaderCallback);
+    curl_easy_setopt(curl, CURLOPT_HEADERDATA, (void *) w);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "SilkJS/1.0");
-    return scope.Close(External::New(w));
+    return External::New(w);
 }
 
 /**
@@ -382,6 +404,28 @@ static JSVAL getContentType (JSARGS args) {
 }
 
 /**
+ * @funciton curl.getResponseHeaders
+ *
+ * ### Synopsis
+ *
+ * var responseHeaders = curl.getResponseHeaders(handle);
+ *
+ * Gets the response headers of the completed CURL response.
+ *
+ * The response headers are returned in the form of a string; each header line is terminated with a newline.
+ *
+ * @param {object} handle - CURL handle
+ * @return {string} responseHeaders - the response headers of the completed CURL request.
+ */
+static JSVAL getResponseHeaders (JSARGS args) {
+    CHANDLE *h = HANDLE(args[0]);
+    if (!h->hsize) {
+        return String::New("");
+    }
+    return String::New(h->headers, h->hsize);
+}
+
+/**
  * @function curl.getResponseText
  * 
  * ### Synopsis
@@ -423,6 +467,7 @@ static JSVAL destroy (JSARGS args) {
     }
     curl_easy_cleanup(h->curl);
     free(h->memory);
+    free(h->headers);
     free(h);
     return Undefined();
 }
@@ -444,6 +489,7 @@ void init_curl_object () {
     curlObject->Set(String::New("getResponseCode"), FunctionTemplate::New(getResponseCode));
     curlObject->Set(String::New("getContentType"), FunctionTemplate::New(getContentType));
     curlObject->Set(String::New("getResponseText"), FunctionTemplate::New(getResponseText));
+    curlObject->Set(String::New("getResponseHeaders"), FunctionTemplate::New(getResponseHeaders));
     curlObject->Set(String::New("destroy"), FunctionTemplate::New(destroy));
 
     builtinObject->Set(String::New("curl"), curlObject);

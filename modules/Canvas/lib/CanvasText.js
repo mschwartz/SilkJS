@@ -1,6 +1,5 @@
 /** @ignore */
 
-
 "use strict";
 
 var cairo = require('builtin/cairo');
@@ -19,7 +18,7 @@ var fontre = new RegExp('^ *'
     + '((?:' + string + ')( *, *(?:' + string + '))*)'
 );
  
- var parseFont = exports.parseFont = function(str) {
+var parseFont = function(str) {
     var font = {}, 
     captures = fontre.exec(str);
     
@@ -63,20 +62,20 @@ var fontre = new RegExp('^ *'
 var valid_textAlign = [ 'start', 'end', 'left', 'right', 'center' ];
 var valid_textBaseline = [ 'top', 'hanging', 'middle', 'alphabetic', 'ideographic', 'bottom' ];
 
-function CanvasText(context) {
-    this._context = context;
-    this._font = null;
-    this._fontString = '10px sans-serif';
-    this._textAlign = 'start';
-    this._textBaseline = 'alphabetic';
-}
-CanvasText.prototype.extend({
+var CanvasText = {
+    initCanvasText: function() {
+        this._font = null;
+        this._fontString = '10px sans-serif';
+        this._textAlign = 'start';
+        this._textBaseline = 'alphabetic';
+    },
     get font() {
         return this._fontString;
     },
     set font(value) {
-        var font;
-        if (font = parseFont(value)) {
+        var font = parseFont(value);
+//        console.dir(font);
+        if (font) {
             var ctx = this._context;
             this._fontString = value;
             this._font = font;
@@ -111,7 +110,7 @@ CanvasText.prototype.extend({
             this._textBaseline = value;
         }
     }
-});
+};
 
 exports.extend({
     CanvasText: CanvasText,

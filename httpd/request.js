@@ -62,7 +62,15 @@ req = (function() {
 			if (uriParts[1]) {
 				uriParts[1].split('&').each(function(part) {
 					part = part.split('=');
-					req.queryParams[part[0]] = data[part[0]] = decodeURIComponent(part[1].replace(/\+/g, ' '));
+                    try {
+    					req.queryParams[part[0]] = data[part[0]] = decodeURIComponent(part[1].replace(/\+/g, ' '));
+                    }
+                    catch (e) {
+//                        console.dir(uriParts);
+//                        console.dir(e);
+//                        console.log(e.stack);
+//                        throw e;
+                    }
 				});
 			}
 			req.method = first[0];

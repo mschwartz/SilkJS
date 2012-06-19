@@ -43,7 +43,6 @@ var responseCodeText = {
 
 res = function() {
 	var buf = buffer.create();
-	var headersSent;
 	return {
 		sock: 0,
 		status: 200,
@@ -51,6 +50,7 @@ res = function() {
 		contentType: 'text/html',
 		headers: {},
         data: {},
+        headersSent: false,
 		
 		init: function(sock, keepAlive, requestsHandled) {
 			buffer.reset(buf);
@@ -65,7 +65,7 @@ res = function() {
 				},
 				data: {}
 			});
-			headersSent = false;
+			res.headersSent = false;
 			var ka = req.headers && req.headers.connection;
 			if (ka && keepAlive) {
 				res.headers.Connection = 'Keep-Alive';
@@ -116,14 +116,15 @@ res = function() {
 		},
 		
 		sendHeaders: function() {
-			if (!headersSent) {
-				headersSent = true;
+			if (!res.headersSent) {
+				res.headersSent = true;
 				var out = '';
 				out += req.proto + ' ' + res.status + ' ' +  responseCodeText[res.status] + '\r\n';
 				out += 'Date: ' + new Date().toGMTString() + '\r\n';
 				res.headers.each(function(value, key) {
 					out += key +': ' + value + '\r\n';
 				});
+                res.cookies = res.cookies || {};
 				res.cookies.each(function(cookie, key) {
 					out += 'Set-Cookie: ' + key + '=' +encodeURIComponent(cookie.value);
 					if (cookie.expires) {
@@ -144,6 +145,8 @@ res = function() {
 					net.write(res.sock, out, out.length);
 				}
 				catch (e) {
+                    console.dir(e);
+                    console.log(e.stack);
 					throw new SilkException(e);
 				}
 				

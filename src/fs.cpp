@@ -31,8 +31,7 @@
  * @return {string} message - error message.
  */
 static JSVAL fs_error (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(String::New(strerror(errno)));
+    return String::New(strerror(errno));
 }
 
 /**
@@ -49,9 +48,8 @@ static JSVAL fs_error (JSARGS args) {
  * @return {int} success - 0 on success, or -1 if error occurred.
  */
 static JSVAL fs_chdir (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value dir(args[0]->ToString());
-    return scope.Close(Integer::New(chdir(*dir)));
+    return Integer::New(chdir(*dir));
 }
 
 /**
@@ -66,11 +64,10 @@ static JSVAL fs_chdir (JSARGS args) {
  * @return {string} current working directory path or null if error occurred.
  */
 static JSVAL fs_getcwd (JSARGS args) {
-    HandleScope scope;
     char *cwd = getcwd(NULL, 0);
     Handle<String>s = String::New(cwd);
     delete[] cwd;
-    return scope.Close(s);
+    return s;
 }
 
 /**
@@ -85,11 +82,10 @@ static JSVAL fs_getcwd (JSARGS args) {
  * @return {int} fd - OS file handle, or -1 if error occurred.
  */
 static JSVAL fs_open (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value filename(args[0]->ToString());
     int flags = args[1]->IntegerValue();
     mode_t mode = args[2]->IntegerValue();
-    return scope.Close(Integer::New(open(*filename, flags, mode)));
+    return Integer::New(open(*filename, flags, mode));
 }
 
 /**
@@ -106,9 +102,8 @@ static JSVAL fs_open (JSARGS args) {
  * 
  */
 static JSVAL fs_close (JSARGS args) {
-    HandleScope scope;
     int fd = args[0]->IntegerValue();
-    return scope.Close(Integer::New(close(fd)));
+    return Integer::New(close(fd));
 }
 
 /**
@@ -135,10 +130,9 @@ static JSVAL fs_close (JSARGS args) {
  * 
  */
 static JSVAL fs_flock (JSARGS args) {
-    HandleScope scope;
     int fd = args[0]->IntegerValue();
     int operation = args[1]->IntegerValue();
-    return scope.Close(Integer::New(flock(fd, operation)));
+    return Integer::New(flock(fd, operation));
 }
 
 /**
@@ -165,10 +159,9 @@ static JSVAL fs_flock (JSARGS args) {
  * lockf() is not fully implemented by SilkJS.  The function allows locking of regions of files.  We don't typically seek() and modify bits of files in place.  This is something to revisit if binary/b specification is implemented.
  */
 static JSVAL fs_lockf (JSARGS args) {
-    HandleScope scope;
     int fd = args[0]->IntegerValue();
     int operation = args[1]->IntegerValue();
-    return scope.Close(Integer::New(lockf(fd, operation, 0)));
+    return Integer::New(lockf(fd, operation, 0));
 }
 
 /**
@@ -187,10 +180,9 @@ static JSVAL fs_lockf (JSARGS args) {
  * @return {int} success - 0 on success, or -1 if error occurred
  */
 static JSVAL fs_rename (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value oldpath(args[0]->ToString());
     String::Utf8Value newpath(args[1]->ToString());
-    return scope.Close(Integer::New(rename(*oldpath, *newpath)));
+    return Integer::New(rename(*oldpath, *newpath));
 }
 
 /**
@@ -208,15 +200,14 @@ static JSVAL fs_rename (JSARGS args) {
  * @return {int} success - 0 on success, or -1 if error occurred.
  */
 static JSVAL fs_truncate (JSARGS args) {
-    HandleScope scope;
     off_t len = args[1]->IntegerValue();
     if (args[0]->IsString()) {
         String::Utf8Value path(args[0]->ToString());
-        return scope.Close(Integer::New(truncate(*path, len)));
+        return Integer::New(truncate(*path, len));
     }
     else {
         int fd = args[0]->IntegerValue();
-        return scope.Close(Integer::New(ftruncate(fd, len)));
+        return Integer::New(ftruncate(fd, len));
     }
 }
 
@@ -250,20 +241,18 @@ static JSVAL fs_truncate (JSARGS args) {
  * @return {int} success - 0 on success, or -1 if error occurred.
  */
 static JSVAL fs_chmod (JSARGS args) {
-    HandleScope scope;
     mode_t mode = args[1]->IntegerValue();
     if (args[0]->IsString()) {
         String::Utf8Value path(args[0]->ToString());
-        return scope.Close(Integer::New(chmod(*path, mode)));
+        return Integer::New(chmod(*path, mode));
     }
     else {
         int fd = args[0]->IntegerValue();
-        return scope.Close(Integer::New(fchmod(fd, mode)));
+        return Integer::New(fchmod(fd, mode));
     }
 }
 
 static JSOBJ format_stat (struct stat &buf) {
-    HandleScope scope;
     JSOBJ o = Object::New();
     o->Set(String::New("dev"), Integer::New(buf.st_dev));
     o->Set(String::New("ino"), Integer::New(buf.st_ino));
@@ -278,7 +267,7 @@ static JSOBJ format_stat (struct stat &buf) {
     o->Set(String::New("atime"), Integer::New(buf.st_atime));
     o->Set(String::New("mtime"), Integer::New(buf.st_mtime));
     o->Set(String::New("ctime"), Integer::New(buf.st_ctime));
-    return scope.Close(o);
+    return o;
 }
 
 /**
@@ -313,13 +302,12 @@ static JSOBJ format_stat (struct stat &buf) {
  * It is a bit more expensive to call this function if you are only interested in one of the fields.  This is because the entire result status object must be constructed.  SilkJS provides faster convenience methods to obtain the size, type, etc., of a file path.
  */
 static JSVAL fs_stat (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
     struct stat buf;
     if (stat(*path, &buf) == -1) {
-        return scope.Close(Null());
+        return Null();
     }
-    return scope.Close(format_stat(buf));
+    return format_stat(buf);
 }
 
 /**
@@ -334,13 +322,12 @@ static JSVAL fs_stat (JSARGS args) {
  * @return {object} o - status structure described for fs.stat(), or null if error occurred.
  */
 static JSVAL fs_lstat (const Arguments & args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
     struct stat buf;
     if (lstat(*path, &buf) == -1) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(format_stat(buf));
+    return format_stat(buf);
 }
 
 /**
@@ -355,13 +342,12 @@ static JSVAL fs_lstat (const Arguments & args) {
  * @return {object} o - status structure described for fs.stat(), or null if error occurred.
  */
 static JSVAL fs_fstat (JSARGS args) {
-    HandleScope scope;
     int fd = args[0]->IntegerValue();
     struct stat buf;
     if (fstat(fd, &buf) == -1) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(format_stat(buf));
+    return format_stat(buf);
 }
 
 /**
@@ -379,14 +365,13 @@ static JSVAL fs_fstat (JSARGS args) {
  * @return {boolean} doesExist - true if file exists, false if not.
  */
 static JSVAL fs_exists (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
 
     struct stat buf;
     if (stat(*path, &buf)) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(True());
+    return True();
 }
 
 /**
@@ -404,18 +389,17 @@ static JSVAL fs_exists (JSARGS args) {
  * @return {boolean} is_a_file - true if path exists and is a regular file, false if not.
  */
 static JSVAL fs_isfile (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
 
     struct stat buf;
     if (stat(*path, &buf)) {
-        return scope.Close(False());
+        return False();
     }
     if (S_ISREG(buf.st_mode)) {
-        return scope.Close(True());
+        return True();
     }
     else {
-        return scope.Close(False());
+        return False();
     }
 }
 
@@ -434,18 +418,17 @@ static JSVAL fs_isfile (JSARGS args) {
  * @return {boolean} is_a_directory - true if path exists and is a directory, false if not.
  */
 static JSVAL fs_isdir (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
 
     struct stat buf;
     if (stat(*path, &buf)) {
-        return scope.Close(False());
+        return False();
     }
     if (S_ISDIR(buf.st_mode)) {
-        return scope.Close(True());
+        return True();
     }
     else {
-        return scope.Close(False());
+        return False();
     }
 }
 
@@ -464,14 +447,13 @@ static JSVAL fs_isdir (JSARGS args) {
  * @return {int} size - size of file in bytes, or false if an error occurred.
  */
 static JSVAL fs_filesize (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
 
     struct stat buf;
     if (stat(*path, &buf)) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(Integer::New(buf.st_size));
+    return Integer::New(buf.st_size);
 }
 
 /**
@@ -489,14 +471,13 @@ static JSVAL fs_filesize (JSARGS args) {
  * @return {int} timestamp - modification time as timestamp, or false if an error occurred.
  */
 static JSVAL fs_mtime (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
 
     struct stat buf;
     if (stat(*path, &buf)) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(Integer::New(buf.st_mtime));
+    return Integer::New(buf.st_mtime);
 }
 
 /**
@@ -515,10 +496,9 @@ static JSVAL fs_mtime (JSARGS args) {
  * @return {int} success - 0 if successful, -1 if an error occurred.
  */
 static JSVAL fs_link (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value oldpath(args[0]->ToString());
     String::Utf8Value newpath(args[1]->ToString());
-    return scope.Close(Integer::New(link(*oldpath, *newpath)));
+    return Integer::New(link(*oldpath, *newpath));
 }
 
 /**
@@ -535,10 +515,9 @@ static JSVAL fs_link (JSARGS args) {
  * @return {int} success - 0 if successful, -1 if an error occurred.
  */
 static JSVAL fs_symlink (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value oldpath(args[0]->ToString());
     String::Utf8Value newpath(args[1]->ToString());
-    return scope.Close(Integer::New(symlink(*oldpath, *newpath)));
+    return Integer::New(symlink(*oldpath, *newpath));
 }
 
 #ifndef PATH_MAX
@@ -558,15 +537,14 @@ static JSVAL fs_symlink (JSARGS args) {
  * @return {string} actual_path - path that the link points to, or false if error.
  */
 static JSVAL fs_readlink (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
 
     char pathBuf[PATH_MAX];
     ssize_t size = readlink(*path, pathBuf, PATH_MAX);
     if (size < 0) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(String::New(pathBuf));
+    return String::New(pathBuf);
 }
 
 /**
@@ -584,16 +562,15 @@ static JSVAL fs_readlink (JSARGS args) {
  * @return {string} real_path - absolute path, or false if an error occurred.
  */
 static JSVAL fs_realpath (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
 
     char *absolutePath = realpath(*path, NULL);
     if (!absolutePath) {
-        return scope.Close(False());
+        return False();
     }
     Handle<String>s = String::New(absolutePath);
     free(absolutePath);
-    return scope.Close(s);
+    return s;
 }
 
 /**
@@ -611,12 +588,11 @@ static JSVAL fs_realpath (JSARGS args) {
  * @return {boolean} success - true if the link/file was removed, false if an error occurred.
  */
 static JSVAL fs_unlink (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
     if (unlink(*path) == -1) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(True());
+    return True();
 }
 
 /**
@@ -632,12 +608,11 @@ static JSVAL fs_unlink (JSARGS args) {
  * @return {boolean} success - true if the directory was removed, false if there was an error.
  */
 static JSVAL fs_rmdir (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
     if (rmdir(*path) == -1) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(True());
+    return True();
 }
 
 /**
@@ -669,16 +644,15 @@ static JSVAL fs_rmdir (JSARGS args) {
  * @return {boolean} success - true if the directory was created, false if an error occurred.
  */
 static JSVAL fs_mkdir (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
     mode_t mode = 0755;
     if (args.Length() > 1) {
         mode = args[1]->IntegerValue();
     }
     if (mkdir(*path, mode) == -1) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(True());
+    return True();
 }
 
 /**
@@ -696,11 +670,10 @@ static JSVAL fs_mkdir (JSARGS args) {
  * @return {array} filenames - array of {string} filenames, or null if the directory oculd not be opened.
  */
 static JSVAL fs_readdir (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
     DIR *d = opendir(*path);
     if (!d) {
-        return scope.Close(Null());
+        return Null();
     }
     Handle<Array>a = Array::New();
     int ndx = 0;
@@ -710,7 +683,7 @@ static JSVAL fs_readdir (JSARGS args) {
         }
     }
     closedir(d);
-    return scope.Close(a);
+    return a;
 }
 
 /**
@@ -729,29 +702,28 @@ static JSVAL fs_readdir (JSARGS args) {
  * This function reads 1024 bytes from the file at a time.  This is not optimal for big files, but minimizes the amount of memory used by the process.
  */
 static JSVAL fs_readfile (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
     int fd = open(*path, O_RDONLY);
     if (fd == -1) {
-        return scope.Close(Null());
+        return Null();
     }
     flock(fd, LOCK_SH);
     lseek(fd, 0, 0);
     std::string s;
-    //	long size = lseek(fd, 0, 2); lseek(fd, 0, 0);
-    //	printf("size = %ld\n", size);
+    //  long size = lseek(fd, 0, 2); lseek(fd, 0, 0);
+    //  printf("size = %ld\n", size);
     char buf[1024];
     ssize_t count;
     while ((count = read(fd, buf, 1024))) {
         s = s.append(buf, count);
     }
-    //	if (read(fd, buf, size) != size) {
-    //		return scope.Close(Null());
-    //	}
+    //  if (read(fd, buf, size) != size) {
+    //      return scope.Close(Null());
+    //  }
     flock(fd, LOCK_UN);
     close(fd);
     Handle<String>ret = String::New(s.c_str(), s.size());
-    return scope.Close(ret);
+    return ret;
 }
 
 /**
@@ -772,24 +744,23 @@ static JSVAL fs_readfile (JSARGS args) {
  * At some point, binary/b will be implemented in SilkJS and additional methods for dealing with binary data will be implemented.
  */
 static JSVAL fs_readfile64 (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
     int fd = open(*path, O_RDONLY);
     if (fd == -1) {
         printf("%s\n%s\n", *path, strerror(errno));
-        return scope.Close(Null());
+        return Null();
     }
     flock(fd, LOCK_SH);
     long size = lseek(fd, 0, 2);
     lseek(fd, 0, 0);
     unsigned char buf[size];
     if (read(fd, buf, size) != size) {
-        return scope.Close(Null());
+        return Null();
     }
     close(fd);
     string encoded = Base64Encode(buf, size);
     Handle<String>s = String::New(encoded.c_str(), encoded.size());
-    return scope.Close(s);
+    return s;
 }
 
 /**
@@ -820,9 +791,9 @@ static JSVAL fs_readfile64 (JSARGS args) {
  * @param {string} filename - name of file to read.
  * @param {string} contents - content of the file.
  * @param {int} mode - mode that the file will have after the contents are written.  See above.
+ * @return {boolean} success - true if file was written.
  */
 static JSVAL fs_writefile (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
     String::Utf8Value data(args[1]->ToString());
     ssize_t size;
@@ -838,17 +809,17 @@ static JSVAL fs_writefile (JSARGS args) {
     }
     int fd = open(*path, O_WRONLY | O_CREAT | O_TRUNC, mode);
     if (fd == -1) {
-        return scope.Close(False());
+        return False();
     }
     flock(fd, LOCK_EX);
     if (write(fd, *data, size) != size) {
         flock(fd, LOCK_UN);
         close(fd);
-        return scope.Close(False());
+        return False();
     }
     flock(fd, LOCK_UN);
     close(fd);
-    return scope.Close(True());
+    return True();
 }
 
 /**
@@ -883,12 +854,12 @@ static JSVAL fs_writefile (JSARGS args) {
  * @param {string} filename - name of file to read.
  * @param {string} contents - content of the file.
  * @param {int} mode - mode that the file will have after the contents are written.  See above.
+ * @return {boolean} success - true if file was written.
  * 
  * ### Notes
  * At some point, binary/b will be implemented in SilkJS and additional methods for dealing with binary data will be implemented.
  */
 static JSVAL fs_writefile64 (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
     String::Utf8Value data(args[1]->ToString());
     mode_t mode = 0644;
@@ -901,16 +872,44 @@ static JSVAL fs_writefile64 (JSARGS args) {
     int fd = open(*path, O_WRONLY | O_CREAT | O_TRUNC, mode);
     if (fd == -1) {
         delete [] buf;
-        return scope.Close(False());
+        return False();
     }
     if (write(fd, buf, decoded) != decoded) {
         close(fd);
         delete [] buf;
-        return scope.Close(False());
+        return False();
     }
     close(fd);
     delete [] buf;
-    return scope.Close(True());
+    return True();
+}
+
+/**
+ * @function fs.touch
+ *
+ * ### Synopsis
+ *
+ * var success = fs.touch(filename);
+ *
+ * Set mtime and atime of a file to now.  If the file doesn't exist, it will be created.
+ *
+ * @param {string} filename - name of file to update
+ * @param {boolean} success - true if the operations succeeded, false if an error occurred.
+ */
+static JSVAL fs_touch(JSARGS args) {
+    String::Utf8Value filename(args[0]->ToString());
+    int success = utime(*filename, NULL);
+    if (success == 0) {
+        return True();
+    }
+    if (success == ENOENT) {
+        int fd = open(*filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        if (fd < 1) {
+            return False();
+        }
+        close(fd);
+    }
+    return True();
 }
 
 /**
@@ -929,8 +928,6 @@ static JSVAL fs_writefile64 (JSARGS args) {
  * @return {boolean} success - true if file was copied successfully, false if an error occurred.
  */
 static JSVAL fs_copyFile (JSARGS args) {
-    HandleScope scope;
-
     String::Utf8Value destination(args[0]->ToString());
     String::Utf8Value source(args[1]->ToString());
     mode_t mode = 0644;
@@ -945,13 +942,13 @@ static JSVAL fs_copyFile (JSARGS args) {
 
     /* open the input file */
     if ((fdin = open(*source, O_RDONLY)) < 0) {
-        return scope.Close(False());
+        return False();
     }
 
     /* open/create the output file */
     if ((fdout = open(*destination, O_RDWR | O_CREAT | O_TRUNC, mode)) < 0) {
         close(fdin);
-        return scope.Close(False());
+        return False();
     }
 
     /* find size of input file */
@@ -960,7 +957,7 @@ static JSVAL fs_copyFile (JSARGS args) {
         close(fdin);
         close(fdout);
         errno = esave;
-        return scope.Close(False());
+        return False();
     }
 
     /* go to the location corresponding to the last byte */
@@ -969,7 +966,7 @@ static JSVAL fs_copyFile (JSARGS args) {
         close(fdin);
         close(fdout);
         errno = esave;
-        return scope.Close(False());
+        return False();
     }
 
     /* write a dummy byte at the last location */
@@ -978,7 +975,7 @@ static JSVAL fs_copyFile (JSARGS args) {
         close(fdin);
         close(fdout);
         errno = esave;
-        return scope.Close(False());
+        return False();
     }
 
     /* mmap the input file */
@@ -987,7 +984,7 @@ static JSVAL fs_copyFile (JSARGS args) {
         close(fdin);
         close(fdout);
         errno = esave;
-        return scope.Close(False());
+        return False();
     }
 
     /* mmap the output file */
@@ -997,7 +994,7 @@ static JSVAL fs_copyFile (JSARGS args) {
         close(fdin);
         close(fdout);
         errno = esave;
-        return scope.Close(False());
+        return False();
     }
 
     /* this copies the input file to the output file */
@@ -1036,7 +1033,7 @@ static JSVAL fs_copyFile (JSARGS args) {
     //    close(infd);
     //    close(outfd);
 
-    return scope.Close(True());
+    return True();
 }
 
 /**
@@ -1052,7 +1049,6 @@ static JSVAL fs_copyFile (JSARGS args) {
  * @return {string} hex - md5 hash
  */
 static JSVAL fs_md5 (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path(args[0]->ToString());
     unsigned char buf[1024];
     int bytes;
@@ -1062,7 +1058,7 @@ static JSVAL fs_md5 (JSARGS args) {
 
     FILE *fp = fopen(*path, "rb");
     if (fp == NULL) {
-        return scope.Close(False());
+        return False();
     }
     while ((bytes = fread(buf, 1, 1024, fp)) != 0) {
         MD5Update(&mdContext, buf, bytes);
@@ -1070,7 +1066,7 @@ static JSVAL fs_md5 (JSARGS args) {
     fclose(fp);
     MD5Final(&mdContext);
     MD5Digest(&mdContext, (char *) buf);
-    return scope.Close(String::New((char *) buf));
+    return String::New((char *) buf);
 }
 
 /**
@@ -1087,7 +1083,6 @@ static JSVAL fs_md5 (JSARGS args) {
  * @return {boolean{ identical - true if the files are identical, or a string describing the difference if not.
  */
 static JSVAL fs_cmp (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value path1(args[0]->ToString());
     String::Utf8Value path2(args[1]->ToString());
     int fd;
@@ -1097,7 +1092,7 @@ static JSVAL fs_cmp (JSARGS args) {
     fd = open(*path1, O_RDONLY);
     if (fd < 0) {
         sprintf(buf, "Could not open %s", *path1);
-        return scope.Close(String::New(buf));
+        return String::New(buf);
     }
     size1 = lseek(fd, 0, 2);
     lseek(fd, 0, 0);
@@ -1105,14 +1100,14 @@ static JSVAL fs_cmp (JSARGS args) {
     if (read(fd, buf1, size1) != size1) {
         close(fd);
         sprintf(buf, "Error reading %s", *path1);
-        return scope.Close(String::New(buf));
+        return String::New(buf);
     }
     close(fd);
 
     fd = open(*path2, O_RDONLY);
     if (fd < 0) {
         sprintf(buf, "Could not open %s", *path2);
-        return scope.Close(String::New(buf));
+        return String::New(buf);
     }
     size2 = lseek(fd, 0, 2);
     lseek(fd, 0, 0);
@@ -1120,26 +1115,24 @@ static JSVAL fs_cmp (JSARGS args) {
     if (read(fd, buf2, size2) != size2) {
         close(fd);
         sprintf(buf, "Error reading %s", *path2);
-        return scope.Close(String::New(buf));
+        return String::New(buf);
     }
     close(fd);
 
     if (size1 != size2) {
-        return scope.Close(String::New("Files differ in size"));
+        return String::New("Files differ in size");
     }
 
     for (long n = 0; n < size1; n++) {
         if (buf1[n] != buf2[n]) {
             sprintf(buf, "Files differ at offset %ld", n);
-            return scope.Close(String::New(buf));
+            return String::New(buf);
         }
     }
-    return scope.Close(True());
+    return True();
 }
 
 void init_fs_object () {
-    HandleScope scope;
-
     Handle<ObjectTemplate>fs = ObjectTemplate::New();
 
     /**
@@ -1253,6 +1246,7 @@ void init_fs_object () {
     fs->Set(String::New("isDir"), FunctionTemplate::New(fs_isdir));
     fs->Set(String::New("fileSize"), FunctionTemplate::New(fs_filesize));
     fs->Set(String::New("fileModified"), FunctionTemplate::New(fs_mtime));
+    fs->Set(String::New("touch"), FunctionTemplate::New(fs_touch));
 
     fs->Set(String::New("md5"), FunctionTemplate::New(fs_md5));
     fs->Set(String::New("cmp"), FunctionTemplate::New(fs_cmp));

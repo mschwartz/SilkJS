@@ -2,39 +2,49 @@
 
 "use strict";
 
-function CanvasPathMethods(context) {
-    this._context = context;
-}
-CanvasPathMethods.extend({
+var debug = global.debug;
+
+var cairo = require('builtin/cairo'),
+    console = require('console');
+
+var CanvasPathMethods = {
     // shared path API methods
     closePath: function() {
+        debug('closePath');
         cairo.context_close_path(this._context);
     },
     moveTo: function(x, y) {
+        if (y == 424) { y = 324; }
+        debug('moveTo ' + x + ',' + y);
         cairo.context_move_to(this._context, x, y);
     },
     lineTo: function(x, y) {
+        if (y == 424) { y = 324; }
+        debug('lineTo ' + x + ',' + y);
         cairo.context_line_to(this._context, x, y);
     },
     quadraticCurveTo: function(x1, y1, x2, y2) {
+        debug('quadraticCurveTo ' + [x1,y1,x2,y2].join(','));
         var point = cairo.context_get_current_point(this._context);
         var x = point.x || x,
             y = point.y || y;
-            
+
         cairo.context_curve_to(
-            this._context, 
+            this._context,
             x  + 2.0 / 3.0 * (x1 - x),  y  + 2.0 / 3.0 * (y1 - y),
-            x2 + 2.0 / 3.0 * (x1 - x2), y2 + 2.0 / 3.0 * (y1 - y2), 
+            x2 + 2.0 / 3.0 * (x1 - x2), y2 + 2.0 / 3.0 * (y1 - y2),
             x2,
             y2
         );
     },
     bezierCurveTo: function(cp1x, cp1y, cp2x, cp2y, x, y) {
+        debug('quadraticCurveTo ' + [cp1x,cp1y,cp2x,cp2y,x,y].join(','));
         cairo.curve_to(this.context, cp1x, cp1y, cp2x, cp2y, x, y);
     },
     arcTo: function(x1, y1, x2, y2, radius) {
+        debug('arcTo ' + [x1,y1,x2,y2,radius].join(','));
         var M_PI = Math.PI;
-        
+
         // Current path point
         var ctx = this._context;
         var p0 = cairo.context_get_current_point(ctx),
@@ -66,15 +76,15 @@ CanvasPathMethods.extend({
             cairo.context_line_to(ctx, p0.x + factor_max * p1p0.x, p0.y + factor_max * p1p0.y);
             return;
         }
-        
+
         var tangent = radius / Math.tan(Math.acos(cos_phi) / 2),
             factor_p1p0 = tangent / p1p0_length,
             t_p1p0 = {x: p1.x + factor_p1p0 * p1p0.x, y: p1.y + factor_p1p0 * p1p0.y };
-            
+
         var orth_p1p0 = { x: p1p0.y, y: -p1p0.x},
             orth_p1p0_length = Math.sqrt(orth_p1p0.x * orth_p1p0.x + orth_p1p0.y * orth_p1p0.y),
             factor_ra = radius / orth_p1p0_length;
-            
+
         var cos_alpha = (orth_p1p0.x * p1p2.x + orth_p1p0.y * p1p2.y) / (orth_p1p0_length * p1p2_length);
         if (cos_alpha < 0) {
             orth_p1p0 = { x: -orth_p1p0.x, y: -orth_p1p0.y};
@@ -122,12 +132,14 @@ CanvasPathMethods.extend({
             , radius
             , sa
             , ea);
-        }        
+        }
     },
     rect: function(x,y, w, h) {
+        debug('rect ' + [x,y,w,h].join(','));
         cairo.context_rectangle(this._context, x, y, w, h);
     },
     arc: function(x,y, radius, startAngle, endAngle, anticlockwise) {
+        debug('arc ' + [x,y, radius, startAngle, endAngle, anticlockwise].join(','));
         if (anticlockwise && Math.PI * 2 != endAngle) {
             cairo.context_arc_negative(this._context, x, y, radius, startAngle, endAngle);
         }
@@ -135,7 +147,7 @@ CanvasPathMethods.extend({
             cairo.context_arc(this._context, x, y, radius, startAngle, endAngle);
         }
     }
-});
+};
 
 exports.extend({
     CanvasPathMethods: CanvasPathMethods

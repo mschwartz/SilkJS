@@ -12,17 +12,35 @@
 var Json = function() {
     return {
         /**
-		 * @function Json.encode
-         * 
+         * @function Json.format
+         *
+         * ### Synopsis
+         *
+         * var s = Json.format(obj);
+         * var s = Json.format(obj, spaces);
+         *
+         * Encode an object as JSON and return it as a formatted string, suitable for printing.
+         *
+         * @param {Object} obj - object to format.
+         * @param {int} spaces - number of spaces to indent while formatting.
+         */
+        format: function(o, spaces) {
+            spaces = spaces || 4;
+            return JSON.stringify(o, null, spaces);
+        },
+
+        /**
+         * @function Json.encode
+         *
          * ### Synopsis
          *
          * var s = Json.encode(obj);
-         * 
-		 * Encode an object using NATIVE JSON object for speed
-		 *
-		 * @param {Object} obj - Object to be encoded as a string
-		 * @returns {string} s - Object encoded as a string
-		 */
+         *
+         * Encode an object using NATIVE JSON object for speed
+         *
+         * @param {Object} obj - Object to be encoded as a string
+         * @returns {string} s - Object encoded as a string
+         */
         encode: function(o) {
             return JSON.stringify(o);
         },
@@ -33,12 +51,12 @@ var Json = function() {
          * ### Synopsis
          *
          * var obj = Json.decode(s);
-         * 
-		 * Decode a string using NATIVE JSON object for speed
-		 *
-		 * @param {string} s - String to be decoded
-		 * @returns {Object} obj - Object decoded from string
-		 */
+         *
+         * Decode a string using NATIVE JSON object for speed
+         *
+         * @param {string} s - String to be decoded
+         * @returns {Object} obj - Object decoded from string
+         */
         decode: function(s) {
             return JSON.parse(s);
         },
@@ -49,17 +67,17 @@ var Json = function() {
          * ### Synopsis
          *
          * var s = Json.successString(obj);
-         * 
-		 * Generate a JSON encoded success string from an Object
-		 *
-		 * @param {Object} obj - Object/Response to be sent to client
-		 * @returns {string} s = Wrapped Object converted to JSON with success indication
-		 */
+         *
+         * Generate a JSON encoded success string from an Object
+         *
+         * @param {Object} obj - Object/Response to be sent to client
+         * @returns {string} s = Wrapped Object converted to JSON with success indication
+         */
         successString: function(obj) {
             obj.success = true;
             return Json.encode(obj);
         },
-		
+        
         /**
          * @function Json.success
          *
@@ -105,11 +123,11 @@ var Json = function() {
          * ### Synopsis
          *
          * Json.send(json_string);
-         * 
-		 * Send an already JSON encoded string and end the request.
-		 *
-		 * @param {string} json_string - String to be sent
-		 */
+         *
+         * Send an already JSON encoded string and end the request.
+         *
+         * @param {string} json_string - String to be sent
+         */
         send: function(json) {
             res.write(json);
             if (global.Server && global.Server.endRequest()) {
@@ -119,25 +137,25 @@ var Json = function() {
                 res.stop();
             }
         },
-		
+        
         /**
         * @function Json.failure
-        * 
+        *
         * ### Synopsis
-        * 
+        *
         * Json.failure(message);
-        * 
+        *
         * Send an error/failure response to the client.  The content has the form { success: false, message: 'text of failure description' },
-        * 
+        *
         * @param {string} message - message to send
-        */        
+        */
         failure: function(msg) {
             var responseObj = {
                 success: false,
                 message: msg
             };
             var contentType = req.getHeader('content-type') || '';
-            if (contentType && !contentType.indexOf('multipart/form-data') != -1) {
+            if (contentType && contentType.indexOf('multipart/form-data') !== -1) {
                 res.write('<textarea>' + Json.encode(responseObj) + '</textarea>');
             }
             else {
@@ -177,7 +195,7 @@ var Json = function() {
                 res.stop();
             }
         }
-    }
+    };
 }();
 
 if (exports) {

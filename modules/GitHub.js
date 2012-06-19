@@ -39,6 +39,9 @@ var cURL = require('cURL'),
 function GitHub(username, password) {
     this.username = username;
     this.password = password;
+    this.page = 1;
+    this.per_page = 100;
+    this.nextUrl = null;
     this.url = 'https://' + username + ':' + password + '@api.github.com';
     var response = cURL({
         url: this.url + '/users/'+username
@@ -53,9 +56,104 @@ function GitHub(username, password) {
 }
 
 GitHub.prototype.extend({
-    repoName: function(repo) {
+    /* private */ _repoName: function(repo) {
         return (repo.indexOf('/') !== -1) ? repo : (this.username + '/' + repo);
     },
+
+    /* private */
+    _get: function(url) {
+        console.dir(url);
+        var response = cURL({
+            url: url
+        });
+        this.status = response.status;
+        return Json.decode(response.responseText);
+    },
+
+    _getList: function(url) {
+        this.nextUrl = url;
+        var response = cURL({
+            url: url + '?page='+this.page+'&per_page='+this.per_page
+        });
+        this.status = response.status;
+        if (this.status !== 200) {
+            this.nextUrl = 0;
+            return false;
+        }
+        var list = Json.decode(response.responseText);
+        this.nextPage = this.page+1;
+        return list;
+    },
+    next: function() {
+        if (!this.nextUrl) {
+            return false;
+        }
+        this.page = this.nextPage;
+        var ret =  this._getList(this.nextUrl);
+        this.page = 1;
+        return ret;
+    },
+
+    _getBoolean: function(url) {
+        var response = cURL({
+            url: url
+        });
+        this.status = response.status;
+        return this.status === 204 ? true : Json.decode(response.responseText);
+    },
+
+    _delete: function(url) {
+        var response = cURL({
+            method: 'DELETE',
+            url: url
+        });
+        this.status = response.status;
+        return this.status === 204 ? true : Json.decode(response.responseText);
+    },
+
+    _post: function(url, params) {
+        var config = {
+            url: url,
+            method: 'POST'
+        };
+        if (params) {
+            config.params = Json.encode(params);
+        }
+        var response = cURL(config);
+        this.status = response.status;
+        return Json.decode(response.responseText);
+    },
+
+    _patch: function(url, params) {
+        var config = {
+            url: url,
+            method: 'PATCH'
+        };
+        if (params) {
+            config.params = Json.encode(params);
+        }
+        var response = cURL(config);
+        this.status = response.status;
+        return Json.decode(response.responseText);
+    },
+
+    _put: function(url, params) {
+        var config = {
+            url: url,
+            method: 'PUT'
+        };
+        if (params) {
+            config.params = Json.encode(params);
+        }
+        else {
+            config.params = ' ';    // hack - forces a content-length: 1 header, requried by github api
+        }
+        var response = cURL(config);
+        this.status = response.status;
+        return this.status === 204 ? true : Json.decode(response.responseText);
+    },
+
+
 
     /**
      * @function GitHub.getUser
@@ -73,12 +171,8 @@ GitHub.prototype.extend({
      */
     getUser: function(username) {
         username = username || this.username;
-        var response = cURL({
-            url: this.url + '/users/'+username
-        });
-        this.status = response.status;
-        var user = Json.decode(response.responseText);
-        if (username === this.username && response.status === 200) {
+        var user = this._get(this.url + '/users/'+username);
+        if (username === this.username && this.status === 200) {
             this.user = user;
         }
         return user;
@@ -107,13 +201,7 @@ GitHub.prototype.extend({
      * @return {object} result - Object containing the information about the authenticated user.
      */
     editUser: function(o) {
-        var response = cURL({
-            method: 'PATCH',
-            url: this.url + '/user',
-            params: Json.encode(o)
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._patch(this.url + '/user', o);
     },
 
     /**
@@ -128,11 +216,7 @@ GitHub.prototype.extend({
      * @return {array} emails - array of email addresses for the user.
      */
     getEmails: function() {
-        var response = cURL({
-            url: this.url + '/user/emails'
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._getList(this.url + '/user/emails');
     },
 
     /**
@@ -148,13 +232,7 @@ GitHub.prototype.extend({
      * @returrn {array} emails - array of emails for user, after the additions.
      */
     addEmails: function(emails) {
-        var response = cURL({
-            method: 'POST',
-            url: this.url + '/user/emails',
-            params: Json.encode(emails)
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._post(this.url + '/user/emails', emails);
     },
 
     /**
@@ -173,15 +251,7 @@ GitHub.prototype.extend({
      * This method will throw a descriptive error {object} if GitHub reports an error.
      */
     deleteEmails: function(emails) {
-        var response = cURL({
-            method: 'DELETE',
-            url: this.url + '/user/emails',
-            params: Json.encode(emails)
-        });
-        this.status = response.status;
-        if (this.status != 204) {
-            throw Json.decode(response.responseText);
-        }
+        return this._delete(this.url + '/user/emails', emails);
     },
 
     /**
@@ -199,11 +269,7 @@ GitHub.prototype.extend({
      */
     listFollowers: function(username) {
         username = username || this.username;
-        var response = cURL({
-            url: this.url + '/users/'+username+'/followers'
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._getList(this.url + '/users/'+username+'/followers');
     },
 
     /**
@@ -221,11 +287,7 @@ GitHub.prototype.extend({
      */
     listFollowing: function(username) {
         username = username || this.username;
-        var response = cURL({
-            url: this.url + '/users/'+username+'/following'
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._getList(this.url + '/users/'+username+'/following');
     },
 
     /**
@@ -242,11 +304,7 @@ GitHub.prototype.extend({
      */
     amFollowing: function(username) {
         username = username || this.username;
-        var response = cURL({
-            url: this.url + '/user/following/'+username
-        });
-        this.status = response.status;
-        return this.status === 204;
+        return this._getBoolean(this.url + '/user/following/'+username);
     },
 
     /**
@@ -263,15 +321,7 @@ GitHub.prototype.extend({
      *
      */
     follow: function(username) {
-        var response = cURL({
-            method: 'PUT',
-            url: this.url + '/user/following/'+username,
-            params: ' ' // hack - forces a content-length: 1 header, required by github api
-        });
-        this.status = response.status;
-        console.log(this.status);
-        console.dir(response.responseText);
-        return this.status == 204;
+        return this._put(this.url + '/user/following/'+username);
     },
 
     /**
@@ -284,16 +334,11 @@ GitHub.prototype.extend({
      * Stop following a user.
      *
      * @param {string} username - GitHub username to stop following.
-     * @return {boolean} success - true if authenticaed user is no longer following the specified user.
+     * @return {boolean} success - true if authenticated user is no longer following the specified user.
      *
      */
     unfollow: function(username) {
-        var response = cURL({
-            method: 'DELETE',
-            url: this.url + '/user/following/'+username
-        });
-        this.status = response.status;
-        return this.status == 204;
+        return this._delete(this.url + '/user/following/'+username);
     },
 
     /**
@@ -308,11 +353,7 @@ GitHub.prototype.extend({
      * @return {array} keys - array of objects describing each of the publich keys for the authenticated user.
      */
     listKeys: function() {
-        var response = cURL({
-            url: this.url + '/user/keys'
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._getList(this.url + '/user/keys');
     },
 
     /**
@@ -331,11 +372,7 @@ GitHub.prototype.extend({
      * The GitHub.listKeys method returns an array of objects, one per key.  Each object contains the id of the key.
      */
     getKey: function(id) {
-        var response = cURL({
-            url: this.url + '/user/keys/'+id
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._get(this.url + '/user/keys/'+id);
     },
 
     /**
@@ -356,13 +393,7 @@ GitHub.prototype.extend({
      * The GitHub WWW site allows you to upload RSA/DSA/etc. keys to allow git:repoURI authentication.  You will generate the key (file) on your workstation and upload it to GitHub using this method.  The title is a string that identifies the key, e.g. "my workstation."
      */
     createKey: function(title, key) {
-        var response = cURL({
-            method: 'POST',
-            url: this.url + '/user/keys',
-            params: Json.encode({ title: title, key: key })
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._post(this.url + '/user/keys', { title: title, key: key });
     },
 
     /**
@@ -380,13 +411,7 @@ GitHub.prototype.extend({
      * @return {object} response - The key that was updated, or an object with descriptive information about why the key could not be updated.
      */
     updateKey: function(id, title, key) {
-        var response = cURL({
-            method: 'PATCH',
-            url: this.url + '/user/keys/'+id,
-            params: Json.encode({ title: title, key: key })
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._patch(this.url + '/user/keys/'+id, { title: title, key: key });
     },
 
     /**
@@ -402,12 +427,7 @@ GitHub.prototype.extend({
      * @returns {boolean} success - true if the key was deleted.
      */
     deleteKey: function(id) {
-        var response = cURL({
-            method: 'delete',
-            url: this.url + '/user/keys/'+id
-        });
-        this.status = response.status;
-        return this.status == 204;
+        return this._delete(this.url + '/user/keys/'+id);
     },
 
     /**
@@ -451,11 +471,7 @@ GitHub.prototype.extend({
      * @return {array} repos - array of repo objects.
      */
     listOrgRepos: function(org) {
-        var response = cURL({
-            url: this.url + '/orgs/' + org + '/repos'
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._getList(this.url + '/orgs/' + org + '/repos');
     },
 
     /**
@@ -484,14 +500,7 @@ GitHub.prototype.extend({
      */
     createRepository: function(config, org) {
         var url = this.url + (org ? ('/orgs/' + org + '/repos') : '/user/repos');
-        console.dir(url);
-        var response = cURL({
-            method: 'POST',
-            url: url,
-            params: Json.encode(config)
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._post(url, config);
     },
 
     /**
@@ -516,11 +525,7 @@ GitHub.prototype.extend({
         else {
             user = this.username;
         }
-        var response = cURL({
-            url: this.url + '/repos/' + user + '/' + repo
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._get(this.url + '/repos/' + user + '/' + repo);
     },
 
     /**
@@ -557,15 +562,7 @@ GitHub.prototype.extend({
         else {
             user = this.username;
         }
-
-        var url = this.url + '/repos/' + user + '/' + name;
-        var response = cURL({
-            method: 'PATCH',
-            url: url,
-            params: Json.encode(config)
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._patch(this.url + '/repos/' + user + '/' + name, config);
     },
 
     /**
@@ -590,13 +587,7 @@ GitHub.prototype.extend({
         else {
             user = this.username;
         }
-
-        var url = this.url + '/repos/' + user + '/' + name + '/contributors';
-        var response = cURL({
-            url: url
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._getList(this.url + '/repos/' + user + '/' + name + '/contributors');
     },
 
     /**
@@ -621,13 +612,7 @@ GitHub.prototype.extend({
         else {
             user = this.username;
         }
-
-        var url = this.url + '/repos/' + user + '/' + name + '/languages';
-        var response = cURL({
-            url: url
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._getList(this.url + '/repos/' + user + '/' + name + '/languages');
     },
 
     /**
@@ -652,13 +637,7 @@ GitHub.prototype.extend({
         else {
             user = this.username;
         }
-
-        var url = this.url + '/repos/' + user + '/' + name + '/teams';
-        var response = cURL({
-            url: url
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._getList(this.url + '/repos/' + user + '/' + name + '/teams');
     },
 
     /**
@@ -683,13 +662,7 @@ GitHub.prototype.extend({
         else {
             user = this.username;
         }
-
-        var url = this.url + '/repos/' + user + '/' + name + '/tags';
-        var response = cURL({
-            url: url
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._getList(this.url + '/repos/' + user + '/' + name + '/tags');
     },
 
     /**
@@ -714,13 +687,7 @@ GitHub.prototype.extend({
         else {
             user = this.username;
         }
-
-        var url = this.url + '/repos/' + user + '/' + name + '/branches';
-        var response = cURL({
-            url: url
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._getList(this.url + '/repos/' + user + '/' + name + '/branches');
     },
 
     /**
@@ -745,13 +712,7 @@ GitHub.prototype.extend({
         else {
             user = this.username;
         }
-
-        var url = this.url + '/repos/' + user + '/' + name + '/collaborators';
-        var response = cURL({
-            url: url
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._getList(this.url + '/repos/' + user + '/' + name + '/collaborators');
     },
 
     /**
@@ -775,13 +736,7 @@ GitHub.prototype.extend({
         else {
             user = this.username;
         }
-
-        var url = this.url + '/repos/' + user + '/' + repo + '/collaborators/' + oUser;
-        var response = cURL({
-            url: url
-        });
-        this.status = response.status;
-        return this.status == 204;
+        return this._getBoolean(this.url + '/repos/' + user + '/' + repo + '/collaborators/' + oUser);
     },
 
     /**
@@ -805,19 +760,7 @@ GitHub.prototype.extend({
         else {
             user = this.username;
         }
-        var url = this.url + '/repos/' + user + '/' + repo + '/collaborators/' + oUser;
-        var response = cURL({
-            method: 'PUT',
-            url: url,
-            params: ' ' // hack - forces a content-length: 1 header, required by github api
-        });
-        this.status = response.status;
-        if (this.status == 204) {
-            return true;
-        }
-        if (response.responseText.length) {
-            throw Json.decode(response.responseText);
-        }
+        return this._put(this.url + '/repos/' + user + '/' + repo + '/collaborators/' + oUser);
     },
 
     /**
@@ -832,18 +775,7 @@ GitHub.prototype.extend({
      * @return {boolean} success - true if user removed as a collaborator.
      */
     removeCollaborator: function(repo, oUser) {
-        var url = this.url + '/repos/' + this.repoName(repo) + '/collaborators/' + oUser;
-        var response = cURL({
-            method: 'DELETE',
-            url: url
-        });
-        this.status = response.status;
-        if (this.status == 204) {
-            return true;
-        }
-        if (response.responseText.length) {
-            throw Json.decode(response.responseText);
-        }
+        return this._delete(this.url + '/repos/' + this._repoName(repo) + '/collaborators/' + oUser);
     },
 
     /**
@@ -866,12 +798,7 @@ GitHub.prototype.extend({
      * @return {array} commits - array of objects describing the commits.
      */
     listCommits: function(repo, params) {
-        var url = this.url + '/repos/' + this.repoName(repo) + '/commits';
-        var response = cURL({
-            url: url
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._getList(this.url + '/repos/' + this._repoName(repo) + '/commits');
     },
 
     /**
@@ -888,12 +815,7 @@ GitHub.prototype.extend({
      * @return {object} commit - info about the commit
      */
     getCommit: function(repo, sha) {
-        var url = this.url + '/repos/' + this.repoName(repo) + '/commits/' + sha;
-        var response = cURL({
-            url: url
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._get(this.url + '/repos/' + this._repoName(repo) + '/commits/' + sha);
     },
 
     /**
@@ -911,16 +833,12 @@ GitHub.prototype.extend({
      * @return {Object} comments - array of comments
      */
     listComments: function(repo, sha) {
-        var url = this.url + '/repos/' + this.repoName(repo);
+        var url = this.url + '/repos/' + this._repoName(repo);
         if (sha) {
             url += '/commits/' + sha;
         }
         url += '/comments';
-        var response = cURL({
-            url: url
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._getList(url);
     },
 
     /**
@@ -946,14 +864,7 @@ GitHub.prototype.extend({
      * @return {object} comment - resulting comment information
      */
     createCommitComment: function(repo, sha, comment) {
-        var url = this.url + '/repos/' + this.repoName(repo) + '/commits/' + sha + '/comments';
-        var response = cURL({
-            method: 'POST',
-            url: url,
-            params: Json.encode(comment)
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._post(this.url + '/repos/' + this._repoName(repo) + '/commits/' + sha + '/comments', comment);
     },
 
     /**
@@ -969,12 +880,7 @@ GitHub.prototype.extend({
      * @return {object} comment - resulting comment information
      */
     getCommitComment: function(repo, id) {
-        var url = this.url + '/repos/' + this.repoName(repo) + '/comments/' + id;
-        var response = cURL({
-            url: url
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._get(this.url + '/repos/' + this._repoName(repo) + '/comments/' + id);
     },
 
     /**
@@ -991,14 +897,7 @@ GitHub.prototype.extend({
      * @return {object} comment - resulting comment information
      */
     updateCommitComment: function(repo, id, body) {
-        var url = this.url + '/repos/' + this.repoName(repo) + '/comments/' + id;
-        var response = cURL({
-            method: 'PATCH',
-            url: url,
-            params: Json.encode({ body: body })
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._patch(this.url + '/repos/' + this._repoName(repo) + '/comments/' + id, { body: body });
     },
 
     /**
@@ -1016,12 +915,7 @@ GitHub.prototype.extend({
      * @return {object} info - comparison information about the two commits
      */
     compareCommits: function(repo, base, head) {
-        var url = this.url + '/repos/' + this.repoName(repo) + '/compare/' + base + '...' + head;
-        var response = cURL({
-            url: url
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._get(this.url + '/repos/' + this._repoName(repo) + '/compare/' + base + '...' + head);
     },
 
     /**
@@ -1041,15 +935,7 @@ GitHub.prototype.extend({
      * If an error occurs, an exception is thrown.
      */
     deleteCommitComment: function(repo, id) {
-        var url = this.url + '/repos/' + this.repoName(repo) + '/comments/' + id;
-        var response = cURL({
-            method: 'DELETE',
-            url: url
-        });
-        this.status = response.status;
-        if (this.status != 204) {
-            throw Json.decode(response.responseText);
-        }
+        return this._delete(this.url + '/repos/' + this._repoName(repo) + '/comments/' + id);
     },
 
     // downloads api
@@ -1067,12 +953,7 @@ GitHub.prototype.extend({
      * @return {array} downloads - array of objects describing each download item
      */
     listDownloads: function(repo) {
-        var url = this.url + '/repos/' + this.repoName(repo) + '/downloads';
-        var response = cURL({
-            url: url
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._getList(this.url + '/repos/' + this._repoName(repo) + '/downloads');
     },
 
     /**
@@ -1089,12 +970,7 @@ GitHub.prototype.extend({
      * @return {object} downloads - object describing each download item
      */
     getDownload: function(repo, id) {
-        var url = this.url + '/repos/' + this.repoName(repo) + '/downloads/' + id;
-        var response = cURL({
-            url: url
-        });
-        this.status = response.status;
-        return Json.decode(response.responseText);
+        return this._get(this.url + '/repos/' + this._repoName(repo) + '/downloads/' + id);
     },
     
     /**
@@ -1115,7 +991,7 @@ GitHub.prototype.extend({
      * @return {boolean} success - true if download was created
      */
     createDownload: function(repo, path, description, contentType) {
-        var url = this.url + '/repos/' + this.repoName(repo) + '/downloads';
+        var url = this.url + '/repos/' + this._repoName(repo) + '/downloads';
         // create the resource
         if (!fs.exists(path)) {
             throw 'File ' + path + ' does not exist';
@@ -1178,16 +1054,309 @@ GitHub.prototype.extend({
      * @return {boolean} success - true if the download was deleted.
      */
     deleteDownload: function(repo, id) {
-        var url = this.url + '/repos/' + this.repoName(repo) + '/downloads/' + id;
-        var response = cURL({
-            method: 'DELETE',
-            url: url
-        });
-        this.status = response.status;
-        if (this.status != 204) {
-            throw Json.decode(response.responseText);
+        return this._delete(this.url + '/repos/' + this._repoName(repo) + '/downloads/' + id);
+    },
+
+    /**
+     * @function GitHub.listForks
+     *
+     * ### Synopsis
+     *
+     * var forks = gh.listForks(repo);
+     * var forks = gh.listForks(repo, sort);
+     *
+     * List forks of a repo.
+     *
+     * The sort parameter may be one of the following:
+     *
+     * + 'newest'
+     * + 'oldest'
+     * + 'watchers'
+     *
+     * Default value for sort is 'newest'
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} sort - one of the above values
+     * @return {Array} forks - array of objects describing each of the forks for the repo
+     */
+    listForks: function(repo,sort) {
+        var url = this.url + '/repos/' + this._repoName(repo) + '/forks';
+        if (sort && sort.length) {
+            url += '?sort='+sort;
         }
-        return this.status == 204;
+        return this._getList(url);
+    },
+
+    /**
+     * @function GitHub.createFork
+     *
+     * ### Synopsis
+     *
+     * var success = gh.createFork(repo);
+     * var success = gh.createFork(repo, org);
+     *
+     * Create a fork for the authenticated user.
+     *
+     * If the org parameter is supplied, it is an organization login; the repository will be forked into this organization.
+     *
+     * <p>
+     * Forking a repository happens asynchronously.  Therefore, you may have to wait a short period before accessing the
+     * git objects.  If this takes longer than 5 minutes, contact GitHub customer support.
+     * </p>
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} org - organization to fork into.
+     * @return {boolean} success - true if fork request was accepted.
+     */
+    createFork: function(repo, org) {
+        var url = this.url + '/repos/' + this._repoName(repo) + '/forks';
+        if (sort && sort.length) {
+            url += '?org='+org;
+        }
+        return this._post(url);
+    },
+
+    /**
+     * @function GitHub.listRepoDeployKeys
+     *
+     * ### Synopsis
+     *
+     * var keys = gh.listRepoDeployKeys(repo);
+     *
+     * List Repo Deploy Keys.
+     *
+     * ### See Also:
+     *
+     * http://help.github.com/deploy-keys/
+     * http://developer.github.com/v3/repos/keys/
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @return {Array} keys - array of repo deploy keys.
+     */
+    listRepoDeployKeys: function(repo) {
+        return this._getList(this.url + '/repos/' + this._repoName(repo) + '/keys');
+    },
+
+    /**
+     * @function GitHub.getRepoDeployKey
+     *
+     * ### Synopsis
+     *
+     * var key = gh.getRepoDeployKey(repo, id);
+     *
+     * Get a specific repo deploy key by id.
+     *
+     * ### See Also:
+     *
+     * http://help.github.com/deploy-keys/
+     * http://developer.github.com/v3/repos/keys/
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {int} id - id of key to return.
+     * @return {Object} key - object containing information for a key.
+     */
+    getRepoDeployKey: function(repo, id) {
+        return this._get(this.url + '/repos/' + this._repoName(repo) + '/keys/' + id);
+    },
+
+    /**
+     * @function GitHub.createRepoDeployKey
+     *
+     * ### Synopsis
+     *
+     * var key = gh.createRepoDeployKey(repo, title, key);
+     *
+     * This function creates a repo deploy key with the given title and SSH-type key (e.g. DSA or RSA string).
+     *
+     * ### See Also:
+     *
+     * http://help.github.com/deploy-keys/
+     * http://developer.github.com/v3/repos/keys/
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} title - title for the key.
+     * @param {string} key - the RSA or DSA key to add.
+     * @return {Object} key - information about the created key.
+     */
+    createRepoDeployKey: function(repo, title, key) {
+        return this._post(this.url + '/repos/' + this._repoName(repo) + '/keys', { title: title, key: key });
+    },
+
+    /**
+     * @function GitHub.editRepoDeployKey
+     *
+     * ### Synopsis
+     *
+     * var key = gh.editRepoDeployKey(repo, id, title, key);
+     *
+     * This function updates a repo deploy key with the given title and SSH-type key (e.g. DSA or RSA string).
+     *
+     * ### See Also:
+     *
+     * http://help.github.com/deploy-keys/
+     * http://developer.github.com/v3/repos/keys/
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {int} id - id of key to update.
+     * @param {string} title - title for the key.
+     * @param {string} key - the RSA or DSA key to add.
+     * @return {Object} key - information about the created key, or false if an error occurred.
+     */
+    editRepoDeployKey: function(repo, id, title, key) {
+        return this._patch(this.url + '/repos/' + this._repoName(repo) + '/keys/' + id, { title: title, key: key});
+    },
+
+    /**
+     * @function GitHub.deleteRepoDeployKey
+     *
+     * ### Synopsis
+     *
+     * var success = gh.getRepoDeployKey(repo, id);
+     *
+     * Delete a specific repo deploy key by id.
+     *
+     * ### See Also:
+     *
+     * http://help.github.com/deploy-keys/
+     * http://developer.github.com/v3/repos/keys/
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {int} id - id of key to delete.
+     * @return {boolean} success - true if key was deleted.
+     */
+    deleteRepoDeployKey: function(repo, id) {
+        return this._delete(this.url + '/repos/' + this._repoName(repo) + '/keys/' + id);
+    },
+
+    /**
+     * @function GitHub.listWatchers
+     *
+     * ### Synopsis
+     *
+     * var watchers = gh.listWatchers(repo);
+     *
+     * Lists watchers of a repository.
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @return {Array} watchers - array of watchers information
+     */
+    listWatchers: function(repo) {
+        return this._getList(this.url + '/repos/' + this._repoName(repo) + '/watchers');
+    },
+
+    /**
+     * @function GitHub.listWatching
+     *
+     * ### Synopsis
+     *
+     * var repos = gh.listWatching(user);
+     *
+     * List repos being watched by a user.
+     *
+     * @param {string} user - GitHub user name.
+     * @return {Array} repos - array of repo information.
+     */
+    listWatched: function(user) {
+        return this._getList(this.url + (user ? ('/users/' + user + '/watched') : '/user/watched'));
+    },
+
+    /**
+     * @function GitHub.amWatching
+     *
+     * ### Synopsis
+     *
+     * var amWatching = gh.amWatching(repo);
+     *
+     * Check if current user is watching a repo.
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @return {boolean} amWatching - true if user is watching the repo.
+     */
+    amWatching: function(repo) {
+        return this._getBoolean(this.url + '/user/watched/' + this._repoName(repo));
+    },
+
+    /**
+     * @function GitHub.watch
+     *
+     * ### Synopsis
+     *
+     * var success = gh.watch(repo);
+     *
+     * Watch a repo.
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @return {boolean} success - true if watch request was successful.
+     */
+    watch: function(repo) {
+        return this._put(this.url + '/user/watched/' + this._repoName(repo));
+    },
+
+    /**
+     * @function GitHub.stopWatching
+     *
+     * ### Synopsis
+     *
+     * var success = gh.stopWatching(repo);
+     *
+     * Stop watching a repo.
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @return {boolean} success - true if unwatch request was successful.
+     */
+    stopWatching: function(repo) {
+        return this._delete(this.url + '/user/watched/' + this._repoName(repo));
+    },
+
+    /**
+     * @function GitHub.getBlob
+     *
+     * ### Synopsis
+     *
+     * var blob = gh.getBlob(repo, sha);
+     *
+     * Get a blob.
+     *
+     * The returned blob has the following members:
+     *
+     * + {string} content: content of the blob
+     * + {string} encoding: encoding of the blob (e.g. "utf-8")
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {string} sha - sha of the blob to get
+     * @return {Object} blob - object of the form described above.
+     */
+    getBlob: function(repo, sha) {
+        return this._get(this.url + '/repos/' + this._repoName(repo) + '/git/blobs/' + sha);
+    },
+
+    /**
+     * @function GitHub.createBlob
+     *
+     * ### Synopsis
+     *
+     * var sha = gh.createBlob(repo, obj);
+     *
+     * Create a blob.
+     *
+     * The obj parameter describes the blob to be created, and has the following members:
+     *
+     * + {string} content: content of the blob
+     * + {string} encoding: encoding of the blob (e.g. "utf-8")
+     *
+     * @param {string} repo - name of repo, e.g. mschwartz/SilkJS or SilkJS if the authenticated user is mschwartz.
+     * @param {object} obj - description of blob, see above.
+     * @return {string} sha - the sha of the created blob, or false if an error occurred.
+     */
+    createBlob: function(repo, o) {
+        return this._post(this.url + '/repos/' + this._repoName(repo) + 'git/blobs', o);
+    },
+
+    getTree: function(repo, sha, recursive) {
+        recursive = recursive ? '?recursive=1' : '';
+        var url = this.url + '/repos/' + this._repoName(repo) + '/git/trees/' + sha + recursive
+        console.log(url);
+        return this._get(url);
     }
 });
 

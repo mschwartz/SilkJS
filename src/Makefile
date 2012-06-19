@@ -1,5 +1,13 @@
 ARCH := $(shell getconf LONG_BIT)
 
+RELEASE := $(shell lsb_release -sr)
+
+ifeq ($(RELEASE),12.04)
+	GROUP=sudo
+else
+	GROUP=admin
+endif
+
 CORE=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o v8.o http.o md5.o popen.o linenoise.o
 
 OBJ=	mysql.o memcached.o gd.o ncurses.o sem.o logfile.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o ftp.o ftplib.o editline.o cairo.o expat.o
@@ -25,10 +33,12 @@ CFLAGS = -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-sections -
 %.o: %.cpp SilkJS.h 
 	g++ $(CFLAGS) -c $(INCDIRS) -o $*.o $*.cpp
 
-silkjs: $(V8DIR) $(V8) $(CORE) $(OBJ) SilkJS.h Makefile
+silkjs: deps $(V8DIR) $(V8) $(CORE) $(OBJ) SilkJS.h Makefile
 	g++ $(CFLAGS) -o silkjs $(CORE) $(OBJ) $(LIBDIRS) -lv8_base -lv8_snapshot -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lmemcached -lcairo
 
-	
+deps: 
+	sudo apt-get -y install libmm-dev libmysqlclient-dev libmemcached-dev libgd2-xpm-dev libncurses5-dev libsqlite3-dev libcurl4-openssl-dev libssh2-1-dev libcairo2-dev
+
 debug:	    CFLAGS += -g
 debug:	    silkjs
 	
@@ -36,6 +46,21 @@ bootstrap:  CFLAGS += -DBOOTSTRAP_SILKJS
 
 bootstrap:  $(V8) $(CORE) SilkJS.h Makefile
 	g++ $(CFLAGS) -o bootstrap-silkjs $(CORE) -L$(V8LIB_DIR)/ -lv8_base -lv8_snapshot -lpthread
+
+perms:
+	@sudo chgrp $(GROUP)  /usr/local /usr/local/bin 
+	@sudo chmod g+rwx /usr/local /usr/local/bin
+
+install:	silkjs perms
+	@rm -rf /usr/local/silkjs/builtin /usr/local/silkjs/bin /usr/local/silkjs/httpd /usr/local/silkjs/lib /usr/local/silkjs/modules /usr/local/silkjs/walkthrough /usr/local/silkjs/src
+	@mkdir -p /usr/local/bin /usr/local/silkjs /usr/local/silkjs/src /usr/local/silkjs/projects
+	cp -rp ../builtin ../examples ../httpd ../lib ../modules ../walkthrough /usr/local/silkjs
+	cp ../src/*.cpp ../src/*.h /usr/local/silkjs/src
+	mv /usr/local/silkjs/examples /usr/local/silkjs/bin
+	chmod 755 /usr/local/silkjs/bin/* /usr/local/silkjs/httpd/main.js
+	cp silkjs /usr/local/silkjs/bin
+	ln -sf /usr/local/silkjs/bin/silkjs /usr/local/bin
+	ln -sf /usr/local/silkjs/httpd/main.js /usr/local/bin/httpd-silk.js
 	
 $(V8DIR):
 	echo "svn checkout"

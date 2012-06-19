@@ -11,6 +11,7 @@
  * 
  */
 #include "SilkJS.h"
+#include <stdint.h>
 #include <cairo/cairo.h>
 
 ////////////////////////// MISC
@@ -625,6 +626,154 @@ static JSVAL image_surface_get_height(JSARGS args) {
     return Integer::New(cairo_image_surface_get_height(surface));
 }
 
+/**
+ * @function cairo.image_surface_get_data
+ * 
+ * ### Synopsis
+ * 
+ * var imageData = cairo.image_surface_get_data(surface, sx, sy, width, height);
+ * 
+ * Gets a canvas style ImageData object.
+ * 
+ * The imageData object returned is of the following form:
+ * 
+ * + {int} width - width of the image data pixel array in device pixels.
+ * + {int} height - height of the image data pixel array in device pixels.
+ * + {array} data - pixel data as a one dimensional array in RGBA order, as integers in the range 0..255.
+ * 
+ * @param {object} surface - opaque handle to a cairo surface.
+ * @return {object} imageData - object of the above form.
+ */
+static JSVAL image_surface_get_data(JSARGS args) {
+    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    int sx = args[1]->IntegerValue();
+    int sy = args[2]->IntegerValue();
+    int width = args[3]->IntegerValue();
+    int height = args[4]->IntegerValue();
+    int length = width * height;
+    int stride = cairo_image_surface_get_stride(surface);
+    int cWidth = cairo_image_surface_get_width(surface);
+    int cHeight = cairo_image_surface_get_height(surface);
+    if (sx < 0) {
+        width += sx;
+        sx = 0;
+    }
+    if (sy < 0) {
+        height += sy;
+        sy = 0;
+    }
+    if (sx + width > cWidth) {
+        width = cWidth - sx;
+    }
+    if (sy + height > cHeight) {
+        height = cHeight - sy;
+    }
+    cairo_surface_flush(surface);
+    uint8_t *src = cairo_image_surface_get_data(surface);
+    Handle<Array>bytes = Array::New(length*4);
+    int ndx = 0;
+    for (int y = 0; y<height; y++) {
+        uint32_t *row = (uint32_t *)(src + stride * (y + sy));
+        for (int x=0; x<width; x++) {
+//            int bx = x*4;
+            uint32_t *pixel = row + x + sx;
+            uint8_t a = *pixel >> 24;
+            uint8_t r = *pixel >> 16;
+            uint8_t g = *pixel >> 8;
+            uint8_t b = *pixel;
+            float alpha = (float)a / 255;
+            bytes->Set(ndx++, Integer::New((int)((float) r / alpha)));
+            bytes->Set(ndx++, Integer::New((int)((float) g / alpha)));
+            bytes->Set(ndx++, Integer::New((int)((float) b / alpha)));
+            bytes->Set(ndx++, Integer::New(a));
+        }
+    }
+    JSOBJ o = Object::New();
+    o->Set(String::New("data"), bytes);
+    o->Set(String::New("width"), Integer::New(width));
+    o->Set(String::New("height"), Integer::New(height));
+    return o;
+}
+
+/**
+ * @function cairo.surface_blur
+ * 
+ * ### Synopsis
+ * 
+ * cairo.surface_blur(surface, radius);
+ * 
+ * Blur the given surface with the given radius.
+ * 
+ * ### Note
+ * 
+ * This is a helper function to implement Canvas class; it is not a part of Cairo.
+ * 
+ * @param {object} surface - opaque handle to a cairo surface.
+ * @param {int} radius - radius to blur
+ */
+static JSVAL surface_blur(JSARGS args) {
+    // see implementation at https://github.com/LearnBoost/node-canvas/blob/master/src/CanvasRenderingContext2d.cc
+    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    int radius = args[1]->IntegerValue();
+
+    // Steve Hanov, 2009
+    // Released into the public domain.
+    --radius;
+    // get width, height
+    int width = cairo_image_surface_get_width(surface);
+    int height = cairo_image_surface_get_height(surface);
+    unsigned* precalc =
+        (unsigned*) malloc(width * height * sizeof (unsigned));
+    unsigned char* src = cairo_image_surface_get_data(surface);
+    double mul = 1.f / ((radius * 2)*(radius * 2));
+    int channel;
+
+    // The number of times to perform the averaging. According to wikipedia,
+    // three iterations is good enough to pass for a gaussian.
+    const int MAX_ITERATIONS = 3;
+    int iteration;
+
+    for (iteration = 0; iteration < MAX_ITERATIONS; iteration++) {
+        for (channel = 0; channel < 4; channel++) {
+            int x, y;
+
+            // precomputation step.
+            unsigned char* pix = src;
+            unsigned* pre = precalc;
+
+            pix += channel;
+            for (y = 0; y < height; y++) {
+                for (x = 0; x < width; x++) {
+                    int tot = pix[0];
+                    if (x > 0) tot += pre[-1];
+                    if (y > 0) tot += pre[-width];
+                    if (x > 0 && y > 0) tot -= pre[-width - 1];
+                    *pre++ = tot;
+                    pix += 4;
+                }
+            }
+
+            // blur step.
+            pix = src + (int) radius * width * 4 + (int) radius * 4 + channel;
+            for (y = radius; y < height - radius; y++) {
+                for (x = radius; x < width - radius; x++) {
+                    int l = x < radius ? 0 : x - radius;
+                    int t = y < radius ? 0 : y - radius;
+                    int r = x + radius >= width ? width - 1 : x + radius;
+                    int b = y + radius >= height ? height - 1 : y + radius;
+                    int tot = precalc[r + b * width] + precalc[l + t * width] -
+                        precalc[l + b * width] - precalc[r + t * width];
+                    *pix = (unsigned char) (tot * mul);
+                    pix += 4;
+                }
+                pix += (int) radius * 2 * 4;
+            }
+        }
+    }
+
+    free(precalc);
+    return Undefined();
+}
 
 ////////////////////// CONTEXTS
 
@@ -2317,6 +2466,91 @@ static JSVAL context_device_to_user_distance(JSARGS args) {
 // http://www.cairographics.org/manual/cairo-Paths.html
 
 // functions to return cario_path_t and manipulate them not done.
+
+
+/**
+ * @function cairo.context_copy_path
+ * 
+ * ### Synopsis
+ * 
+ * var path = cairo.context_copy_path(context);
+ * 
+ * Creates a copy of the current path.
+ * 
+ * The caller owns the returned object and should call cairo.path_destroy() when finished with it.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} path - opaque handle to a cairo path
+ */
+static JSVAL context_copy_path(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return External::New(cairo_copy_path(context));
+}
+
+/**
+ * @function cairo.context_copy_path_flat
+ * 
+ * ### Synopsis
+ * 
+ * var path = cairo.context_copy_path_flat(context);
+ * 
+ * Creates a copy of the current path.
+ * 
+ * Gets a flattened copy of the current path and returns it to the user as a cairo_path_t. See cairo_path_data_t for hints on how to iterate over the returned data structure.
+ * 
+ * This function is like cairo.context_copy_path() except that any curves in the path will be approximated with piecewise-linear approximations, (accurate to within the current tolerance value). 
+ * 
+ * That is, the result is guaranteed to not have any elements of type cairo.PATH_CURVE_TO which will instead be replaced by a series of cairo.PATH_LINE_TO elements.
+ * 
+ * The caller owns the returned object and should call cairo.path_destroy() when finished with it.
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @return {object} path - opaque handle to a cairo path
+ */
+static JSVAL context_copy_path_flat(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    return External::New(cairo_copy_path_flat(context));
+}
+
+/**
+ * @function cairo.context_append_path
+ * 
+ * ### Synopsis
+ * 
+ * cairo.context_append_path(context, path);
+ * 
+ * Append the path onto the current path.
+ * 
+ * The path may be either the return value from one of cairo.context_copy_path() or cairo.context_copy_path_flat()
+ * 
+ * @param {object} context - opaque handle to a cairo context.
+ * @param {object} path - opaque handle to a cairo path
+ */
+static JSVAL context_append_path(JSARGS args) {
+    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_path_t *path = (cairo_path_t *)JSEXTERN(args[1]);
+    cairo_append_path(context, path);
+    return Undefined();
+}
+
+/**
+ * @functino cairo.path_destroy
+ * 
+ * ### Synopsis
+ * 
+ * cairo.path_dstroy(path);
+ * 
+ * Immediately releases all memory associated with path. 
+ * 
+ * After a call to cairo.path_destroy() the path pointer is no longer valid and should not be used further.
+ * 
+ * @param {object} path - opaque handle to a cairo path
+ */
+static JSVAL path_destroy(JSARGS args) {
+    cairo_path_t *path = (cairo_path_t *)JSEXTERN(args[0]);
+    cairo_path_destroy(path);
+    return Undefined();
+}
 
 /**
  * @function cairo.context_has_current_point
@@ -6535,6 +6769,8 @@ void init_cairo_object () {
     cairo->Set(String::New("image_surface_get_format"), FunctionTemplate::New(image_surface_get_format));
     cairo->Set(String::New("image_surface_get_width"), FunctionTemplate::New(image_surface_get_width));
     cairo->Set(String::New("image_surface_get_height"), FunctionTemplate::New(image_surface_get_height));
+    cairo->Set(String::New("image_surface_get_data"), FunctionTemplate::New(image_surface_get_data));
+    cairo->Set(String::New("surface_blur"), FunctionTemplate::New(surface_blur));
     cairo->Set(String::New("context_create"), FunctionTemplate::New(context_create));
     cairo->Set(String::New("context_reference"), FunctionTemplate::New(context_reference));
     cairo->Set(String::New("context_get_reference_count"), FunctionTemplate::New(context_get_reference_count));
@@ -6604,6 +6840,11 @@ void init_cairo_object () {
     cairo->Set(String::New("context_user_to_device_distance"), FunctionTemplate::New(context_user_to_device_distance));
     cairo->Set(String::New("context_device_to_user"), FunctionTemplate::New(context_device_to_user));
     cairo->Set(String::New("context_device_to_user_distance"), FunctionTemplate::New(context_device_to_user_distance));
+
+    cairo->Set(String::New("context_copy_path"), FunctionTemplate::New(context_copy_path));
+    cairo->Set(String::New("context_copy_path_flat"), FunctionTemplate::New(context_copy_path_flat));
+    cairo->Set(String::New("context_append_path"), FunctionTemplate::New(context_append_path));
+    cairo->Set(String::New("path_destroy"), FunctionTemplate::New(path_destroy));
     cairo->Set(String::New("context_has_current_point"), FunctionTemplate::New(context_has_current_point));
     cairo->Set(String::New("context_get_current_point"), FunctionTemplate::New(context_get_current_point));
     cairo->Set(String::New("context_new_path"), FunctionTemplate::New(context_new_path));

@@ -1,6 +1,6 @@
-/* 
+/*
  * @module extensions
- * 
+ *
  * Provides handy extensions to builtin JS types
  */
 
@@ -19,19 +19,20 @@ String.prototype.endsWith = function(suffix) {
 };
 
 String.prototype.trim = function() {
-    return this.replace(/^\s+|\s+$/, ''); 
+    return this.replace(/^\s+|\s+$/, '');
 };
 
 String.prototype.capitalize = function(limit) {
-    if (limit == null)
+    if (limit === null || limit === undefined) {
         limit = 1;
-    var head = this.substring(0, limit);
-    var tail = this.substring(limit, this.length);
+    }
+    var head = this.substr(0, limit);
+    var tail = this.substr(limit, this.length);
     return head.toUpperCase() + tail.toLowerCase();
 };
 
-String.prototype.endsWith = function endsWith(c){
-	if(this.charAt(this.length - 1) == c){
+String.prototype.endsWith = function endsWith(c) {
+	if (this.charAt(this.length - 1) == c) {
 		return true;
 	}
 	else {
@@ -39,8 +40,8 @@ String.prototype.endsWith = function endsWith(c){
 	}
 };
 
-String.prototype.startsWith = function startsWith(c){
-	if(this.charAt(0) == c){
+String.prototype.startsWith = function startsWith(c) {
+	if (this.charAt(0) == c) {
 		return true;
 	}
 	else {
@@ -48,29 +49,40 @@ String.prototype.startsWith = function startsWith(c){
 	}
 };
 
-String.prototype.replaceAll = function replaceAll(a, b){
+String.prototype.replaceAll = function replaceAll(a, b) {
 	var s = this;
-	while(s.indexOf(a) > -1){
+	while (s.indexOf(a) > -1) {
 		s = s.replace(a, b);
 	}
 	return s;
 };
 
-Object.prototype.extend = function() {
+Object.prototype.extend = Function.prototype.extend = function() {
     var me = this;
     arguments.each(function(o) {
         for (var key in o) {
-            me[key] = o[key];
+            var g = o.__lookupGetter__(key), s = o.__lookupSetter__(key);
+            if (g || s) {
+                if (g) {
+                    me.__defineGetter__(key, g);
+                }
+                if (s) {
+                    me.__defineSetter__(key, s);
+                }
+            }
+            else {
+                me[key] = o[key];
+            }
         }
     });
     return this;
 };
 
-Array.prototype.format = Object.prototype.format = function(depth) {
-    return builtin.print_r(this, depth);
-}
-
-Array.prototype.dump = Object.prototype.dump = function(out, depth) {
-    out = out || println;
-    out(this.format(depth));
-};
+//Array.prototype.format = Object.prototype.format = function(depth) {
+//    return builtin.print_r(this, depth);
+//};
+//
+//Array.prototype.dump = Object.prototype.dump = function(out, depth) {
+//    out = out || println;
+//    out(this.format(depth));
+//};
