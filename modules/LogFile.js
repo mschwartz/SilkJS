@@ -15,7 +15,7 @@
  *
  * The log file will be flushed upon calling the flush() method, or the destroy() method.  The constructor forks a process to periodically flush the buffered log file lines to disk.
  */
-/*global require, exports, log */
+/*global require, exports: true, log */
 
 (function() {
     "use strict";
@@ -110,5 +110,5 @@
             return logfile.destroy(this.handle);
         }
     });
-    exports.extend(LogFile);
+    exports = LogFile;
 }());
