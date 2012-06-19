@@ -31,7 +31,7 @@ struct ScriptWrapper {
  */
 static JSVAL gc (const Arguments& args) {
     HandleScope scope;
-    for (int i=0; i<10000; i++) {}
+    for (int i=0; i<10000; i++) {
         if (V8::IdleNotification()) {
             break;
         }
