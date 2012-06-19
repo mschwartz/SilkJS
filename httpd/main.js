@@ -32,40 +32,40 @@ include('httpd/child.js');
 function main() {
     var debugMode = false;
     // load any user provided JavaScripts
-	arguments.each(function(arg) {
-		if (arg === '-d') {
+    arguments.each(function(arg) {
+        if (arg === '-d') {
             debugMode = true;
-			return false;
+            return false;
         }
-	});
+    });
 
-	if (debugMode) {
-		v8.enableDebugger();
-		log('Running in debug mode');
-	}
+    if (debugMode) {
+        v8.enableDebugger();
+        log('Running in debug mode');
+    }
     arguments.each(function(arg) {
         if (arg.endsWith('.js') || arg.endsWith('.coffee')) {
             include(arg);
         }
     });
 
-	var pid;
-    var fd = fs.open(Config.lockFile, fs.O_WRONLY|fs.O_CREAT|fs.O_TRUNC, 0644);
+    var pid;
+    var fd = fs.open(Config.lockFile, fs.O_WRONLY|fs.O_CREAT|fs.O_TRUNC, parseInt('0644', 8));
     fs.close(fd);
     var serverSocket = net.listen(Config.port, 10, Config.listenIp);
 
     global.logfile = new LogFile(Config.logFile || '/tmp/httpd-silkjs.log');
     
     if (debugMode) {
-		while (1) {
-	        HttpChild.run(serverSocket, process.getpid());
-		}
+        while (1) {
+            HttpChild.run(serverSocket, process.getpid());
+        }
     }
    
     var children = {};
     for (var i=0; i<Config.numChildren; i++) {
         pid = process.fork();
-        if (pid == 0) {
+        if (pid === 0) {
             HttpChild.run(serverSocket, process.getpid());
             process.exit(0);
         }
@@ -93,7 +93,7 @@ console.log('********************** CHILD EXITED THAT IS NOT HTTP CHILD');
         }
         delete children[o.pid];
         pid = process.fork();
-        if (pid == 0) {
+        if (pid === 0) {
             HttpChild.run(serverSocket, process.getpid());
             process.exit(0);
         }
