@@ -27,12 +27,13 @@
 #include <libmemcached/memcached.h>
 
 #define M memcached_st
-#ifdef memcached_return_t
-#define R memcached_return_t
+#ifdef __LIBMEMCACHED_MEMCACHED_H__
+ #define R memcached_return_t
+ #define dump_fn_type const memcached_st
 #else
-#define memcached_dump_fn memcached_dump_func
-#define R memcached_return
-
+ #define memcached_dump_fn memcached_dump_func
+ #define dump_fn_type memcached_st
+ #define R memcached_return
 #endif
 #define S memcached_server_st
 
@@ -424,7 +425,7 @@ struct CTX {
     int ndx;
     Handle<Array>keys;
 };
-static R dump_fn(memcached_st *ptr, const char *key, size_t key_length, void *context) {
+static R dump_fn(dump_fn_type *ptr, const char *key, size_t key_length, void *context) {
     CTX *ctx = (CTX *)context;
     ctx->keys->Set(ctx->ndx++, String::New(key, key_length));
     return MEMCACHED_SUCCESS;

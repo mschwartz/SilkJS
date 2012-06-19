@@ -5,6 +5,7 @@
 (function() {
 	var fs = builtin.fs;
 	var v8 = builtin.v8;
+	var console = builtin.console;
 
 	function runScript(src, fn) {
 		var script = v8.compileScript(src, fn);
