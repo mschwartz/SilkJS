@@ -136,10 +136,13 @@ int main (int argc, char** argv) {
 
             Handle<Script>init = Script::New(String::New("global=this; module = {}; include('builtin/all.js');"), String::New("builtin"));
             init->Run();
-
-            mainScript = Persistent<Script>::New(Script::Compile(String::New(startup), String::New(progName)));
             V8::SetCaptureStackTraceForUncaughtExceptions(true, 50, StackTrace::kDetailed);
             TryCatch tryCatch;
+            mainScript = Persistent<Script>::New(Script::Compile(String::New(startup), String::New(progName)));
+            if (mainScript.IsEmpty()) {
+                ReportException(&tryCatch);
+                exit(1);
+            }
             Handle<Value>v = mainScript->Run();
             if (v.IsEmpty()) {
                 ReportException(&tryCatch);
