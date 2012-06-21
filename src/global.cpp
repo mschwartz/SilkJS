@@ -15,6 +15,7 @@
  * The global object is roughly equivalent to the window object on the browser side.  You will note the method names below do no start with "global." - it's not required.
  */
 #include "SilkJS.h"
+#include <dlfcn.h>
 
 using namespace v8;
 
@@ -104,7 +105,6 @@ SCRIPTNODE *scriptCache = NULL;
  * @param {string} path - the path in the file system to a file to include.
  */
 static Handle<Value> Include (const Arguments& args) {
-    HandleScope scope;
     for (int i = 0; i < args.Length(); i++) {
         String::Utf8Value str(args[i]);
         char buf[strlen(*str) + 18 + 1];
@@ -137,6 +137,24 @@ static Handle<Value> Include (const Arguments& args) {
     return Undefined();
 }
 
+static Handle<Value> LoadLibrary(const Arguments& args) {
+    String::Utf8Value filename(args[0]);
+    int flag = RTLD_NOW | RTLD_GLOBAL; // args[1]->IntegerValue();
+    void *handle = dlopen(*filename, flag);
+    if (!handle) {
+        printf("1) %s\n", dlerror());
+        return ThrowException(String::Concat(String::New("Shared library not found "), args[0]->ToString()));
+    }
+    typedef JSOBJ (*getExports_t)();
+    getExports_t getExports = (getExports_t)dlsym(handle, "getExports");
+    if (!getExports) {
+        printf("2) %s\n", dlerror());
+        return ThrowException(String::Concat(String::New("Shared library does not contain getExports function "), args[0]->ToString()));
+    }
+
+    return getExports();
+}
+
 extern void init_buffer_object ();
 extern void init_console_object ();
 extern void init_process_object ();
@@ -147,7 +165,7 @@ extern void init_http_object ();
 extern void init_popen_object ();
 #if !BOOTSTRAP_SILKJS
 extern void init_sem_object ();
-extern void init_mysql_object ();
+// extern void init_mysql_object ();
 extern void init_sqlite3_object ();
 extern void init_memcached_object ();
 extern void init_gd_object ();
@@ -164,7 +182,6 @@ extern void init_expat_object();
 #endif
 
 void init_global_object () {
-    HandleScope scope;
     globalObject = Persistent<ObjectTemplate>::New(ObjectTemplate::New());
     builtinObject = Persistent<ObjectTemplate>::New(ObjectTemplate::New());
 
@@ -180,7 +197,7 @@ void init_global_object () {
 #if !BOOTSTRAP_SILKJS
     init_logfile_object();
     init_sem_object();
-    init_mysql_object();
+    // init_mysql_object();
     init_sqlite3_object();
     init_memcached_object();
     init_gd_object();
@@ -199,4 +216,5 @@ void init_global_object () {
     globalObject->Set(String::New("print"), FunctionTemplate::New(Print));
     globalObject->Set(String::New("println"), FunctionTemplate::New(Println));
     globalObject->Set(String::New("include"), FunctionTemplate::New(Include));
+    globalObject->Set(String::New("loadDll"), FunctionTemplate::New(LoadLibrary));
 }
