@@ -6,38 +6,45 @@ if  [ "$OSTYPE" != "darwin11" ] ; then
 fi
 
 # exit immediately if a simple command exits with a non-zero status.
-set -e
-trap "echo Installation failed.  Aborting."  EXIT
+#set -e
+#trap "echo Installation failed.  Aborting."  EXIT
 
-INSTALLDIR = "/usr/local"
-SILKJS = "$INSTALLDIR/silkjs"
+INSTALLDIR="/usr/local"
+SILKJS="$INSTALLDIR/silkjs"
 
 if [ -e "$SILKJS" ] ; then
     echo "Updating SilkJS in $SILKJS"
+    rm -f /usr/local/bin/silkjs /usr/local/bin/httpd-silk.js
+    rm -rf /usr/local/silkjs
 else 
     echo "Installing SilkJS in $SILKJS"
+    echo
+    echo "You may be asked to enter your password."
+    echo "This is so the /usr/local directory can be made writable for the install."
+    echo
+    sudo chgrp admin /usr/local /usr/local/bin 
+    sudo chmod g+rwx /usr/local /usr/local/bin
 fi
 
-# assure INSTALLDIR and SILKJS directories exist and have proper permissions
-# a neat trick here is that on Ubuntu and OSX, the user is in group admin
-# so we can chmod 775 /usr/local and chgrp it to admin and write to it
-# without sudo (after the install)
+# curl --progress-bar https://github.com/downloads/mschwartz/SilkJS/silkjs-lion-x64.tgz | tar -C "$INSTALLDIR" -xzvf -
+echo "Downloading SilkJS"
+curl --progress-bar --location https://github.com/downloads/mschwartz/SilkJS/silkjs-lion-x64.tgz | tar -C "$INSTALLDIR" -xzf -
 
-if [ ! -d "$INSTALLDIR" ] ; then
-    echo
-    echo "$INSTALLDIR doesn't exist.  Creating it with sudo, so you may be asked for your password."
-    echo
-    sudo /bin/mkdir "$INSTALLDIR"
-    sudo /usr/bin/chgrp admin "$INSTALLDIR"
-    sudo /bin/chmod 775 "$PARENT"
-elif [ ! -w "$INSTALLDIR" -o ! -w "$INSTALLDIR/bin" ]; then
-    echo
-    echo "Setting permissions on $INSTALLDIR,  and $INSTALLDIR/bin"
-    echo "You may be asked for your password."
-    echo
-    sudo /bin/mkdir -p "$INSTALLDIR/bin"
-    sudo /bin/chmod g+rwx "$INSTALLDIR"
-    sudo /bin/chmod g+rwx "$INSTALLDIR/bin"
-fi
+ln -sf /usr/local/silkjs/bin/silkjs /usr/local/bin
+ln -sf /usr/local/silkjs/httpd/main.js /usr/local/bin/httpd-silk.js
 
-# 
+echo "Installation complete."
+echo
+echo "You need to add /usr/local/bin to your PATH environment variable."
+echo "This can be done by adding this line to your .bashrc file:"
+echo "export PATH=/usr/local/bin:\$PATH"
+echo
+echo "You can run SilkJS with the following command:"
+echo "$ silkjs"
+echo
+echo "You can run the SilkJS HTTP Server with the following command:"
+echo "$ httpd-silk.js yourapp.js"
+echo
+echo "For instructions on setting up a WWW site for httpd-silk.js, see"
+echo "http://silkjs.org/http-server/"
+echo
