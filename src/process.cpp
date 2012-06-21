@@ -268,6 +268,8 @@ static JSVAL process_env (JSARGS args) {
         home = pw->pw_dir;
         env->Set(String::New("HOME"), String::New(home));
     }
+    // set number of CPU cores
+    env->Set(String::New("CORES"), Integer::New(sysconf(_SC_NPROCESSORS_ONLN)));
     return env;
 }
 
