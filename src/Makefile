@@ -58,7 +58,6 @@ perms:
 
 install:	silkjs perms
 	@rm -rf /usr/local/silkjs/builtin /usr/local/silkjs/bin /usr/local/silkjs/httpd /usr/local/silkjs/lib /usr/local/silkjs/modules /usr/local/silkjs/walkthrough /usr/local/silkjs/src
-	echo mkdir
 	@mkdir -p /usr/local/bin /usr/local/silkjs /usr/local/silkjs/src/v8 /usr/local/silkjs/projects
 	cp -rp ../builtin ../examples ../httpd ../lib ../modules ../walkthrough /usr/local/silkjs
 	cp ../src/*.cpp ../src/*.h /usr/local/silkjs/src
