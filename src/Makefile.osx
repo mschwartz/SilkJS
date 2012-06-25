@@ -4,7 +4,6 @@ LD = /usr/bin/g++
 
 OBJ=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o http.o gd.o ncurses.o sem.o logfile.o v8.o md5.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o memcached.o ftplib.o ftp.o editline.o popen.o linenoise.o cairo.o expat.o
 
-
 CFLAGS = -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-strict-aliasing -fvisibility=hidden -Wall -W -Wno-unused-function -Wno-unused-parameter -Wnon-virtual-dtor -m64 -O3 -fomit-frame-pointer -fdata-sections -ffunction-sections -ansi -fno-strict-aliasing
 
 V8DIR =	v8-read-only
@@ -44,7 +43,7 @@ STATICLIBS = \
 	g++ $(CFLAGS) -c -I/usr/X11/include -I$(CURDIR)/osx_dependencies/include -I$(SSH2)/include -Iv8-read-only/include -o $*.o $*.cpp
 
 SilkJS:	$(V8DIR) $(V8) $(DEPENDENCIES) $(OBJ) SilkJS.h Makefile
-	$(LD) -o silkjs $(OBJ) $(STATICLIBS) $(V8LIBS) -lncurses -lpthread -lsqlite3  -L/usr/X11/lib -lcairo -lexpat -lz -lssl -lcrypto -lpng -lfreetype -lxpm -liconv -lfontconfig -lsasl2  -Wl,-rpath,/usr/local/silkjs/src/v8,-rpath,$(V8LIB_DIR) 
+	$(LD) -rdynamic  -o silkjs $(OBJ) $(STATICLIBS) $(V8LIBS) -lncurses -lpthread -lsqlite3  -L/usr/X11/lib -lcairo -lexpat -lz -lssl -lcrypto -lpng -lfreetype -lxpm -liconv -lfontconfig -lsasl2  -Wl,-rpath,/usr/local/silkjs/src/v8,-rpath,$(V8LIB_DIR) 
 
 perms:
 	@sudo chgrp admin /usr/local /usr/local/bin 
@@ -56,11 +55,11 @@ install:	SilkJS perms
 	cp -rp ../builtin ../examples ../httpd ../lib ../modules ../walkthrough /usr/local/silkjs
 	cp ../src/*.cpp ../src/*.h /usr/local/silkjs/src
 	cp -rp $(V8DIR)/include $(V8) /usr/local/silkjs/src/v8
-	install_name_tool -id "@rpath/libv8.dylib" /usr/local/silkjs/src/v8/libv8.dylib 
+	# install_name_tool -id "@rpath/libv8.dylib" /usr/local/silkjs/src/v8/libv8.dylib 
 	mv /usr/local/silkjs/examples /usr/local/silkjs/bin
 	chmod 755 /usr/local/silkjs/bin/* /usr/local/silkjs/httpd/main.js
 	cp silkjs /usr/local/silkjs/bin
-	install_name_tool -change $(CURDIR)/$(V8LIB_DIR)/libv8.dylib /usr/local/silkjs/src/v8/libv8.dylib /usr/local/silkjs/bin/silkjs
+	install_name_tool -change $(CURDIR)/$(V8LIB_DIR)/libv8.dylib @rpath/libv8.dylib /usr/local/silkjs/bin/silkjs
 	chgrp admin /usr/local /usr/local/bin 
 	chmod g+rwx /usr/local /usr/local/bin
 	ln -sf /usr/local/silkjs/bin/silkjs /usr/local/bin
