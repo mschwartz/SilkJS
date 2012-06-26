@@ -48,7 +48,7 @@
 			return false;
 		}
 		if (module.substr(0,1) == '/' || module.substr(0,2) == './' || module.substr(0,3) == '../') {
-			return tryFile(module) || tryFile(module + '.js' || tryFile(module + '.coffee') || tryFile(module + '.so'));
+			return tryFile(module) || tryFile(module + '.js') || tryFile(module + '.coffee') || tryFile(module + '.so');
 		}
 		else {
 			var paths = require.path;

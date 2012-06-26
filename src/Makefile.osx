@@ -46,8 +46,8 @@ SilkJS:	$(V8DIR) $(V8) $(DEPENDENCIES) $(OBJ) SilkJS.h Makefile
 	$(LD) -rdynamic  -o silkjs $(OBJ) $(STATICLIBS) $(V8LIBS) -lncurses -lpthread -lsqlite3  -L/usr/X11/lib -lcairo -lexpat -lz -lssl -lcrypto -lpng -lfreetype -lxpm -liconv -lfontconfig -lsasl2  -Wl,-rpath,/usr/local/silkjs/src/v8,-rpath,$(V8LIB_DIR) 
 
 perms:
-	@sudo chgrp admin /usr/local /usr/local/bin 
-	@sudo chmod g+rwx /usr/local /usr/local/bin
+	sudo chgrp admin /usr/local /usr/local/bin 
+	sudo chmod g+rwx /usr/local /usr/local/bin
 
 install:	SilkJS perms
 	@rm -rf /usr/local/silkjs/builtin /usr/local/silkjs/bin /usr/local/silkjs/httpd /usr/local/silkjs/lib /usr/local/silkjs/modules /usr/local/silkjs/walkthrough /usr/local/silkjs/src
@@ -60,8 +60,6 @@ install:	SilkJS perms
 	chmod 755 /usr/local/silkjs/bin/* /usr/local/silkjs/httpd/main.js
 	cp silkjs /usr/local/silkjs/bin
 	install_name_tool -change $(CURDIR)/$(V8LIB_DIR)/libv8.dylib @rpath/libv8.dylib /usr/local/silkjs/bin/silkjs
-	chgrp admin /usr/local /usr/local/bin 
-	chmod g+rwx /usr/local /usr/local/bin
 	ln -sf /usr/local/silkjs/bin/silkjs /usr/local/bin
 	ln -sf /usr/local/silkjs/httpd/main.js /usr/local/bin/httpd-silk.js
 

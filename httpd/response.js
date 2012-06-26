@@ -79,7 +79,7 @@ res = function() {
 		},
 		
 		stop: function() {
-			throw 'RES.STOP';
+			Server.endRequest();
 		},
 		
 		reset: function() {

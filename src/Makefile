@@ -53,12 +53,12 @@ bootstrap:  $(V8) $(CORE) SilkJS.h Makefile
 	g++ $(CFLAGS) -o bootstrap-silkjs $(CORE) -L$(V8LIB_DIR)/ -lv8_base -lv8_snapshot -lpthread
 
 perms:
-	@sudo chgrp $(GROUP)  /usr/local /usr/local/bin 
-	@sudo chmod g+rwx /usr/local /usr/local/bin
+	sudo chgrp $(GROUP)  /usr/local /usr/local/bin 
+	sudo chmod g+rwx /usr/local /usr/local/bin
 
 install:	silkjs perms
 	@rm -rf /usr/local/silkjs/builtin /usr/local/silkjs/bin /usr/local/silkjs/httpd /usr/local/silkjs/lib /usr/local/silkjs/modules /usr/local/silkjs/walkthrough /usr/local/silkjs/src
-	@mkdir -p /usr/local/bin /usr/local/silkjs /usr/local/silkjs/src/v8 /usr/local/silkjs/projects
+	@mkdir -p /usr/local/bin /usr/local/silkjs /usr/local/silkjs/src/v8 /usr/local/silkjs/projects /usr/local/silkjs/contrib
 	cp -rp ../builtin ../examples ../httpd ../lib ../modules ../walkthrough /usr/local/silkjs
 	cp ../src/*.cpp ../src/*.h /usr/local/silkjs/src
 	cp -rp $(V8DIR)/include $(V8) /usr/local/silkjs/src/v8

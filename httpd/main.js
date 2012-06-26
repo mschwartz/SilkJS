@@ -21,10 +21,10 @@ include('lib/Util.js');
 Json = require('Json');
 include('lib/Jst.js');
 include('lib/Showdown.js');
-MySQL = require('MySQL');
 var SSH = require('SSH');
 ////
 include('httpd/config.js');
+include('httpd/Server.js');
 include('httpd/request.js');
 include('httpd/response.js');
 include('httpd/child.js');
@@ -48,6 +48,9 @@ function main() {
             include(arg);
         }
     });
+    if (Config.mysql) {
+        MySQL = require('MySQL').MySQL;
+    }
 
     var pid;
     var fd = fs.open(Config.lockFile, fs.O_WRONLY|fs.O_CREAT|fs.O_TRUNC, parseInt('0644', 8));
@@ -56,6 +59,8 @@ function main() {
 
     global.logfile = new LogFile(Config.logFile || '/tmp/httpd-silkjs.log');
     
+    Server.onStart();
+
     if (debugMode) {
         while (1) {
             HttpChild.run(serverSocket, process.getpid());
