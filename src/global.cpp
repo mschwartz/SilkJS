@@ -163,6 +163,8 @@ extern void init_net_object ();
 extern void init_fs_object ();
 extern void init_http_object ();
 extern void init_popen_object ();
+extern void init_async_object ();
+extern void init_time_object ();
 #if !BOOTSTRAP_SILKJS
 extern void init_sem_object ();
 // extern void init_mysql_object ();
@@ -193,6 +195,8 @@ void init_global_object () {
     init_fs_object();
     init_v8_object();
     init_popen_object();
+    init_async_object();
+    init_time_object();
 
 #if !BOOTSTRAP_SILKJS
     init_logfile_object();

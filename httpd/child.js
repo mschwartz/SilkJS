@@ -3,7 +3,8 @@
 HttpChild = (function() {
     var requestsHandled;
 
-    var mimeTypes = require('MimeTypes');
+    var mimeTypes = require('MimeTypes'),
+        time = require('builtin/time');
 
     function errorHandler(e) {
         console.dir(e);
@@ -406,7 +407,7 @@ HttpChild = (function() {
         getCoffeeScript: function(fn) {
             return coffee_cache[fn];
         },
-        run: function(serverSocket, pid) {
+        run: function(serverSocket, pid, control) {
             // randomize the random number generator, just in case.
             var bits = pid % Config.numChildren;
             for (var b=0; b<bits; b++) {
@@ -425,21 +426,24 @@ HttpChild = (function() {
             var requestHandler = HttpChild.requestHandler;
             var endRequest = HttpChild.endRequest;
             requestsHandled = 0;
-            var lockfd = fs.open(Config.lockFile, fs.O_RDONLY);
+            // var lockfd = fs.open(Config.lockFile, fs.O_RDONLY);
             while (requestsHandled < REQUESTS_PER_CHILD) {
-                lock(lockfd);
+                net.write(control, 'r', 1);
+                async.read(control, 1);
+                // lock(lockfd);
                 var sock = net.accept(serverSocket);
-                unlock(lockfd);
+                // unlock(lockfd);
                 var keepAlive = true;
                 while (keepAlive) {
                     if (++requestsHandled > REQUESTS_PER_CHILD) {
                         keepAlive = false;
                     }
-                    var rstart = process.rusage();
+                    var start_time = time.getrusage();
                     try {
                         if (!req.init(sock)) {
                             break;
                         }
+                        // console.log(time.getrusage() - start_time);
                         keepAlive = res.init(sock, keepAlive, requestsHandled);
                         // execute a pure JavaScript handler, if provided.
                         if (requestHandler) {
@@ -460,16 +464,19 @@ HttpChild = (function() {
                     res.data = {};
                     res.flush();
                     res.reset();
-                    // this logfile.write() reduces # requests/sec by 5000!
-                    var elapsed = ('' + (process.rusage().time - rstart.time)).substr(0,8);
+                    var end_time = time.getrusage();
+                    var elapsed = end_time - start_time;
+                    elapsed = '' + elapsed;
+                    elapsed = elapsed.substr(0, 8);
                     logfile.write(req.remote_addr + ' ' + req.method + ' ' + req.uri + ' completed in ' + elapsed + 's\n');
                 }
                 req.close();
                 net.close(sock);
                 v8.gc();
             }
-            fs.close(lockfd);
+            // fs.close(lockfd);
             res.close();
+            log('exiting');
         }
     };
 })();

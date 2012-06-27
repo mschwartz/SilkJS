@@ -159,26 +159,41 @@ static JSVAL process_usleep (JSARGS args) {
  * ### Synopsis
  * 
  * var o = process.wait();
+ * var o = process.wait(poll)
  * 
  * Wait for process termination.
  * 
  * ### Description
  * 
- * This function suspends executio of its calling process until one of its child processes terminates.  The function returns an object of the form:
+ * This function suspends execution of its calling process until one of its child processes terminates.  The function returns an object of the form:
  * 
  * + pid: the pid of the child process that terminated
  * + status: the status returned by the child process
  * 
- * @return {object} o - information about the process that terminated.
+ * @param {boolean} poll - if true, then this function will return immediately whether a child process has exited or not.
+ * @return {object} o - information about the process that terminated.  If polling and no process exited, false is returned.
  * 
  * ### See Also
  * process.exit()
  */
 static JSVAL process_wait (JSARGS args) {
-    int status;
-    pid_t childPid = waitpid(-1, &status, 0);
+    int status, 
+        flags = 0;
+
+    if (args.Length() > 0) {
+        if (args[0]->BooleanValue()) {
+            flags = WNOHANG;
+        }
+    }
+    pid_t childPid = waitpid(-1, &status, flags);
     if (childPid == -1) {
         perror("wait ");
+    }
+    if (childPid == 0) {
+        return False();
+    }
+    if (flags) {
+        waitpid(childPid, &status, 0);
     }
     Handle<Object>o = Object::New();
     o->Set(String::New("pid"), Integer::New(childPid));
