@@ -99,6 +99,13 @@ static JSVAL async_select(JSARGS args) {
 	return o;
 }
 
+JSVAL async_write(JSARGS args) {
+	int fd = args[0]->IntegerValue();
+    String::AsciiValue s(args[1]);
+	size_t size = args[2]->IntegerValue();
+	return Integer::New(write(fd, *s, size));
+}
+
 JSVAL async_read(JSARGS args) {
 	int fd = args[0]->IntegerValue();
 	size_t size = args[1]->IntegerValue();
@@ -128,6 +135,7 @@ void init_async_object () {
     async->Set(String::New("FD_CLR"), FunctionTemplate::New(async_fd_clr));
     async->Set(String::New("FD_ISSET"), FunctionTemplate::New(async_fd_isset));
     async->Set(String::New("select"), FunctionTemplate::New(async_select));
+    async->Set(String::New("write"), FunctionTemplate::New(async_write));
     async->Set(String::New("read"), FunctionTemplate::New(async_read));
     builtinObject->Set(String::New("async"), async);
 }

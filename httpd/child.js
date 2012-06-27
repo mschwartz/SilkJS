@@ -428,7 +428,7 @@ HttpChild = (function() {
             requestsHandled = 0;
             // var lockfd = fs.open(Config.lockFile, fs.O_RDONLY);
             while (requestsHandled < REQUESTS_PER_CHILD) {
-                net.write(control, 'r', 1);
+                async.write(control, 'r', 1);
                 async.read(control, 1);
                 // lock(lockfd);
                 var sock = net.accept(serverSocket);
@@ -470,9 +470,9 @@ HttpChild = (function() {
                     elapsed = elapsed.substr(0, 8);
                     logfile.write(req.remote_addr + ' ' + req.method + ' ' + req.uri + ' completed in ' + elapsed + 's\n');
                 }
-                req.close();
                 net.close(sock);
-                v8.gc();
+                req.close();
+                // v8.gc();
             }
             // fs.close(lockfd);
             res.close();

@@ -54,9 +54,9 @@ function main() {
     }
 
     var pid;
-    var fd = fs.open(Config.lockFile, fs.O_WRONLY|fs.O_CREAT|fs.O_TRUNC, parseInt('0644', 8));
-    fs.close(fd);
-    var serverSocket = net.listen(Config.port, 10, Config.listenIp);
+    // var fd = fs.open(Config.lockFile, fs.O_WRONLY|fs.O_CREAT|fs.O_TRUNC, parseInt('0644', 8));
+    // fs.close(fd);
+    var serverSocket = net.listen(Config.port, 1000, Config.listenIp);
     global.logfile = new LogFile(Config.logFile || '/tmp/httpd-silkjs.log');
     
     Server.onStart();
@@ -74,6 +74,7 @@ function main() {
         var pair = net.socketpair();
         pid = process.fork();
         if (pid === 0) {
+            net.close(pair[0]);
             HttpChild.run(serverSocket, process.getpid(), pair[1]);
             process.exit(0);
         }
@@ -81,6 +82,7 @@ function main() {
             console.error(process.error());
         }
         else {
+            net.close(pair[1]);
             children_map[pair[0]] = children[pid] = { pid: pid, control: pair[0], status: 'f' };
             children_fifo.push(children[pid]);
         }
