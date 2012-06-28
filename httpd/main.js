@@ -56,7 +56,7 @@ function main() {
     var pid;
     // var fd = fs.open(Config.lockFile, fs.O_WRONLY|fs.O_CREAT|fs.O_TRUNC, parseInt('0644', 8));
     // fs.close(fd);
-    var serverSocket = net.listen(Config.port, 1000, Config.listenIp);
+    var serverSocket = net.listen(Config.port, 50, Config.listenIp);
     global.logfile = new LogFile(Config.logFile || '/tmp/httpd-silkjs.log');
     
     Server.onStart();
