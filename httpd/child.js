@@ -476,7 +476,6 @@ HttpChild = (function() {
             }
             // fs.close(lockfd);
             res.close();
-            log('exiting');
         }
     };
 })();

@@ -327,7 +327,7 @@ static JSVAL net_read (JSARGS args) {
     FD_ZERO(&fds);
     FD_SET(fd, &fds);
     struct timeval timeout;
-    timeout.tv_sec = 5;
+    timeout.tv_sec = 1;
     timeout.tv_usec = 0;
     switch (select(fd + 1, &fds, NULL, NULL, &timeout)) {
         case -1:

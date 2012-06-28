@@ -109,9 +109,10 @@ JSVAL async_write(JSARGS args) {
 JSVAL async_read(JSARGS args) {
     int fd = args[0]->IntegerValue();
     size_t size = args[1]->IntegerValue();
-    char *buf = new char[size];
+    char *buf = new char[size+1];
     int ret = read(fd, buf, size);
     if (ret == 0) {
+        // printf("Async read %d %s\n", fd, strerror(errno));
         delete[] buf;
         return False();
     }
@@ -120,10 +121,15 @@ JSVAL async_read(JSARGS args) {
         return False();
     }
     else {
-        Handle<String>s = String::New(buf);
+        Handle<String>s = String::New(buf, ret);
         delete[] buf;
         return s;
     }
+}
+
+JSVAL async_close(JSARGS args) {
+    int fd = args[0]->IntegerValue();
+    return Integer::New(close(fd));
 }
 
 void init_async_object () {
@@ -135,7 +141,8 @@ void init_async_object () {
     async->Set(String::New("FD_CLR"), FunctionTemplate::New(async_fd_clr));
     async->Set(String::New("FD_ISSET"), FunctionTemplate::New(async_fd_isset));
     async->Set(String::New("select"), FunctionTemplate::New(async_select));
-    async->Set(String::New("write"), FunctionTemplate::New(async_write));
     async->Set(String::New("read"), FunctionTemplate::New(async_read));
+    async->Set(String::New("write"), FunctionTemplate::New(async_write));
+    async->Set(String::New("close"), FunctionTemplate::New(async_close));
     builtinObject->Set(String::New("async"), async);
 }

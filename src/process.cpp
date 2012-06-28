@@ -188,13 +188,17 @@ static JSVAL process_wait (JSARGS args) {
     pid_t childPid = waitpid(-1, &status, flags);
     if (childPid == -1) {
         perror("wait ");
+        return False();
     }
     if (childPid == 0) {
         return False();
     }
-    if (flags) {
-        waitpid(childPid, &status, 0);
-    }
+    // if (flags) {
+    //     childPid = waitpid(childPid, &status, 0);
+    //     if (childPid == -1) {
+    //         perror("waitpid ");
+    //     }
+    // }
     Handle<Object>o = Object::New();
     o->Set(String::New("pid"), Integer::New(childPid));
     o->Set(String::New("status"), Integer::New(status));

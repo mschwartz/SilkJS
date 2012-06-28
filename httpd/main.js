@@ -66,25 +66,53 @@ function main() {
             HttpChild.run(serverSocket, process.getpid());
         }
     }
-   
+    
+    var List = require('List').List,
+        freeList = new List(),
+        activeList = new List();
+
+    for (var n=0; n<Config.numChildren; n++) {
+        freeList.addTail({ n: n, pid: 0, control: 0, status: '' });
+    }
+
+    function dumpList(list, heading) {
+        heading = heading || 'List Dump';
+        console.log(heading);
+        list.each(function(node) {
+            console.dir({
+                n: node.n,
+                pid: node.pid,
+                control: node.control,
+                status: node.status
+            });
+        });
+    }
+
     var children = {},
-        children_map = {},
-        children_fifo = [];
+        children_map = {};
     function forkChild() {
         var pair = net.socketpair();
+        if (pair === false) {
+            console.dir(fs.error());
+            return;
+        }
         pid = process.fork();
         if (pid === 0) {
-            net.close(pair[0]);
-            HttpChild.run(serverSocket, process.getpid(), pair[1]);
+            net.close(pair[1]);
+            HttpChild.run(serverSocket, process.getpid(), pair[0]);
             process.exit(0);
         }
         else if (pid == -1) {
             console.error(process.error());
         }
         else {
-            net.close(pair[1]);
-            children_map[pair[0]] = children[pid] = { pid: pid, control: pair[0], status: 'f' };
-            children_fifo.push(children[pid]);
+            net.close(pair[0]);
+            var node = freeList.remHead();
+            node.pid = pid;
+            node.control = pair[1];
+            node.status = 'f';
+            activeList.addTail(node);
+            children_map[pair[1]] = children[pid] = node;
         }
     }
 
@@ -107,7 +135,7 @@ function main() {
         async.FD_ZERO(readfds);
         async.FD_SET(serverSocket, readfds);
         maxfd = serverSocket;
-        children.each(function(child) {
+        activeList.each(function(child) {
             var fd = child.control;
             if (fd > maxfd) {
                 maxfd = fd;
@@ -123,10 +151,14 @@ function main() {
         }
         var child = children_map[fd];
         if (!child) {
-            console.log('processInput no child ' + fd);
+            // console.log('processInput no child ' + fd);
             return;
         }
-        child.status = async.read(child.control, 1);
+        var status = async.read(child.control, 1);
+        if (status === false) {
+            return;
+        }
+        child.status = status;
         wakeupChild();
     }
     var wakeupCount = 0;
@@ -134,47 +166,39 @@ function main() {
         if (!wakeupCount) {
             return;
         }
-        var n,
-            len = children_fifo.length;
-        for (n=0; n<len; n++) {
-            var child = children_fifo.shift();
-            children_fifo.push(child);
-            if (child.status === 'r') {
-                net.write(child.control, 'g', 1);
-                child.status = 'x';
-                wakeupCount--;
-                return;
-            }
+        if (activeList.next.status !== 'r') {
+            return;
         }
-        // console.log('no children');
+        var child = activeList.remHead();
+        net.write(child.control, 'g', 1);
+        child.status = 'x';
+        wakeupCount--;
+        activeList.addTail(child);
     }
-    function removeChild(child) {
-        var control = child.control;
-        delete children_map[control];
-        delete children[child.pid];
-        var new_fifo = [];
-        children_fifo.each(function(e) {
-            if (e.control !== control) {
-                new_fifo.push(e);
-            }
-        });
-        children_fifo = new_fifo;
+
+    function removeChild(pid) {
+        var child = children[pid];
+        if (child) {
+            var control = child.control;
+            async.close(control);
+            activeList.remove(child);
+            freeList.addTail(child);
+            delete children_map[control];
+            delete children[child.pid];
+        }
     }
     while (true) {
         build_fd_set();
         var o = async.select(maxfd+1, readfds);
-        if (o === false) {
-            while ((child = process.wait(true))) {
-                console.log('child ' + child.pid + ' exited');
-                if (!children[child.pid]) {
-                    console.log('********************** CHILD EXITED THAT IS NOT HTTP CHILD');
-                    continue;
-                }
-                removeChild(child);
-                forkChild();
+        while ((child = process.wait(true))) {
+            if (!children[child.pid]) {
+                console.log('********************** CHILD EXITED THAT IS NOT HTTP CHILD');
+                continue;
             }
+            removeChild(child);
+            forkChild();
         }
-        else {
+        if (o !== false) {
             // console.dir(o);
             o.read.each(processInput);
             if (o.read.indexOf(serverSocket) !== -1) {
