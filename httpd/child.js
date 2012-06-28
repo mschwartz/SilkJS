@@ -321,6 +321,7 @@ HttpChild = (function() {
         });
         return found;
     }
+    var realDocumentRoot = fs.realpath(Config.documentRoot);
     function handleRequest() {
         req.script_path = req.uri;
         delete req.path_info;
@@ -378,7 +379,7 @@ HttpChild = (function() {
             notFound();
         }
 
-        req.script_path = fn.replace(/index\..*$/, '').replace(fs.realpath(Config.documentRoot), '');
+        req.script_path = fn.replace(/index\..*$/, '').replace(realDocumentRoot, '');
         res.status = 200;
         req.path = fn;
         parts = fn.split('.');
@@ -430,7 +431,7 @@ HttpChild = (function() {
                     if (++requestsHandled > REQUESTS_PER_CHILD) {
                         keepAlive = false;
                     }
-                    var start_time = time.getrusage();
+                    // var start_time = time.getrusage();
                     try {
                         if (!req.init(sock)) {
                             break;
@@ -456,11 +457,11 @@ HttpChild = (function() {
                     res.data = {};
                     res.flush();
                     res.reset();
-                    var end_time = time.getrusage();
-                    var elapsed = end_time - start_time;
-                    elapsed = '' + elapsed;
-                    elapsed = elapsed.substr(0, 8);
-                    logfile.write(req.remote_addr + ' ' + req.method + ' ' + req.uri + ' completed in ' + elapsed + 's\n');
+                    // var end_time = time.getrusage();
+                    // var elapsed = end_time - start_time;
+                    // elapsed = '' + elapsed;
+                    // elapsed = elapsed.substr(0, 8);
+                    // logfile.write(req.remote_addr + ' ' + req.method + ' ' + req.uri + ' completed in ' + elapsed + 's\n');
                 }
                 net.close(sock);
                 req.close();
