@@ -395,11 +395,6 @@ HttpChild = (function() {
         }
     }
 
-    // semaphore for locking around accept()
-    var USE_FLOCK = true;
-    var lock = USE_FLOCK ? function(lockfd) { fs.flock(lockfd, fs.LOCK_EX); } : function(lockfd) { fs.lockf(lockfd, fs.F_LOCK); };
-    var unlock = USE_FLOCK ? function(lockfd) { fs.flock(lockfd, fs.LOCK_UN); } : function(lockfd) { fs.lockf(lockfd, fs.F_ULOCK); };
-
     return {
         requestHandler: null,   // called at start of each request
         endRequest: null,       // called at end of each request
@@ -426,13 +421,10 @@ HttpChild = (function() {
             var requestHandler = HttpChild.requestHandler;
             var endRequest = HttpChild.endRequest;
             requestsHandled = 0;
-            // var lockfd = fs.open(Config.lockFile, fs.O_RDONLY);
             while (requestsHandled < REQUESTS_PER_CHILD) {
                 async.write(control, 'r', 1);
                 async.read(control, 1);
-                // lock(lockfd);
                 var sock = net.accept(serverSocket);
-                // unlock(lockfd);
                 var keepAlive = true;
                 while (keepAlive) {
                     if (++requestsHandled > REQUESTS_PER_CHILD) {
@@ -474,7 +466,6 @@ HttpChild = (function() {
                 req.close();
                 // v8.gc();
             }
-            // fs.close(lockfd);
             res.close();
         }
     };
