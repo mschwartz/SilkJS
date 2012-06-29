@@ -311,6 +311,12 @@ static JSVAL process_env (JSARGS args) {
     return env;
 }
 
+static JSVAL process_setenv(JSARGS args) {
+    String::AsciiValue key(args[0]);
+    String::AsciiValue value(args[1]);
+	return Integer::New(setenv(*key, *value, 1));
+}
+
 /**
  * @function process.rusage
  * 
@@ -409,6 +415,7 @@ void init_process_object () {
 
     Handle<ObjectTemplate>process = ObjectTemplate::New();
     process->Set(String::New("env"), FunctionTemplate::New(process_env));
+    process->Set(String::New("setenv"), FunctionTemplate::New(process_setenv));
     process->Set(String::New("error"), FunctionTemplate::New(process_error));
     process->Set(String::New("kill"), FunctionTemplate::New(process_kill));
     process->Set(String::New("getpid"), FunctionTemplate::New(process_getpid));
