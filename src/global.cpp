@@ -139,7 +139,7 @@ static Handle<Value> Include (const Arguments& args) {
 
 static Handle<Value> LoadLibrary(const Arguments& args) {
     String::Utf8Value filename(args[0]);
-    int flag = RTLD_NOW | RTLD_GLOBAL; // args[1]->IntegerValue();
+    int flag = RTLD_LAZY | RTLD_GLOBAL; // args[1]->IntegerValue();
     void *handle = dlopen(*filename, flag);
     if (!handle) {
         printf("1) %s\n", dlerror());

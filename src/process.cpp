@@ -221,6 +221,7 @@ static JSVAL process_wait (JSARGS args) {
  * @param {string} command_line - a Unix command to execute
  * @return {string} output - the output of the command executed.
  */
+static int exec_result;
 static JSVAL process_exec (JSARGS args) {
     String::AsciiValue cmd(args[0]);
     string s;
@@ -230,8 +231,12 @@ static JSVAL process_exec (JSARGS args) {
     while (ssize_t size = read(fd, buf, 2048)) {
         s.append(buf, size);
     }
-    pclose(fp);
+    exec_result = pclose(fp);
     return String::New(s.c_str(), s.size());
+}
+
+static JSVAL process_exec_result(JSARGS args) {
+    return Integer::New(exec_result);
 }
 
 /**
@@ -289,6 +294,20 @@ static JSVAL process_env (JSARGS args) {
     }
     // set number of CPU cores
     env->Set(String::New("CORES"), Integer::New(sysconf(_SC_NPROCESSORS_ONLN)));
+    // OS TYPE
+#ifdef __APPLE__
+    env->Set(String::New("OS"), String::New("OSX"));
+#elif __linux__
+    env->Set(String::New("OS"), String::New("LINUX"));
+#else
+    env->Set(String::New("OS"), String::New("UNIX"));
+#endif
+    // 32 bit or 64 bit OS
+#ifdef __x86_64__
+    env->Set(String::New("PROCESSOR"), String::New("64"));
+#else
+    env->Set(String::New("PROCESSOR"), String::New("32"));
+#endif
     return env;
 }
 
@@ -399,6 +418,7 @@ void init_process_object () {
     process->Set(String::New("usleep"), FunctionTemplate::New(process_usleep));
     process->Set(String::New("wait"), FunctionTemplate::New(process_wait));
     process->Set(String::New("exec"), FunctionTemplate::New(process_exec));
+    process->Set(String::New("exec_result"), FunctionTemplate::New(process_exec_result));
     process->Set(String::New("getuid"), FunctionTemplate::New(process_getuid));
     process->Set(String::New("rusage"), FunctionTemplate::New(process_rusage));
     process->Set(String::New("getlogin"), FunctionTemplate::New(process_getlogin));
