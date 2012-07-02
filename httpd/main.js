@@ -71,7 +71,7 @@ function main() {
         freeList = new List(),
         activeList = new List();
 
-    for (var n=0; n<Config.numChildren; n++) {
+    for (var n=0; n<Config.numChildren*2; n++) {
         freeList.addTail({ n: n, pid: 0, control: 0, status: '' });
     }
 
@@ -136,6 +136,10 @@ function main() {
         async.FD_SET(serverSocket, readfds);
         maxfd = serverSocket;
         activeList.each(function(child) {
+            // if (!child.control) {
+            //     console.dir(child);
+            //     dumpList(activeList);
+            // }
             var fd = child.control;
             if (fd > maxfd) {
                 maxfd = fd;
@@ -195,7 +199,7 @@ function main() {
                 console.log('********************** CHILD EXITED THAT IS NOT HTTP CHILD');
                 continue;
             }
-            removeChild(child);
+            removeChild(child.pid);
             forkChild();
         }
         if (o !== false) {

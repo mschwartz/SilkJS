@@ -431,7 +431,7 @@ HttpChild = (function() {
                     if (++requestsHandled > REQUESTS_PER_CHILD) {
                         keepAlive = false;
                     }
-                    // var start_time = time.getrusage();
+                    var start_time = time.getrusage();
                     try {
                         if (!req.init(sock)) {
                             break;
@@ -457,15 +457,15 @@ HttpChild = (function() {
                     res.data = {};
                     res.flush();
                     res.reset();
-                    // var end_time = time.getrusage();
-                    // var elapsed = end_time - start_time;
-                    // elapsed = '' + elapsed;
-                    // elapsed = elapsed.substr(0, 8);
-                    // logfile.write(req.remote_addr + ' ' + req.method + ' ' + req.uri + ' completed in ' + elapsed + 's\n');
+                    var end_time = time.getrusage();
+                    var elapsed = end_time - start_time;
+                    elapsed = '' + elapsed;
+                    elapsed = elapsed.substr(0, 8);
+                    logfile.write(req.remote_addr + ' ' + req.method + ' ' + req.uri + ' completed in ' + elapsed + 's\n');
                 }
                 net.close(sock);
                 req.close();
-                // v8.gc();
+                v8.gc();
             }
             res.close();
         }
