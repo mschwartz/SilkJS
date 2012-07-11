@@ -7,6 +7,7 @@ HttpChild = (function() {
         time = require('builtin/time');
 
     function errorHandler(e) {
+        console.log('errorHandler');
         console.dir(e);
         console.log(e.stack);
         var spaces = '                 ';

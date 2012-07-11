@@ -27,8 +27,10 @@ char *readFile (const char *fn) {
 
 void AnsiSignalHandler (int sig) {
     signal(sig, AnsiSignalHandler);
-    printf("Caught Signal %d for process: %ld\n", sig, (size_t) getpid());
-    exit(11);
+    if (sig != SIGINT) {
+        printf("Caught Signal %d for process: %ld\n", sig, (size_t) getpid());
+    }
+    exit(sig);
 }
 
 //int serverSocket;
@@ -94,6 +96,8 @@ int main (int argc, char** argv) {
     //    printf("SILK V0.1\n");
     char *startup;
     const char *progName;
+    signal(SIGSEGV, AnsiSignalHandler);
+    signal(SIGINT, AnsiSignalHandler);
 
     if (argc < 2) {
         startup = readFile("/usr/local/silkjs/builtin/interpreter.js");
