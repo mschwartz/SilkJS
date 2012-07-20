@@ -4,7 +4,7 @@ CFLAGS = -O6 -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-stric
 
 V8 = ./v8-read-only
 
-V8_LIB = $(V8)/libv8.a
+V8_LIB = $(V8)/out/x64.release/libv8_base.a $(V8)/out/x64.release/libv8_snapshot.a
 
 MYSQL = $(CURDIR)/mysql-5.1.58
 
@@ -25,7 +25,7 @@ LIBDIR = $(CURDIR)/osx_dependencies
 DEPENDENCIES = $(MYSQL) $(JPEG) $(GD2) $(MM) $(CURL) $(SSH2) $(MEMCACHED)
 
 STATICLIBS = $(LIBDIR)/lib/mysql/libmysqlclient.a \
-	v8-read-only/libv8.a \
+	$(V8_LIB) \
 	$(LIBDIR)/lib/libcurl.a \
 	$(LIBDIR)/lib/libmm.a \
 	$(LIBDIR)/lib/libgd.a \
