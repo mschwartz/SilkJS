@@ -44,6 +44,7 @@ SilkJS:	$(V8) $(V8_LIB) $(DEPENDENCIES) $(OBJ) SilkJS.h Makefile
 	g++ $(CFLAGS) -o silkjs $(OBJ) $(STATICLIBS) -lncurses -lpthread -lsqlite3  -L/usr/X11/lib -lcairo -lexpat -lz -lssl -lcrypto -lpng -lfreetype -lxpm -liconv -lfontconfig -lsasl2
 
 perms:
+	@sudo mkdir -p /usr/local/bin
 	@sudo chgrp admin /usr/local /usr/local/bin 
 	@sudo chmod g+rwx /usr/local /usr/local/bin
 
