@@ -1,8 +1,9 @@
 GCC = /usr/bin/gcc
 GPP = /usr/bin/g++
 LD = /usr/bin/g++
+export LC_ALL:=C
 
-OBJ=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o http.o gd.o ncurses.o sem.o logfile.o v8.o md5.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o memcached.o ftplib.o ftp.o editline.o popen.o linenoise.o cairo.o expat.o async.o time.o
+OBJ=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o http.o gd.o ncurses.o sem.o logfile.o v8.o md5.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o memcached.o ftplib.o ftp.o editline.o popen.o linenoise.o cairo.o expat.o async.o time.o mysql.o
 
 CFLAGS = -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-strict-aliasing -fvisibility=hidden -Wall -W -Wno-unused-function -Wno-unused-parameter -Wnon-virtual-dtor -m64 -O3 -fomit-frame-pointer -fdata-sections -ffunction-sections -ansi -fno-strict-aliasing
 
@@ -14,7 +15,11 @@ V8=	$(V8LIB_DIR)/libv8_base.a $(V8LIB_DIR)/libv8_snapshot.a $(V8LIB_DIR)/libv8.d
 
 V8LIBS = -L$(V8LIB_DIR) -lv8
 
+MYSQL = $(CURDIR)/mysql-5.1.63
+
 JPEG = $(CURDIR)/jpeg-8b
+
+PNG = $(CURDIR)/libpng-1.2.50
 
 GD2 = $(CURDIR)/libgd2_2.0.36~rc1~dfsg.orig
 
@@ -28,22 +33,24 @@ MEMCACHED = $(CURDIR)/libmemcached-0.44
 
 LIBDIR = $(CURDIR)/osx_dependencies
 
-DEPENDENCIES = $(JPEG) $(GD2) $(MM) $(CURL) $(SSH2) $(MEMCACHED)
+DEPENDENCIES = $(MYSQL) $(JPEG) $(PNG) $(GD2) $(MM) $(CURL) $(SSH2) $(MEMCACHED)
 
 STATICLIBS = \
+	$(LIBDIR)/lib/mysql/libmysqlclient.a \
 	$(LIBDIR)/lib/libcurl.a \
 	$(LIBDIR)/lib/libmm.a \
 	$(LIBDIR)/lib/libgd.a \
 	$(LIBDIR)/lib/libjpeg.a \
+	$(LIBDIR)/lib/libpng.a \
 	$(LIBDIR)/lib/libmemcached.a \
 	$(LIBDIR)/lib/libssh2.a
 
 
 %.o: %.cpp SilkJS.h Makefile
-	g++ $(CFLAGS) -c -I/usr/X11/include -I$(CURDIR)/osx_dependencies/include -I$(SSH2)/include -Iv8-read-only/include -o $*.o $*.cpp
+	g++ $(CFLAGS) -c -I/usr/X11/include -I$(CURDIR)/osx_dependencies/include -I$(MYSQL)/include -I$(SSH2)/include -Iv8-read-only/include -o $*.o $*.cpp
 
 SilkJS:	$(V8DIR) $(V8) $(DEPENDENCIES) $(OBJ) SilkJS.h Makefile
-	$(LD) -rdynamic  -o silkjs $(OBJ) $(STATICLIBS) $(V8LIBS) -lncurses -lpthread -lsqlite3  -L/usr/X11/lib -lcairo -lexpat -lz -lssl -lcrypto -lpng -lfreetype -lxpm -liconv -lfontconfig -lsasl2  -Wl,-rpath,/usr/local/silkjs/src/v8,-rpath,$(V8LIB_DIR) 
+	$(LD) -rdynamic  -o silkjs $(OBJ) $(STATICLIBS) $(V8LIBS) -lncurses -lpthread -lsqlite3  -L/usr/X11/lib -lcairo -lexpat -lz -lssl -lcrypto -lpng -lfreetype -lxpm -liconv -lfontconfig -ldl -lsasl2  -Wl,-rpath,/usr/local/silkjs/src/v8,-rpath,$(V8LIB_DIR) 
 
 perms:
 	sudo chgrp admin /usr/local /usr/local/bin 
@@ -55,7 +62,7 @@ install:	SilkJS perms
 	cp -rp ../builtin ../examples ../httpd ../lib ../modules ../walkthrough /usr/local/silkjs
 	cp ../src/*.cpp ../src/*.h /usr/local/silkjs/src
 	cp -rp $(V8DIR)/include $(V8) /usr/local/silkjs/src/v8
-	# install_name_tool -id "@rpath/libv8.dylib" /usr/local/silkjs/src/v8/libv8.dylib 
+	install_name_tool -id "@rpath/libv8.dylib" /usr/local/silkjs/src/v8/libv8.dylib 
 	mv /usr/local/silkjs/examples /usr/local/silkjs/bin
 	chmod 755 /usr/local/silkjs/bin/* /usr/local/silkjs/httpd/main.js
 	cp silkjs /usr/local/silkjs/bin
@@ -85,6 +92,10 @@ $(V8):
 	cd $(V8DIR) && svn update && make dependencies && GYP_GENERATORS=make make GYPFLAGS="-Dcomponent=shared_library" -j 4 x64.release $(V8VERSION)
 #	cd $(V8DIR) && scons -j 4 arch=x64
 
+$(MYSQL):
+	tar xzvfp dependencies/mysql-5.1.63.tar.gz
+	cd $(MYSQL) && ./configure --prefix $(LIBDIR) --without-bench --without-server && make && make install
+
 $(MEMCACHED):
 	tar xzvfp dependencies/libmemcached_0.44.orig.tar.gz
 	cd $(MEMCACHED) && ./configure --prefix $(LIBDIR) CFLAGS=-fPIC --disable-shared && make && make install
@@ -93,9 +104,13 @@ $(JPEG):
 	tar xzvfp dependencies/libjpeg8_8b.orig.tar.gz
 	cd $(JPEG) && ./configure --prefix $(LIBDIR) && make && make install
 
+$(PNG):
+	tar xzvfp dependencies/libpng-1.2.50.tar.gz
+	cd $(PNG) && ./configure --prefix $(LIBDIR) && make && make install
+
 $(GD2):
 	tar xzvfp dependencies/libgd2_2.0.36~rc1~dfsg.orig.tar.gz
-	cd $(GD2) && ./configure --prefix $(LIBDIR) --with-jpeg=$(LIBDIR) && make && make install
+	cd $(GD2) && ./configure --prefix $(LIBDIR) --with-png=$(LIBDIR) --with-jpeg=$(LIBDIR) && LC_ALL=C make && make install
 
 $(MM):
 	tar xzvfp dependencies/mm_1.4.2.orig.tar.gz

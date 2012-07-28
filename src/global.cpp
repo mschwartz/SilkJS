@@ -167,7 +167,7 @@ extern void init_async_object ();
 extern void init_time_object ();
 #if !BOOTSTRAP_SILKJS
 extern void init_sem_object ();
-// extern void init_mysql_object ();
+extern void init_mysql_object ();
 extern void init_sqlite3_object ();
 extern void init_memcached_object ();
 extern void init_gd_object ();
@@ -201,7 +201,7 @@ void init_global_object () {
 #if !BOOTSTRAP_SILKJS
     init_logfile_object();
     init_sem_object();
-    // init_mysql_object();
+    init_mysql_object();
     init_sqlite3_object();
     init_memcached_object();
     init_gd_object();
