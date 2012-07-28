@@ -10,8 +10,8 @@ endif
 
 CORE=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o v8.o http.o md5.o popen.o linenoise.o async.o time.o
 
-#OBJ=	mysql.o memcached.o gd.o ncurses.o sem.o logfile.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o ftp.o ftplib.o editline.o cairo.o expat.o
-OBJ=	memcached.o gd.o ncurses.o sem.o logfile.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o ftp.o ftplib.o editline.o cairo.o expat.o
+OBJ=	mysql.o memcached.o gd.o ncurses.o sem.o logfile.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o ftp.o ftplib.o editline.o cairo.o expat.o
+#OBJ=	memcached.o gd.o ncurses.o sem.o logfile.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o ftp.o ftplib.o editline.o cairo.o expat.o
 
 V8DIR=	./v8-read-only
 
