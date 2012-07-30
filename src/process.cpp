@@ -159,27 +159,46 @@ static JSVAL process_usleep (JSARGS args) {
  * ### Synopsis
  * 
  * var o = process.wait();
+ * var o = process.wait(poll)
  * 
  * Wait for process termination.
  * 
  * ### Description
  * 
- * This function suspends executio of its calling process until one of its child processes terminates.  The function returns an object of the form:
+ * This function suspends execution of its calling process until one of its child processes terminates.  The function returns an object of the form:
  * 
  * + pid: the pid of the child process that terminated
  * + status: the status returned by the child process
  * 
- * @return {object} o - information about the process that terminated.
+ * @param {boolean} poll - if true, then this function will return immediately whether a child process has exited or not.
+ * @return {object} o - information about the process that terminated.  If polling and no process exited, false is returned.
  * 
  * ### See Also
  * process.exit()
  */
 static JSVAL process_wait (JSARGS args) {
-    int status;
-    pid_t childPid = waitpid(-1, &status, 0);
+    int status, 
+        flags = 0;
+
+    if (args.Length() > 0) {
+        if (args[0]->BooleanValue()) {
+            flags = WNOHANG;
+        }
+    }
+    pid_t childPid = waitpid(-1, &status, flags);
     if (childPid == -1) {
         perror("wait ");
+        return False();
     }
+    if (childPid == 0) {
+        return False();
+    }
+    // if (flags) {
+    //     childPid = waitpid(childPid, &status, 0);
+    //     if (childPid == -1) {
+    //         perror("waitpid ");
+    //     }
+    // }
     Handle<Object>o = Object::New();
     o->Set(String::New("pid"), Integer::New(childPid));
     o->Set(String::New("status"), Integer::New(status));
@@ -202,6 +221,7 @@ static JSVAL process_wait (JSARGS args) {
  * @param {string} command_line - a Unix command to execute
  * @return {string} output - the output of the command executed.
  */
+static int exec_result;
 static JSVAL process_exec (JSARGS args) {
     String::AsciiValue cmd(args[0]);
     string s;
@@ -211,8 +231,12 @@ static JSVAL process_exec (JSARGS args) {
     while (ssize_t size = read(fd, buf, 2048)) {
         s.append(buf, size);
     }
-    pclose(fp);
+    exec_result = pclose(fp);
     return String::New(s.c_str(), s.size());
+}
+
+static JSVAL process_exec_result(JSARGS args) {
+    return Integer::New(exec_result);
 }
 
 /**
@@ -268,7 +292,29 @@ static JSVAL process_env (JSARGS args) {
         home = pw->pw_dir;
         env->Set(String::New("HOME"), String::New(home));
     }
+    // set number of CPU cores
+    env->Set(String::New("CORES"), Integer::New(sysconf(_SC_NPROCESSORS_ONLN)));
+    // OS TYPE
+#ifdef __APPLE__
+    env->Set(String::New("OS"), String::New("OSX"));
+#elif __linux__
+    env->Set(String::New("OS"), String::New("LINUX"));
+#else
+    env->Set(String::New("OS"), String::New("UNIX"));
+#endif
+    // 32 bit or 64 bit OS
+#ifdef __x86_64__
+    env->Set(String::New("PROCESSOR"), String::New("64"));
+#else
+    env->Set(String::New("PROCESSOR"), String::New("32"));
+#endif
     return env;
+}
+
+static JSVAL process_setenv(JSARGS args) {
+    String::AsciiValue key(args[0]);
+    String::AsciiValue value(args[1]);
+	return Integer::New(setenv(*key, *value, 1));
 }
 
 /**
@@ -369,6 +415,7 @@ void init_process_object () {
 
     Handle<ObjectTemplate>process = ObjectTemplate::New();
     process->Set(String::New("env"), FunctionTemplate::New(process_env));
+    process->Set(String::New("setenv"), FunctionTemplate::New(process_setenv));
     process->Set(String::New("error"), FunctionTemplate::New(process_error));
     process->Set(String::New("kill"), FunctionTemplate::New(process_kill));
     process->Set(String::New("getpid"), FunctionTemplate::New(process_getpid));
@@ -378,6 +425,7 @@ void init_process_object () {
     process->Set(String::New("usleep"), FunctionTemplate::New(process_usleep));
     process->Set(String::New("wait"), FunctionTemplate::New(process_wait));
     process->Set(String::New("exec"), FunctionTemplate::New(process_exec));
+    process->Set(String::New("exec_result"), FunctionTemplate::New(process_exec_result));
     process->Set(String::New("getuid"), FunctionTemplate::New(process_getuid));
     process->Set(String::New("rusage"), FunctionTemplate::New(process_rusage));
     process->Set(String::New("getlogin"), FunctionTemplate::New(process_getlogin));

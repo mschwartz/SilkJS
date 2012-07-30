@@ -1,4 +1,4 @@
-/* 
+/*
  * CommonJS require 1.1 implementation
  */
 
@@ -48,7 +48,7 @@
 			return false;
 		}
 		if (module.substr(0,1) == '/' || module.substr(0,2) == './' || module.substr(0,3) == '../') {
-			return tryFile(module) || tryFile(module + '.js' || tryFile(module + '.coffee'));
+			return tryFile(module) || tryFile(module + '.js') || tryFile(module + '.coffee') || tryFile(module + '.so');
 		}
 		else {
 			var paths = require.path;
@@ -58,7 +58,7 @@
 					path += '/';
 				}
 				path += module;
-				var found = tryFile(path) || tryFile(path+'.js') || tryFile(path + '.coffee');
+				var found = tryFile(path) || tryFile(path+'.js') || tryFile(path + '.coffee') || tryFile(path + '.so');
 				if (found) {
 					return found;
 				}
@@ -67,12 +67,12 @@
 		throw 'Could not locate require file ' + module;
 	}
 	// coffeescript support
-	var suffix = '.coffee',
-		suffixLen = suffix.length;
+	var coffeeRegEx = /\.coffee$/,
+        soRegEx = /\.so/;
 
 	function loadFile(modulePath) {
 		var contents = fs.readFile(modulePath);
-		if (modulePath.indexOf(suffix, modulePath.length - suffixLen) !== -1) {
+		if (coffeeRegEx.test(modulePath)) {
 			contents = CoffeeScript.compile(contents, { bare: true });
 		}
 		return contents;
@@ -86,6 +86,10 @@
 		if (require.cache[modulePath]) {
 			return require.cache[modulePath];
 		}
+        if (soRegEx.test(modulePath)) {
+            require.cache[modulePath] = loadDll(modulePath);
+            return require.cache[modulePath];
+        }
 		var content = loadFile(modulePath);
 		require.dirStack.push(require.fsPath);
 		var fsPath = modulePath.split('/');
@@ -126,8 +130,8 @@
 		'./',
 		'modules',
         '/usr/local/silkjs',
-        '/usr/local/silkjs/modules',
         '/usr/local/silkjs/contrib',
+        '/usr/local/silkjs/modules',
 		'/usr/share/silkjs/modules'
 	];
 }());

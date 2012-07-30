@@ -31,12 +31,16 @@
  #define R memcached_return_t
  #define dump_fn_type const memcached_st
 #else
- #define memcached_dump_fn memcached_dump_func
+#ifdef SLES
+ #define R memcached_return_t
+ #define dump_fn_type const memcached_st
+#else
  #define dump_fn_type memcached_st
  #define R memcached_return
+ #define memcached_dump_fn memcached_dump_func
+#endif
 #endif
 #define S memcached_server_st
-
 static inline M* HANDLE (Handle<Value>v) {
     if (v->IsNull()) {
         ThrowException(String::New("Handle is NULL"));

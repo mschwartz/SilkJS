@@ -40,7 +40,7 @@
         if (!this.pid) {
             // child
             while (true) {
-                process.sleep(5);
+                process.sleep(1);
                 logfile.flush(me.handle);
             }
         }

@@ -30,6 +30,7 @@
  */
 
 #include "SilkJS.h"
+#include <mm.h>
 
 #define LOGFILE_CHUNK_SIZE	(16384*2)
 

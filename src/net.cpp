@@ -173,6 +173,7 @@ static JSVAL net_accept (JSARGS args) {
     socklen_t sock_size = sizeof (struct sockaddr_in);
     bzero(&their_addr, sizeof (their_addr));
 
+#if 1
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(sock, &fds);
@@ -197,6 +198,9 @@ static JSVAL net_accept (JSARGS args) {
             perror("accept");
         }
     }
+#else
+    sock = accept(sock, (struct sockaddr *) &their_addr, &sock_size);
+#endif
     //	int yes = 1;
     //#ifdef USE_CORK
     //	setsockopt( sock, IPPROTO_TCP, TCP_CORK, (char *)&yes, sizeof(yes) );
@@ -211,6 +215,24 @@ static JSVAL net_accept (JSARGS args) {
     strcpy(remote_addr, inet_ntoa(their_addr.sin_addr));
 
     return scope.Close(Integer::New(sock));
+}
+
+static JSVAL net_readReady(JSARGS args) {
+    int sock = args[0]->IntegerValue();
+    fd_set fds;
+    FD_ZERO(&fds);
+    FD_SET(sock, &fds);
+     struct timeval timeout;
+     timeout.tv_sec = 0;
+     timeout.tv_usec = 0;
+     switch (select(sock+1, &fds, NULL, NULL, &timeout)) {
+        case -1:
+            perror("select");
+            return ThrowException(String::Concat(String::New("Read Error: "), String::New(strerror(errno))));
+        case 0:
+            return False();
+     }
+     return True();
 }
 
 /**
@@ -305,7 +327,7 @@ static JSVAL net_read (JSARGS args) {
     FD_ZERO(&fds);
     FD_SET(fd, &fds);
     struct timeval timeout;
-    timeout.tv_sec = 5;
+    timeout.tv_sec = 1;
     timeout.tv_usec = 0;
     switch (select(fd + 1, &fds, NULL, NULL, &timeout)) {
         case -1:
@@ -346,7 +368,6 @@ static JSVAL net_read (JSARGS args) {
  * This function throws an exception with a string describing any write errors.
  */
 static JSVAL net_write (JSARGS args) {
-    HandleScope scope;
     int fd = args[0]->IntegerValue();
     String::Utf8Value buf(args[1]);
     long size = args[2]->IntegerValue();
@@ -360,9 +381,8 @@ static JSVAL net_write (JSARGS args) {
         size -= count;
         s += count;
         written += count;
-        ;
     }
-    return scope.Close(Integer::New(written));
+    return Integer::New(written);
 }
 
 /**
@@ -395,7 +415,6 @@ static JSVAL net_write (JSARGS args) {
  * 
  */
 static JSVAL net_writebuffer (JSARGS args) {
-    HandleScope scope;
     int fd = args[0]->IntegerValue();
     Local<External>wrap = Local<External>::Cast(args[1]);
     Buffer *buf = (Buffer *) wrap->Value();
@@ -417,7 +436,7 @@ static JSVAL net_writebuffer (JSARGS args) {
     setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof (flag));
     flag = 1;
     setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof (flag));
-    return scope.Close(Integer::New(written));
+    return Integer::New(written);
 }
 
 /**
@@ -491,9 +510,18 @@ static JSVAL net_sendfile (JSARGS args) {
     return Undefined();
 }
 
-void init_net_object () {
-    HandleScope scope;
+static JSVAL net_socketpair(JSARGS args) {
+    int sv[2];
+    if (socketpair(AF_UNIX, SOCK_STREAM, 0, sv) == -1) {
+        return False();
+    }
+    JSARRAY a = Array::New();
+    a->Set(0, Integer::New(sv[0]));
+    a->Set(1, Integer::New(sv[1]));
+    return a;
+}
 
+void init_net_object () {
     Handle<ObjectTemplate>net = ObjectTemplate::New();
     net->Set(String::New("connect"), FunctionTemplate::New(net_connect));
     net->Set(String::New("listen"), FunctionTemplate::New(net_listen));
@@ -505,6 +533,7 @@ void init_net_object () {
     net->Set(String::New("write"), FunctionTemplate::New(net_write));
     net->Set(String::New("writeBuffer"), FunctionTemplate::New(net_writebuffer));
     net->Set(String::New("sendFile"), FunctionTemplate::New(net_sendfile));
-
+    net->Set(String::New("socketpair"), FunctionTemplate::New(net_socketpair));
+    net->Set(String::New("readReady"), FunctionTemplate::New(net_readReady));
     builtinObject->Set(String::New("net"), net);
 }
