@@ -416,6 +416,6 @@ MySQL.prototype.extend({
 });
 
 if (exports) {
-    exports = MySQL;
+    exports.MySQL = MySQL;
 }
 
