@@ -1,0 +1,76 @@
+<VirtualHost *:80>
+	ServerAdmin webmaster@localhost
+
+        SetEnv proxy-sendcl true
+        RewriteEngine On
+
+        ProxyPreserveHost On
+        ProxyPass /previewDir/ !
+        ProxyPass / http://localhost:9090/ retry=1
+        ProxyPassReverse / http://localhost:9090/
+        AddDefaultCharset UTF-8
+
+	<Location />
+# Insert filter
+	SetOutputFilter DEFLATE
+
+# Netscape 4.x has some problems...
+	BrowserMatch ^Mozilla/4 gzip-only-text/html
+
+# Netscape 4.06-4.08 have some more problems
+	BrowserMatch ^Mozilla/4\.0[678] no-gzip
+
+# MSIE masquerades as Netscape, but it is fine
+# BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+
+# NOTE: Due to a bug in mod_setenvif up to Apache 2.0.48
+# the above regex won't work. You can use the following
+# workaround to get the desired effect:
+	BrowserMatch \bMSI[E] !no-gzip !gzip-only-text/html
+
+# Don't compress images
+	SetEnvIfNoCase Request_URI \
+		\.(?:gif|jpe?g|png|swf|flv)$ no-gzip dont-vary
+
+# Make sure proxies don't deliver the wrong content
+		Header append Vary User-Agent env=!dont-vary
+	</Location>
+
+	DocumentRoot /var/www
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride None
+	</Directory>
+	<Directory /var/www/>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride None
+		Order allow,deny
+		allow from all
+	</Directory>
+
+	ScriptAlias /cgi-bin/ /usr/lib/cgi-bin/
+	<Directory "/usr/lib/cgi-bin">
+		AllowOverride None
+		Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
+		Order allow,deny
+		Allow from all
+	</Directory>
+
+	ErrorLog ${APACHE_LOG_DIR}/error.log
+
+	# Possible values include: debug, info, notice, warn, error, crit,
+	# alert, emerg.
+	LogLevel warn
+
+	CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+    Alias /doc/ "/usr/share/doc/"
+    <Directory "/usr/share/doc/">
+        Options Indexes MultiViews FollowSymLinks
+        AllowOverride None
+        Order deny,allow
+        Deny from all
+        Allow from 127.0.0.0/255.0.0.0 ::1/128
+    </Directory>
+
+</VirtualHost>
