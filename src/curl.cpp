@@ -331,6 +331,25 @@ static JSVAL setPostFields (JSARGS args) {
 }
 
 /**
+ * @function curl.setTimeout
+ *
+ * ### Synopsis
+ *
+ * curl.setTimeout(handle, seconds);
+ * 
+ * Set timeout for CURL operations.  Normally they do not timeout, which can cause a hang to occur.
+ * @param {object} handle - CURL handle
+ * @param {int} seconds - timeout in seconds, or 0 for infinite.
+ */
+static JSVAL setTimeout (JSARGS args) {
+    CHANDLE *h = HANDLE(args[0]);
+    long timeout = args[1]->IntegerValue();
+    curl_easy_setopt(h->curl, CURLOPT_NOSIGNAL, 1;
+    curl_easy_setopt(h->curl, CURLOPT_TIMEOUT, timeout);
+    return Undefined();
+}
+
+/**
  * @function curl.perform
  * 
  * ###Synopsis
@@ -485,6 +504,7 @@ void init_curl_object () {
     curlObject->Set(String::New("addFormField"), FunctionTemplate::New(addFormField));
     curlObject->Set(String::New("addFormFile"), FunctionTemplate::New(addFormFile));
     curlObject->Set(String::New("setPostFields"), FunctionTemplate::New(setPostFields));
+    curlObject->Set(String::New("setTimeout"), FunctionTemplate::New(setTimeout));
     curlObject->Set(String::New("perform"), FunctionTemplate::New(perform));
     curlObject->Set(String::New("getResponseCode"), FunctionTemplate::New(getResponseCode));
     curlObject->Set(String::New("getContentType"), FunctionTemplate::New(getContentType));

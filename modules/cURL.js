@@ -27,15 +27,15 @@ function isString(v) {
 
 /**
  * @function cURL
- * 
+ *
  * ### Synopsis
- * 
+ *
  * var result = cURL(config);
- * 
+ *
  * Perform a cURL request.
- * 
+ *
  * The config parameter is an object of the form:
- * 
+ *
  * + url: (required) the URL to POST or GET from the remote server.
  * + method: (optional) either "GET" or "POST"
  * + followRedirects (optional) true (default) to follow redirect responses from the server
@@ -44,26 +44,27 @@ function isString(v) {
  * + params: POST variables to send to server
  * + form: FORM to send to server (see below)
  * + verbose: set to > 0 to have cURL library log debugging info to console
- * 
+ * + timeout: set to number of seconds to have cURL timeout.  Defaults to infinite.
+ *
  * NOTE: only one of form or params may be provided.
- * 
+ *
  * If you wish to submit a multipart/form style form to the remote server, set the form config parameter, which is an array of objects of the following format:
- * 
+ *
  * + name: (required) name of form field
  * + value: (required) value of form field
  * + fileUpload: (optional) if true, value is the name of a file to upload
  * + contentType: (optional) content-type header to set for this field
- * 
+ *
  * The result returned is an object of the form:
- * 
+ *
  * + status: HTTP status from server (e.g. 200 for OK, 404 for not found, etc.)
  * + contentType: the MIME type or content-type of the response.
  * + responseHeaders: an object with key/value pairs; the key is the header name, the value is the value.
  * + responseText: the response from the server as a string.
- * 
+ *
  * @param {object} config - a config object as described above.
  * @returns {object} result - a result object as described above.
- * 
+ *
  * ### Note
  * This function throws an error if the arguments are invalid.
  */
@@ -82,6 +83,7 @@ function cURL(config) {
         switch (config.method.toLowerCase()) {
             case 'post':
                 method = 'POST';
+                break;
             case 'get':
 //                c.setMethod(handle, config.method);
                 break;
@@ -175,6 +177,10 @@ function cURL(config) {
         else {
             throw new Error('Invalid headers config');
         }
+    }
+
+    if (config.timeout !== undefined) {
+        c.setTimeout(handle, config.timeout);
     }
 
     var errorCode = c.perform(handle, config.verbose || 0);
