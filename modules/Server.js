@@ -129,7 +129,7 @@ var Server = (function() {
 		 */
         abortRequest: function() {
             // Cache.unlockAll();
-            res.stop();
+			throw 'RES.STOP';
         }
     }
 })();
