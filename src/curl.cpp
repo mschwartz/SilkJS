@@ -344,7 +344,7 @@ static JSVAL setPostFields (JSARGS args) {
 static JSVAL setTimeout (JSARGS args) {
     CHANDLE *h = HANDLE(args[0]);
     long timeout = args[1]->IntegerValue();
-    curl_easy_setopt(h->curl, CURLOPT_NOSIGNAL, 1;
+    curl_easy_setopt(h->curl, CURLOPT_NOSIGNAL, 1);
     curl_easy_setopt(h->curl, CURLOPT_TIMEOUT, timeout);
     return Undefined();
 }
