@@ -118,7 +118,7 @@ var Server = (function() {
 		 */
         endRequest: function() {
             // Cache.unlockAll();
-            res.stop();
+        	throw 'RES.STOP';
         },
 
         /**
