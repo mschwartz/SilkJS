@@ -184,6 +184,7 @@ var Json = function() {
          * @param {string} msg - text to send as exception.
          */
         exception : function(msg) {
+            res.status = 500;
             res.write(Json.encode({
                 success   : false,
                 exception : msg

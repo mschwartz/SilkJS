@@ -1352,9 +1352,24 @@ GitHub.prototype.extend({
         return this._post(this.url + '/repos/' + this._repoName(repo) + 'git/blobs', o);
     },
 
+    /*
+     * @function GitHub.listIssues
+     *
+     * ### Synopsis
+     *
+     * var issues = gh.listIssues(config);
+     *
+     * List issues for current user.
+     *
+     * Config object has the following format
+     */
+    listIssues: function(config) {
+
+    },
+
     getTree: function(repo, sha, recursive) {
         recursive = recursive ? '?recursive=1' : '';
-        var url = this.url + '/repos/' + this._repoName(repo) + '/git/trees/' + sha + recursive
+        var url = this.url + '/repos/' + this._repoName(repo) + '/git/trees/' + sha + recursive;
         console.log(url);
         return this._get(url);
     }
