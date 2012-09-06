@@ -14,6 +14,14 @@ OBJ=	mysql.o memcached.o gd.o ncurses.o sem.o logfile.o sqlite3.o xhrhelper.o cu
 #OBJ=	memcached.o gd.o ncurses.o sem.o logfile.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o ftp.o ftplib.o editline.o cairo.o expat.o
 
 V8DIR=	./v8-read-only
+# Use either trunk or bleeding_edge branch. Normally we use trunk.
+#V8SVNBASE=	http://v8.googlecode.com/svn/branches/bleeding_edge/
+V8SVNBASE=	http://v8.googlecode.com/svn/trunk/
+# Revision 12443 is known good, 12448 is bad, see
+# https://groups.google.com/forum/?fromgroups=#!topic/v8-users/gS1SMb1Tjks
+#V8REV=	HEAD
+V8REV=	12443
+V8SVN=	$(V8SVNBASE)@$(V8REV)
 
 # V8LIB_64 := $(V8DIR)/out/x64.release/obj.target/tools/gyp
 # V8LIB_32 := $(V8DIR)/out/ia32.release/obj.target/tools/gyp
@@ -70,21 +78,20 @@ install:	silkjs perms
 	
 $(V8DIR):
 	echo "svn checkout"
-#	svn checkout http://v8.googlecode.com/svn/branches/bleeding_edge/ v8-read-only
-	svn checkout http://v8.googlecode.com/svn/trunk/ v8-read-only
+	svn co $(V8SVN) $(V8DIR)
 
 $(V8):
-	cd $(V8DIR) && svn update && make dependencies && GYP_GENERATORS=make make GYPFLAGS="-Dcomponent=shared_library" -j 4 $(V8VERSION)
+	cd $(V8DIR) && svn update -r $(V8REV) && make dependencies && GYP_GENERATORS=make make GYPFLAGS="-Dcomponent=shared_library" -j 4 $(V8VERSION)
 
 update:
-	cd $(V8DIR) && svn update && make dependencies && GYP_GENERATORS=make make $(V8VERSION)
+	cd $(V8DIR) && svn update -r $(V8REV) && make dependencies && GYP_GENERATORS=make make $(V8VERSION)
 	git pull
 	
 clean:
 	rm -rf silkjs *.o
 
 realclean:
-	rm -rf silkjs *.o v8-read-only
+	rm -rf silkjs *.o $(V8DIR)
 
 release: silkjs
 	tar czvfp ~/SilkJS.tgz silkjs examples httpd lib
