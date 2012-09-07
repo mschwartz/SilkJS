@@ -46,8 +46,6 @@
 
 #include <string>
 
-#undef ENABLE_EXTRA_CHECKS
-
 using namespace v8;
 using namespace std;
 
