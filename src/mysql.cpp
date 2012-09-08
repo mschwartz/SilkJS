@@ -46,7 +46,7 @@ static inline const char *currentDb (Handle<Value>v) {
         ThrowException(String::New("Handle is NULL"));
         return NULL;
     }
-    mstate *m = (mstate *) JSEXTERN(v);
+    mstate *m = (mstate *) JSOPAQUE(v);
     return m->currentDb;
 }
 
@@ -55,7 +55,7 @@ static inline MYSQL* HANDLE (Handle<Value>v) {
         ThrowException(String::New("Handle is NULL"));
         return NULL;
     }
-    mstate *m = (mstate *) JSEXTERN(v);
+    mstate *m = (mstate *) JSOPAQUE(v);
     if (!mysql_ping(m->handle)) {
         return m->handle;
     }
@@ -75,7 +75,7 @@ static inline void deleteHandle (Handle<Value>v) {
         ThrowException(String::New("Handle is NULL"));
         return;
     }
-    mstate *m = (mstate *) JSEXTERN(v);
+    mstate *m = (mstate *) JSOPAQUE(v);
     delete m;
 }
 
@@ -84,7 +84,7 @@ static inline void setCurrentDb (Handle<Value>v, const char *s) {
         ThrowException(String::New("Handle is NULL"));
         return;
     }
-    mstate *m = (mstate *) JSEXTERN(v);
+    mstate *m = (mstate *) JSOPAQUE(v);
     m->setCurrentDb(s);
 }
 
@@ -93,7 +93,7 @@ static inline MYSQL_RES *RESULT_SET (Handle<Value> v) {
         ThrowException(String::New("Handle is NULL"));
         return NULL;
     }
-    return (MYSQL_RES *) JSEXTERN(v);
+    return (MYSQL_RES *) JSOPAQUE(v);
 }
 
 static JSVAL affected_rows (JSARGS args) {
@@ -816,7 +816,7 @@ JSVAL connect (JSARGS args) {
     m->host = strdup(*host);
     m->user = strdup(*user);
     m->passwd = strdup(*passwd);
-    return External::New(m);
+    return Opaque::New(m);
 }
 
 JSVAL select_db (JSARGS args) {

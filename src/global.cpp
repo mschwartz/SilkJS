@@ -38,7 +38,6 @@ extern char *readFile (const char *s);
  * @param {string} s - the string to write to stdout.
  */
 static Handle<Value> Log (const Arguments& args) {
-    HandleScope handle_scope;
     String::AsciiValue str(args[0]);
     printf("%ld %s\n", (unsigned long) getpid(), *str);
     return Undefined();
@@ -58,7 +57,6 @@ static Handle<Value> Log (const Arguments& args) {
  * @param {string} s - the string to write to stdout.
  */
 static Handle<Value> Print (const Arguments& args) {
-    HandleScope handle_scope;
     String::AsciiValue str(args[0]);
     printf("%s", *str);
     return Undefined();
@@ -78,7 +76,6 @@ static Handle<Value> Print (const Arguments& args) {
  * @param {string} s - the string to write to stdout.
  */
 static Handle<Value> Println (const Arguments& args) {
-    HandleScope handle_scope;
     String::AsciiValue str(args[0]);
     printf("%s\n", *str);
     return Undefined();

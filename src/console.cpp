@@ -28,7 +28,6 @@
  * @param {string} s - the string to write to stdout
  */
 static JSVAL log (JSARGS args) {
-    HandleScope scope;
     String::AsciiValue s(args[0]);
     fprintf(stdout, "%s\n", *s);
     return Undefined();
@@ -46,7 +45,6 @@ static JSVAL log (JSARGS args) {
  * @param {string} s - the string to write to stderr
  */
 static JSVAL error (JSARGS args) {
-    HandleScope scope;
     String::AsciiValue s(args[0]);
     fprintf(stderr, "%s\n", *s);
     return Undefined();
@@ -65,14 +63,11 @@ static JSVAL error (JSARGS args) {
  * @returns {string} password - the password entered by the user
  */
 static JSVAL getPassword (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value prompt(args[0]);
-    return scope.Close(String::New(getpass(*prompt)));
+    return String::New(getpass(*prompt));
 }
 
 void init_console_object () {
-    HandleScope scope;
-
     Handle<ObjectTemplate>console = ObjectTemplate::New();
     console->Set(String::New("log"), FunctionTemplate::New(log));
     console->Set(String::New("error"), FunctionTemplate::New(error));

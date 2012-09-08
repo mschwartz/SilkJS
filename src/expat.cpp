@@ -96,7 +96,7 @@ static JSVAL parser(JSARGS args) {
  * @param {object} parser - opaque handle to a parser, as returned by expat.parser(). 
  */
 static JSVAL destroy(JSARGS args) {
-    p *ptr = (p *)JSEXTERN(args[0]);
+    p *ptr = (p *)JSOPAQUE(args[0]);
     ptr->end.Dispose();
     ptr->end.Clear();
     ptr->start.Dispose();
@@ -126,7 +126,7 @@ static JSVAL destroy(JSARGS args) {
  */
 
 static JSVAL parse(JSARGS args) {
-    p *ptr = (p *)JSEXTERN(args[0]);
+    p *ptr = (p *)JSOPAQUE(args[0]);
     String::Utf8Value xml(args[1]->ToString());
     int res = XML_Parse(ptr->parser, *xml, strlen(*xml), 1);
     return Integer::New(res);

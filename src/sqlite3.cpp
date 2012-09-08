@@ -2,261 +2,204 @@
 #include <sqlite3.h>
 
 static JSVAL sqlite_open (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value filename(args[0]->ToString());
     sqlite3 *db;
     if (sqlite3_open(*filename, &db)) {
-        return scope.Close(String::New(sqlite3_errmsg(db)));
+        return String::New(sqlite3_errmsg(db));
     }
-    return scope.Close(External::New(db));
+    return Opaque::New(db);
 }
 
 static JSVAL sqlite_open16 (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value filename(args[0]->ToString());
     sqlite3 *db;
     if (sqlite3_open16(*filename, &db)) {
-        return scope.Close(String::New(sqlite3_errmsg(db)));
+        return String::New(sqlite3_errmsg(db));
     }
-    return scope.Close(External::New(db));
+    return Opaque::New(db);
 }
 
 static JSVAL sqlite_open_v2 (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value filename(args[0]->ToString());
     int flags = args[1]->IntegerValue();
     String::Utf8Value zVfs(args[2]->ToString());
     sqlite3 *db;
     if (sqlite3_open_v2(*filename, &db, flags, *zVfs)) {
-        return scope.Close(String::New(sqlite3_errmsg(db)));
+        return String::New(sqlite3_errmsg(db));
     }
-    return scope.Close(External::New(db));
+    return Opaque::New(db);
 }
 
 static JSVAL sqlite_extended_result_codes (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3 *db = (sqlite3 *) wrap->Value();
+    sqlite3 *db = (sqlite3 *)JSOPAQUE(args[0]);
     int onoff = args[1]->IntegerValue();
-    return scope.Close(Integer::New(sqlite3_extended_result_codes(db, onoff)));
+    return Integer::New(sqlite3_extended_result_codes(db, onoff));
 }
 
 static JSVAL sqlite_errcode (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3 *db = (sqlite3 *) wrap->Value();
-    return scope.Close(Integer::New(sqlite3_errcode(db)));
+    sqlite3 *db = (sqlite3 *)JSOPAQUE(args[0]);
+    return Integer::New(sqlite3_errcode(db));
 }
 
 static JSVAL sqlite_extended_errcode (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3 *db = (sqlite3 *) wrap->Value();
-    return scope.Close(Integer::New(sqlite3_extended_errcode(db)));
+    sqlite3 *db = (sqlite3 *)JSOPAQUE(args[0]);
+    return Integer::New(sqlite3_extended_errcode(db));
 }
 
 static JSVAL sqlite_errmsg (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3 *db = (sqlite3 *) wrap->Value();
-    return scope.Close(String::New(sqlite3_errmsg(db)));
+    sqlite3 *db = (sqlite3 *)JSOPAQUE(args[0]);
+    return String::New(sqlite3_errmsg(db));
 }
 
 static JSVAL sqlite_errmsg16 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3 *db = (sqlite3 *) wrap->Value();
-    return scope.Close(String::New((char *) sqlite3_errmsg16(db)));
+    sqlite3 *db = (sqlite3 *)JSOPAQUE(args[0]);
+    return String::New((char *) sqlite3_errmsg16(db));
 }
 
 static JSVAL sqlite_prepare (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3 *db = (sqlite3 *) wrap->Value();
+    sqlite3 *db = (sqlite3 *)JSOPAQUE(args[0]);
     String::Utf8Value zSql(args[1]->ToString());
     int nByte = args[2]->IntegerValue();
     sqlite3_stmt *stmt;
     if (!sqlite3_prepare(db, *zSql, nByte, &stmt, NULL)) {
-        return scope.Close(String::New(sqlite3_errmsg(db)));
+        return String::New(sqlite3_errmsg(db));
     }
-    return scope.Close(External::New(stmt));
+    return Opaque::New(stmt);
 }
 
 static JSVAL sqlite_prepare_v2 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3 *db = (sqlite3 *) wrap->Value();
+    sqlite3 *db = (sqlite3 *)JSOPAQUE(args[0]);
     String::Utf8Value zSql(args[1]->ToString());
     int nByte = args[2]->IntegerValue();
     sqlite3_stmt *stmt;
     if (!sqlite3_prepare_v2(db, *zSql, nByte, &stmt, NULL)) {
-        return scope.Close(String::New(sqlite3_errmsg(db)));
+        return String::New(sqlite3_errmsg(db));
     }
-    return scope.Close(External::New(stmt));
+    return Opaque::New(stmt);
 }
 
 static JSVAL sqlite_prepare16 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3 *db = (sqlite3 *) wrap->Value();
+    sqlite3 *db = (sqlite3 *)JSOPAQUE(args[0]);
     String::Utf8Value zSql(args[1]->ToString());
     int nByte = args[2]->IntegerValue();
     sqlite3_stmt *stmt;
     if (!sqlite3_prepare16(db, *zSql, nByte, &stmt, NULL)) {
-        return scope.Close(String::New(sqlite3_errmsg(db)));
+        return String::New(sqlite3_errmsg(db));
     }
-    return scope.Close(External::New(stmt));
+    return Opaque::New(stmt);
 }
 
 static JSVAL sqlite_prepare16_v2 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3 *db = (sqlite3 *) wrap->Value();
+    sqlite3 *db = (sqlite3 *)JSOPAQUE(args[0]);
     String::Utf8Value zSql(args[1]->ToString());
     int nByte = args[2]->IntegerValue();
     sqlite3_stmt *stmt;
     if (!sqlite3_prepare16_v2(db, *zSql, nByte, &stmt, NULL)) {
-        return scope.Close(String::New(sqlite3_errmsg(db)));
+        return String::New(sqlite3_errmsg(db));
     }
-    return scope.Close(External::New(stmt));
+    return Opaque::New(stmt);
 }
 
 static JSVAL sqlite_close (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3 *db = (sqlite3 *) wrap->Value();
-    return scope.Close(Integer::New(sqlite3_close(db)));
+    sqlite3 *db = (sqlite3 *)JSOPAQUE(args[0]);
+    return Integer::New(sqlite3_close(db));
 }
 
 static JSVAL sqlite_finalize (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
-    return scope.Close(Integer::New(sqlite3_finalize(stmt)));
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
+    return Integer::New(sqlite3_finalize(stmt));
 }
 
 static JSVAL sqlite_reset (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
-    return scope.Close(Integer::New(sqlite3_reset(stmt)));
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
+    return Integer::New(sqlite3_reset(stmt));
 }
 
 static JSVAL sqlite_step (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
-    return scope.Close(Integer::New(sqlite3_step(stmt)));
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
+    return Integer::New(sqlite3_step(stmt));
 }
 
 static JSVAL sqlite_column_count (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
-    return scope.Close(Integer::New(sqlite3_column_count(stmt)));
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
+    return Integer::New(sqlite3_column_count(stmt));
 }
 
 static JSVAL sqlite_data_count (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
-    return scope.Close(Integer::New(sqlite3_data_count(stmt)));
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
+    return Integer::New(sqlite3_data_count(stmt));
 }
 
 static JSVAL sqlite_column_type (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
     int iCol = args[1]->IntegerValue();
-    return scope.Close(Integer::New(sqlite3_column_type(stmt, iCol)));
+    return Integer::New(sqlite3_column_type(stmt, iCol));
 }
 
 static JSVAL sqlite_column_bytes (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
     int iCol = args[1]->IntegerValue();
-    return scope.Close(Integer::New(sqlite3_column_bytes(stmt, iCol)));
+    return Integer::New(sqlite3_column_bytes(stmt, iCol));
 }
 
 static JSVAL sqlite_column_bytes16 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
     int iCol = args[1]->IntegerValue();
-    return scope.Close(Integer::New(sqlite3_column_bytes16(stmt, iCol)));
+    return Integer::New(sqlite3_column_bytes16(stmt, iCol));
 }
 
 static JSVAL sqlite_column_blob (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
     int iCol = args[1]->IntegerValue();
-    return scope.Close(String::New((char *) sqlite3_column_blob(stmt, iCol)));
+    return String::New((char *) sqlite3_column_blob(stmt, iCol));
 }
 
 // returns a binary blob as base64 encoded string
 
 static JSVAL sqlite_column_blob64 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
     int iCol = args[1]->IntegerValue();
     const void *blob = sqlite3_column_blob(stmt, iCol);
-    return scope.Close(String::New(Base64Encode((unsigned char const*) blob, sqlite3_column_bytes(stmt, iCol)).c_str()));
+    return String::New(Base64Encode((unsigned char const*) blob, sqlite3_column_bytes(stmt, iCol)).c_str());
 }
 
 static JSVAL sqlite_column_double (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
     int iCol = args[1]->IntegerValue();
-    return scope.Close(Number::New(sqlite3_column_double(stmt, iCol)));
+    return Number::New(sqlite3_column_double(stmt, iCol));
 }
 
 static JSVAL sqlite_column_int (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
     int iCol = args[1]->IntegerValue();
-    return scope.Close(Integer::New(sqlite3_column_int(stmt, iCol)));
+    return Integer::New(sqlite3_column_int(stmt, iCol));
 }
 
 static JSVAL sqlite_column_int64 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
     int iCol = args[1]->IntegerValue();
-    return scope.Close(Integer::New(sqlite3_column_int64(stmt, iCol)));
+    return Integer::New(sqlite3_column_int64(stmt, iCol));
 }
 
 static JSVAL sqlite_column_text (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
     int iCol = args[1]->IntegerValue();
-    return scope.Close(String::New((const char *) sqlite3_column_text(stmt, iCol)));
+    return String::New((const char *) sqlite3_column_text(stmt, iCol));
 }
 
 static JSVAL sqlite_column_text16 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
     int iCol = args[1]->IntegerValue();
-    return scope.Close(String::New((char *) sqlite3_column_text16(stmt, iCol)));
+    return String::New((char *) sqlite3_column_text16(stmt, iCol));
 }
 
 static JSVAL sqlite_column_value (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    sqlite3_stmt *stmt = (sqlite3_stmt *) wrap->Value();
+    sqlite3_stmt *stmt = (sqlite3_stmt *)JSOPAQUE(args[0]);
     int iCol = args[1]->IntegerValue();
-    return scope.Close(External::New(sqlite3_column_value(stmt, iCol)));
+    return Opaque::New(sqlite3_column_value(stmt, iCol));
 }
 
 void init_sqlite3_object () {
-    HandleScope scope;
-
     JSOBJT o = ObjectTemplate::New();
 
     // open flags

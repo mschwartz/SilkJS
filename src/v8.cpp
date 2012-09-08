@@ -30,7 +30,6 @@ struct ScriptWrapper {
  * Call v8's garbage collector.
  */
 static JSVAL gc (const Arguments& args) {
-    HandleScope scope;
     for (int i=0; i<10000; i++) {
         if (V8::IdleNotification()) {
             break;
@@ -55,14 +54,12 @@ static JSVAL gc (const Arguments& args) {
  */
 
 static JSVAL compileScript (JSARGS args) {
-    HandleScope scope;
-
     //	Persistent<Context>context = Context::New(NULL, ObjectTemplate::New());
     //	Context::Scope context_scope(context);
     ScriptWrapper *wrapper = new ScriptWrapper;
     wrapper->script = Persistent<Script>::New(Script::New(args[0]->ToString(), args[1]->ToString()));
     //	context.Dispose();
-    return scope.Close(External::New(wrapper));
+    return Opaque::New(wrapper);
 }
 
 
@@ -80,17 +77,14 @@ static JSVAL compileScript (JSARGS args) {
 // runScript(context, script)
 
 static JSVAL runScript (JSARGS args) {
-    HandleScope scope;
-
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    ScriptWrapper *wrapper = (ScriptWrapper *) wrap->Value();
+    // Local<External>wrap = Local<External>::Cast(args[0]);
+    ScriptWrapper *wrapper = (ScriptWrapper *) JSOPAQUE(args[0]); // wrap->Value();
 
     //	Persistent<Context>context = Context::New(NULL, ObjectTemplate::New());
     //	Context::Scope context_scope(context);
     Handle<Value>v = wrapper->script->Run();
     //	context.Dispose();
-    JSVAL ret = scope.Close(v);
-    return ret;
+    return v;
 }
 
 /**
@@ -105,10 +99,7 @@ static JSVAL runScript (JSARGS args) {
  * @param {object} script - opaque handle to script to be freed.
  */
 static JSVAL freeScript (JSARGS args) {
-    HandleScope scope;
-
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    ScriptWrapper *wrapper = (ScriptWrapper *) wrap->Value();
+    ScriptWrapper *wrapper = (ScriptWrapper *) JSOPAQUE(args[0]);
     wrapper->script.Dispose();
     delete wrapper;
     return Undefined();

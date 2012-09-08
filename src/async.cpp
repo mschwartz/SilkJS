@@ -3,38 +3,38 @@
 static JSVAL async_alloc_fd_set(JSARGS args) {
     fd_set *set = new fd_set;
     FD_ZERO(set);
-    return External::New(set);
+    return Opaque::New(set);
 }
 
 static JSVAL async_free_fd_set(JSARGS args) {
-    fd_set *set = (fd_set *)JSEXTERN(args[0]);
+    fd_set *set = (fd_set *)JSOPAQUE(args[0]);
     delete set;
     return Undefined();
 }
 
 static JSVAL async_fd_zero(JSARGS args) {
-    fd_set *set = (fd_set *)JSEXTERN(args[0]);
+    fd_set *set = (fd_set *)JSOPAQUE(args[0]);
     FD_ZERO(set);
     return args[0];
 }
 
 static JSVAL async_fd_set(JSARGS args) {
     int fd = args[0]->IntegerValue();
-    fd_set *set = (fd_set *)JSEXTERN(args[1]);
+    fd_set *set = (fd_set *)JSOPAQUE(args[1]);
     FD_SET(fd, set);
     return args[0];
 }
 
 static JSVAL async_fd_clr(JSARGS args) {
     int fd = args[0]->IntegerValue();
-    fd_set *set = (fd_set *)JSEXTERN(args[1]);
+    fd_set *set = (fd_set *)JSOPAQUE(args[1]);
     FD_CLR(fd, set);
     return args[0];
 }
 
 static JSVAL async_fd_isset(JSARGS args) {
     int fd = args[0]->IntegerValue();
-    fd_set *set = (fd_set *)JSEXTERN(args[1]);
+    fd_set *set = (fd_set *)JSOPAQUE(args[1]);
     return FD_ISSET(fd, set) ? True() : False();
 }
 
@@ -48,21 +48,21 @@ static JSVAL async_select(JSARGS args) {
     timeout.tv_usec = 0;
     int maxfd = args[0]->IntegerValue();
     if (!args[1]->IsNull() && !args[1]->IsUndefined()) {
-        fds = (fd_set *)JSEXTERN(args[1]);
+        fds = (fd_set *)JSOPAQUE(args[1]);
         readfds = *fds;
     }
     else {
         FD_ZERO(&readfds);
     }
     if (!args[2]->IsNull() && !args[2]->IsUndefined()) {
-        fds = (fd_set *)JSEXTERN(args[2]);
+        fds = (fd_set *)JSOPAQUE(args[2]);
         writefds = *fds;
     }
     else {
         FD_ZERO(&writefds);
     }
     if (!args[3]->IsNull() && !args[3]->IsUndefined()) {
-        fds = (fd_set *)JSEXTERN(args[3]);
+        fds = (fd_set *)JSOPAQUE(args[3]);
         exceptfds = *fds;
     }
     else {

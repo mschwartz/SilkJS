@@ -42,7 +42,6 @@ static char remote_addr[16];
  * @return {int} sock - file descriptor or false if error occurred.
  */
 static JSVAL net_connect (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value host(args[0]);
     int port = args[1]->IntegerValue();
     struct hostent *h = gethostbyname(*host);
@@ -78,7 +77,7 @@ static JSVAL net_connect (JSARGS args) {
         close(fd);
         return False();
     }
-    return scope.Close(Integer::New(fd));
+    return Integer::New(fd);
 }
 
 /**
@@ -107,7 +106,6 @@ static JSVAL net_connect (JSARGS args) {
  * This function throws an exception of the socket(), bind(), or listen() OS calls fail.
  */
 static JSVAL net_listen (JSARGS args) {
-    HandleScope scope;
     int port = args[0]->IntegerValue();
     int backlog = 30;
     if (args.Length() > 1) {
@@ -140,7 +138,7 @@ static JSVAL net_listen (JSARGS args) {
     if (listen(sock, backlog)) {
         return ThrowException(String::Concat(String::New("listen() Error: "), String::New(strerror(errno))));
     }
-    return scope.Close(Integer::New(sock));
+    return Integer::New(sock);
 }
 
 /**
@@ -165,7 +163,6 @@ static JSVAL net_listen (JSARGS args) {
  * See http://en.wikipedia.org/wiki/Thundering_herd_problem for a brief description of the problem.
  */
 static JSVAL net_accept (JSARGS args) {
-    HandleScope scope;
     struct sockaddr_in their_addr;
 
     int sock = args[0]->IntegerValue();
@@ -214,7 +211,7 @@ static JSVAL net_accept (JSARGS args) {
     //	}
     strcpy(remote_addr, inet_ntoa(their_addr.sin_addr));
 
-    return scope.Close(Integer::New(sock));
+    return Integer::New(sock);
 }
 
 static JSVAL net_readReady(JSARGS args) {
@@ -247,8 +244,7 @@ static JSVAL net_readReady(JSARGS args) {
  * @return {string} remote_ip - ip address of client
  */
 static JSVAL net_remote_addr (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(String::New(remote_addr));
+    return String::New(remote_addr);
 }
 
 /**
@@ -276,7 +272,6 @@ static JSVAL net_remote_addr (JSARGS args) {
  * @param {boolean} flag - true to turn on TCP_CORK, false to turn it off
  */
 static JSVAL net_cork (JSARGS args) {
-    HandleScope scope;
     int fd = args[0]->IntegerValue();
     int flag = args[1]->IntegerValue();
     setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof (flag));
@@ -294,7 +289,6 @@ static JSVAL net_cork (JSARGS args) {
  * @param {int} socket to close
  */
 static JSVAL net_close (JSARGS args) {
-    HandleScope scope;
     int fd = args[0]->IntegerValue();
     close(fd);
     return Undefined();
@@ -319,7 +313,6 @@ static JSVAL net_close (JSARGS args) {
  * This function throws an exception if there is a read error with the error message.
  */
 static JSVAL net_read (JSARGS args) {
-    HandleScope scope;
     int fd = args[0]->IntegerValue();
     long size = args[1]->IntegerValue();
 
@@ -347,7 +340,7 @@ static JSVAL net_read (JSARGS args) {
         return Null();
     }
     Handle<String>s = String::New(buf, count);
-    return scope.Close(s);
+    return s;
 }
 
 /**
@@ -416,8 +409,7 @@ static JSVAL net_write (JSARGS args) {
  */
 static JSVAL net_writebuffer (JSARGS args) {
     int fd = args[0]->IntegerValue();
-    Local<External>wrap = Local<External>::Cast(args[1]);
-    Buffer *buf = (Buffer *) wrap->Value();
+    Buffer *buf = (Buffer *)JSOPAQUE(args[1]);
 
     long size = buf->length();
     long written = 0;
@@ -430,7 +422,6 @@ static JSVAL net_writebuffer (JSARGS args) {
         size -= count;
         s += count;
         written += count;
-        ;
     }
     int flag = 0;
     setsockopt(fd, IPPROTO_TCP, TCP_CORK, &flag, sizeof (flag));
@@ -475,7 +466,7 @@ static JSVAL net_sendfile (JSARGS args) {
         if (stat(*filename, &buf)) {
             printf("%s\n", *filename);
             perror("SendFile stat");
-            return handle_scope.Close(False());
+            return False();
         }
         size = buf.st_size - offset;
     }

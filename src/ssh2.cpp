@@ -149,7 +149,7 @@ public:
 };
 
 static SSH2 *HANDLE (Handle<Value> arg) {
-    return (SSH2 *) JSEXTERN(arg);
+    return (SSH2 *) JSOPAQUE(arg);
 }
 
 /**
@@ -169,7 +169,6 @@ static SSH2 *HANDLE (Handle<Value> arg) {
  * @return {object} conn - connection ready to use for other methods.
  */
 static JSVAL ssh2_connect (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value host(args[0]);
     String::Utf8Value username(args[1]);
     String::Utf8Value password(args[2]);
@@ -178,7 +177,7 @@ static JSVAL ssh2_connect (JSARGS args) {
         port = args[3]->IntegerValue();
     }
     SSH2 *ssh2 = new SSH2(*host, *username, *password, port);
-    return scope.Close(External::New(ssh2));
+    return Opaque::New(ssh2);
 }
 
 /**
@@ -194,10 +193,8 @@ static JSVAL ssh2_connect (JSARGS args) {
  * @return {boolean} is_alive - true if connection is alive.
  */
 static JSVAL ssh2_alive (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    SSH2 *ssh2 = (SSH2 *) wrap->Value();
-    return scope.Close(Boolean::New(ssh2->Alive()));
+    SSH2 *ssh2 = HANDLE(args[0]);
+    return Boolean::New(ssh2->Alive());
 }
 
 /**
@@ -213,10 +210,8 @@ static JSVAL ssh2_alive (JSARGS args) {
  * @return {string} msg - last SSH error message.
  */
 static JSVAL ssh2_error (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    SSH2 *ssh2 = (SSH2 *) wrap->Value();
-    return scope.Close(String::New(ssh2->ErrorMessage()));
+    SSH2 *ssh2 = HANDLE(args[0]);
+    return String::New(ssh2->ErrorMessage());
 }
 
 /**
@@ -231,11 +226,9 @@ static JSVAL ssh2_error (JSARGS args) {
  * @param {object} conn - connection returned from ssh.connect()
  */
 static JSVAL ssh2_close (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    SSH2 *ssh2 = (SSH2 *) wrap->Value();
+    SSH2 *ssh2 = HANDLE(args[0]);
     delete ssh2;
-    return scope.Close(Undefined());
+    return Undefined();
 }
 
 /**
@@ -253,11 +246,9 @@ static JSVAL ssh2_close (JSARGS args) {
  * @param {int} msec - milliseconds to set timeout value to
  */
 static JSVAL ssh2_timeout (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    SSH2 *ssh2 = (SSH2 *) wrap->Value();
+    SSH2 *ssh2 = HANDLE(args[0]);
     ssh2->SetTimeout(args[1]->IntegerValue());
-    return scope.Close(Undefined());
+    return Undefined();
 }
 
 /**
@@ -274,14 +265,12 @@ static JSVAL ssh2_timeout (JSARGS args) {
  * @return {boolean} success - true if the command was successfuly executed.
  */
 static JSVAL ssh2_exec (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    SSH2 *ssh2 = (SSH2 *) wrap->Value();
+    SSH2 *ssh2 = HANDLE(args[0]);
     String::Utf8Value command(args[1]);
     if (!ssh2->RunCommand(*command)) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(True());
+    return True();
 }
 
 /**
@@ -297,10 +286,8 @@ static JSVAL ssh2_exec (JSARGS args) {
  * @return {int} code - exit code from remote program
  */
 static JSVAL ssh2_exit_code (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    SSH2 *ssh2 = (SSH2 *) wrap->Value();
-    return scope.Close(Integer::New(ssh2->GetExitCode()));
+    SSH2 *ssh2 = HANDLE(args[0]);
+    return Integer::New(ssh2->GetExitCode());
 }
 
 /**
@@ -316,10 +303,8 @@ static JSVAL ssh2_exit_code (JSARGS args) {
  * @return {string} text - output of remote command.
  */
 static JSVAL ssh2_response (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    SSH2 *ssh2 = (SSH2 *) wrap->Value();
-    return scope.Close(String::New(ssh2->GetResponse()));
+    SSH2 *ssh2 = HANDLE(args[0]);
+    return String::New(ssh2->GetResponse());
 }
 
 /**
@@ -342,14 +327,13 @@ static JSVAL ssh2_response (JSARGS args) {
  * If mode is not provided, the file mode of the file being sent will be used.
  */
 static JSVAL ssh2_scp_send (JSARGS args) {
-    HandleScope scope;
     SSH2 *ssh2 = HANDLE(args[0]);
     String::Utf8Value srcPath(args[1]);
     String::Utf8Value dstPath(args[2]);
     int mode;
     struct stat fileinfo;
     if (stat(*srcPath, &fileinfo) != 0) {
-        return scope.Close(String::New(strerror(errno)));
+        return String::New(strerror(errno));
     }
     if (args.Length() > 3) {
         mode = args[3]->IntegerValue();
@@ -360,7 +344,7 @@ static JSVAL ssh2_scp_send (JSARGS args) {
     mode &= 0777;
     int fd = open(*srcPath, O_RDONLY);
     if (fd < 0) {
-        return scope.Close(String::New(strerror(errno)));
+        return String::New(strerror(errno));
     }
 #ifdef libssh2_scp_send64
     LIBSSH2_CHANNEL *channel = libssh2_scp_send64(ssh2->mSession, *dstPath, mode, fileinfo.st_size, 0, 0);
@@ -371,7 +355,7 @@ static JSVAL ssh2_scp_send (JSARGS args) {
         char *errmsg;
         int errlen;
         libssh2_session_last_error(ssh2->mSession, &errmsg, &errlen, 0);
-        return scope.Close(String::New(errmsg, errlen));
+        return String::New(errmsg, errlen);
     }
 
     char mem[1024];
@@ -382,7 +366,7 @@ static JSVAL ssh2_scp_send (JSARGS args) {
             int eNum = errno;
             libssh2_channel_free(channel);
             close(fd);
-            return scope.Close(String::New(strerror(eNum)));
+            return String::New(strerror(eNum));
         }
         int rc = libssh2_channel_write(channel, mem, nRead);
         if (rc < 0) {
@@ -391,18 +375,16 @@ static JSVAL ssh2_scp_send (JSARGS args) {
             libssh2_session_last_error(ssh2->mSession, &errmsg, &errlen, 0);
             libssh2_channel_free(channel);
             close(fd);
-            return scope.Close(String::New(errmsg));
+            return String::New(errmsg);
         }
         toWrite -= nRead;
     }
     close(fd);
     libssh2_channel_free(channel);
-    return scope.Close(True());
+    return True();
 }
 
 void init_ssh_object () {
-    HandleScope scope;
-
     Handle<ObjectTemplate>ssh = ObjectTemplate::New();
     ssh->Set(String::New("connect"), FunctionTemplate::New(ssh2_connect));
     ssh->Set(String::New("alive"), FunctionTemplate::New(ssh2_alive));

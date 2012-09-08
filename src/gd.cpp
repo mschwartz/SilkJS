@@ -44,14 +44,13 @@
  * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreate (JSARGS args) {
-    HandleScope scope;
     int sx = args[0]->IntegerValue();
     int sy = args[1]->IntegerValue();
     gdImagePtr im = gdImageCreate(sx, sy);
     if (!im) {
         return Null();
     }
-    return scope.Close(External::New(im));
+    return Opaque::New(im);
 }
 
 /**
@@ -72,14 +71,13 @@ static JSVAL gd_imageCreate (JSARGS args) {
  * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateTrueColor (JSARGS args) {
-    HandleScope scope;
     int sx = args[0]->IntegerValue();
     int sy = args[1]->IntegerValue();
     gdImagePtr im = gdImageCreateTrueColor(sx, sy);
     if (!im) {
         return Null();
     }
-    return scope.Close(External::New(im));
+    return Opaque::New(im);
 }
 
 /**
@@ -99,7 +97,6 @@ static JSVAL gd_imageCreateTrueColor (JSARGS args) {
  * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_ImageCreateFromJpeg (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value data(args[0]);
     FILE *in = fopen(*data, "rb");
     if (!in) {
@@ -128,7 +125,7 @@ static JSVAL gd_ImageCreateFromJpeg (JSARGS args) {
     if (!im) {
         return Null();
     }
-    return scope.Close(External::New(im));
+    return Opaque::New(im);
 }
 
 /**
@@ -144,7 +141,6 @@ static JSVAL gd_ImageCreateFromJpeg (JSARGS args) {
  * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromJpeg64 (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value data(args[0]);
     unsigned char buf[data.length()];
     int decoded = decode_base64(buf, *data);
@@ -154,7 +150,7 @@ static JSVAL gd_imageCreateFromJpeg64 (JSARGS args) {
     if (!im) {
         return Null();
     }
-    return scope.Close(External::New(im));
+    return Opaque::New(im);
 }
 
 /**
@@ -170,7 +166,6 @@ static JSVAL gd_imageCreateFromJpeg64 (JSARGS args) {
  * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromPng (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value data(args[0]);
     FILE *in = fopen(*data, "rb");
     if (!in) {
@@ -181,7 +176,7 @@ static JSVAL gd_imageCreateFromPng (JSARGS args) {
     if (!im) {
         return Null();
     }
-    return scope.Close(External::New(im));
+    return Opaque::New(im);
 }
 
 /**
@@ -197,7 +192,6 @@ static JSVAL gd_imageCreateFromPng (JSARGS args) {
  * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromPng64 (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value data(args[0]);
     unsigned char buf[data.length()];
     int decoded = decode_base64(buf, *data);
@@ -208,7 +202,7 @@ static JSVAL gd_imageCreateFromPng64 (JSARGS args) {
     if (!im) {
         return Null();
     }
-    return scope.Close(External::New(im));
+    return Opaque::New(im);
 }
 
 /**
@@ -224,7 +218,6 @@ static JSVAL gd_imageCreateFromPng64 (JSARGS args) {
  * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromGif (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value data(args[0]);
     FILE *in = fopen(*data, "rb");
     if (!in) {
@@ -235,7 +228,7 @@ static JSVAL gd_imageCreateFromGif (JSARGS args) {
     if (!im) {
         return Null();
     }
-    return scope.Close(External::New(im));
+    return Opaque::New(im);
 }
 
 /**
@@ -251,7 +244,6 @@ static JSVAL gd_imageCreateFromGif (JSARGS args) {
  * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromGif64 (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value data(args[0]);
 
     unsigned char buf[data.length()];
@@ -263,7 +255,7 @@ static JSVAL gd_imageCreateFromGif64 (JSARGS args) {
     if (!im) {
         return Null();
     }
-    return scope.Close(External::New(im));
+    return Opaque::New(im);
 }
 
 /**
@@ -279,7 +271,6 @@ static JSVAL gd_imageCreateFromGif64 (JSARGS args) {
  * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromGd (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value data(args[0]);
     FILE *in = fopen(*data, "rb");
     if (!in) {
@@ -290,7 +281,7 @@ static JSVAL gd_imageCreateFromGd (JSARGS args) {
     if (!im) {
         return Null();
     }
-    return scope.Close(External::New(im));
+    return Opaque::New(im);
 }
 
 /**
@@ -306,7 +297,6 @@ static JSVAL gd_imageCreateFromGd (JSARGS args) {
  * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromGd64 (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value data(args[0]);
     unsigned char buf[data.length()];
     int decoded = decode_base64(buf, *data);
@@ -316,7 +306,7 @@ static JSVAL gd_imageCreateFromGd64 (JSARGS args) {
     if (!im) {
         return Null();
     }
-    return scope.Close(External::New(im));
+    return Opaque::New(im);
 }
 
 /**
@@ -332,7 +322,6 @@ static JSVAL gd_imageCreateFromGd64 (JSARGS args) {
  * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromWBMP (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value data(args[0]);
     FILE *in = fopen(*data, "rb");
     if (!in) {
@@ -343,7 +332,7 @@ static JSVAL gd_imageCreateFromWBMP (JSARGS args) {
     if (!im) {
         return Null();
     }
-    return scope.Close(External::New(im));
+    return Opaque::New(im);
 }
 
 /**
@@ -359,7 +348,6 @@ static JSVAL gd_imageCreateFromWBMP (JSARGS args) {
  * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromWBMP64 (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value data(args[0]);
     unsigned char buf[data.length()];
     int decoded = decode_base64(buf, *data);
@@ -369,7 +357,7 @@ static JSVAL gd_imageCreateFromWBMP64 (JSARGS args) {
     if (!im) {
         return Null();
     }
-    return scope.Close(External::New(im));
+    return Opaque::New(im);
 }
 
 /**
@@ -385,10 +373,9 @@ static JSVAL gd_imageCreateFromWBMP64 (JSARGS args) {
  * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromXpm (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value data(args[0]);
     gdImagePtr im = gdImageCreateFromXpm(*data);
-    return scope.Close(External::New(im));
+    return Opaque::New(im);
 }
 
 /**
@@ -404,7 +391,6 @@ static JSVAL gd_imageCreateFromXpm (JSARGS args) {
  * @return {object} handle - opaque handle to image, or null if the image could not be created.
  */
 static JSVAL gd_imageCreateFromXbm (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value data(args[0]);
     FILE *in = fopen(*data, "rb");
     if (!in) {
@@ -415,7 +401,7 @@ static JSVAL gd_imageCreateFromXbm (JSARGS args) {
     if (!im) {
         return Null();
     }
-    return scope.Close(External::New(im));
+    return Opaque::New(im);
 }
 
 /**
@@ -432,9 +418,7 @@ static JSVAL gd_imageCreateFromXbm (JSARGS args) {
  * @param {object} handle - opaque handle to a GD image.
  */
 static JSVAL gd_imageDestroy (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     gdImageDestroy(im);
     return Undefined();
 }
@@ -458,9 +442,7 @@ static JSVAL gd_imageDestroy (JSARGS args) {
  * @return {boolean} success - true if the file was written, false if there was an error.
  */
 static JSVAL gd_imageJpeg (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     String::Utf8Value data(args[1]);
     int quality = args[2]->IntegerValue();
 
@@ -489,9 +471,7 @@ static JSVAL gd_imageJpeg (JSARGS args) {
  * @return {string} base64String - image as a base64 encoded string.
  */
 static JSVAL gd_imageJpeg64 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int quality = args[1]->IntegerValue();
     int size;
     void *ptr = gdImageJpegPtr(im, &size, quality);
@@ -516,9 +496,7 @@ static JSVAL gd_imageJpeg64 (JSARGS args) {
  * @return {boolean} success - true if the file was written, false if there was an error..
  */
 static JSVAL gd_imageGif (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     String::Utf8Value data(args[1]);
 
     FILE *out = fopen(*data, "wb");
@@ -545,9 +523,7 @@ static JSVAL gd_imageGif (JSARGS args) {
  * @return {string} base64String - image as a base64 encoded string.
  */
 static JSVAL gd_imageGif64 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int size;
     void *ptr = gdImageGifPtr(im, &size);
     string out = Base64Encode((const unsigned char *) ptr, size);
@@ -571,9 +547,7 @@ static JSVAL gd_imageGif64 (JSARGS args) {
  * @return {boolean} success - true if the file was written, false if there was an error..
  */
 static JSVAL gd_imagePng (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     String::Utf8Value data(args[1]);
 
     FILE *out = fopen(*data, "wb");
@@ -598,9 +572,7 @@ static JSVAL gd_imagePng (JSARGS args) {
  * @return {string} base64String - image as a base64 encoded string.
  */
 static JSVAL gd_imagePng64 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int size;
     void *ptr = gdImagePngPtr(im, &size);
     string out = Base64Encode((const unsigned char *) ptr, size);
@@ -631,9 +603,7 @@ static JSVAL gd_imagePng64 (JSARGS args) {
  * @return {boolean} success - true if the file was written, false if there was an error.
  */
 static JSVAL gd_imagePngEx (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     String::Utf8Value data(args[1]);
     int quality = args[2]->IntegerValue();
 
@@ -668,9 +638,7 @@ static JSVAL gd_imagePngEx (JSARGS args) {
  * @return {string} base64String - image as a base64 encoded string.
  */
 static JSVAL gd_imagePng64Ex (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int quality = args[1]->IntegerValue();
     int size;
     void *ptr = gdImagePngPtrEx(im, &size, quality);
@@ -698,9 +666,7 @@ static JSVAL gd_imagePng64Ex (JSARGS args) {
  * @return {boolean} success - true if the file was written, false if there was an error..
  */
 static JSVAL gd_imageWBMP (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     String::Utf8Value data(args[1]);
     int fg = args[2]->IntegerValue();
 
@@ -731,9 +697,7 @@ static JSVAL gd_imageWBMP (JSARGS args) {
  * @return {string} base64String - image as a base64 encoded string.
  */
 static JSVAL gd_imageWBMP64 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int fg = args[1]->IntegerValue();
     int size;
     void *ptr = gdImageWBMPPtr(im, &size, fg);
@@ -756,9 +720,7 @@ static JSVAL gd_imageWBMP64 (JSARGS args) {
  * @return {boolean} success - true if the file was written, false if there was an error..
  */
 static JSVAL gd_imageGd (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     String::Utf8Value data(args[1]);
 
     FILE *out = fopen(*data, "wb");
@@ -783,9 +745,7 @@ static JSVAL gd_imageGd (JSARGS args) {
  * @return {string} base64String - image as a base64 encoded string.
  */
 static JSVAL gd_imageGd64 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int size;
     void *ptr = gdImageGdPtr(im, &size);
     string out = Base64Encode((unsigned char *) ptr, size);
@@ -819,9 +779,7 @@ static JSVAL gd_imageGd64 (JSARGS args) {
  * @param {int} colorsWanted - see note above.
  */
 static JSVAL gd_imageTrueColorToPalette (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int ditherFlag = args[1]->IntegerValue();
     int colorsWanted = args[2]->IntegerValue();
     gdImageTrueColorToPalette(im, ditherFlag, colorsWanted);
@@ -853,13 +811,11 @@ static JSVAL gd_imageTrueColorToPalette (JSARGS args) {
  * @returns {object} newHandle - handle to a new palettized image.
  */
 static JSVAL gd_imageCreatePaletteFromTrueColor (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int ditherFlag = args[1]->IntegerValue();
     int colorsWanted = args[2]->IntegerValue();
     gdImagePtr newImage = gdImageCreatePaletteFromTrueColor(im, ditherFlag, colorsWanted);
-    return scope.Close(External::New(newImage));
+    return Opaque::New(newImage);
 }
 
 /**
@@ -877,9 +833,7 @@ static JSVAL gd_imageCreatePaletteFromTrueColor (JSARGS args) {
  * @param {int} color - color index to set pixel
  */
 static JSVAL gd_imageSetPixel (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int x = args[1]->IntegerValue();
     int y = args[2]->IntegerValue();
     int color = args[3]->IntegerValue();
@@ -906,9 +860,7 @@ static JSVAL gd_imageSetPixel (JSARGS args) {
  * @param {int} color - color index to draw line.
  */
 static JSVAL gd_imageLine (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int x1 = args[1]->IntegerValue();
     int y1 = args[2]->IntegerValue();
     int x2 = args[3]->IntegerValue();
@@ -942,9 +894,7 @@ static JSVAL gd_imageLine (JSARGS args) {
  * @param {int} color - color index to draw polygon.
  */
 static JSVAL gd_imagePolygon (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     Handle<Array>jPoints = Handle<Array>::Cast(args[1]->ToObject());
     int color = args[2]->IntegerValue();
     int numPoints = jPoints->Length();
@@ -985,9 +935,7 @@ static JSVAL gd_imagePolygon (JSARGS args) {
  * @param {int} color - color index to draw polygon.
  */
 static JSVAL gd_imageOpenPolygon (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     Handle<Array>jPoints = Handle<Array>::Cast(args[1]->ToObject());
     int color = args[2]->IntegerValue();
     int numPoints = jPoints->Length();
@@ -1021,9 +969,7 @@ static JSVAL gd_imageOpenPolygon (JSARGS args) {
  * @param {int} color - color index to draw rectangle.
  */
 static JSVAL gd_imageRectangle (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int x1 = args[1]->IntegerValue();
     int y1 = args[2]->IntegerValue();
     int x2 = args[3]->IntegerValue();
@@ -1057,9 +1003,7 @@ static JSVAL gd_imageRectangle (JSARGS args) {
  * @param {int} color - color index to fill the polygon.
  */
 static JSVAL gd_imageFilledPolygon (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     Handle<Array>jPoints = Handle<Array>::Cast(args[1]->ToObject());
     int color = args[2]->IntegerValue();
     int numPoints = jPoints->Length();
@@ -1093,9 +1037,7 @@ static JSVAL gd_imageFilledPolygon (JSARGS args) {
  * @param {int} color - color index to fill rectangle.
  */
 static JSVAL gd_imageFilledRectangle (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int x1 = args[1]->IntegerValue();
     int y1 = args[2]->IntegerValue();
     int x2 = args[3]->IntegerValue();
@@ -1132,9 +1074,7 @@ static JSVAL gd_imageFilledRectangle (JSARGS args) {
  * @param {int} color - color index to render arc.
  */
 static JSVAL gd_imageArc (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int cx = args[1]->IntegerValue();
     int cy = args[2]->IntegerValue();
     int w = args[3]->IntegerValue();
@@ -1190,9 +1130,7 @@ static JSVAL gd_imageArc (JSARGS args) {
  * @param {int} style - color index to fill arc.
  */
 static JSVAL gd_imageFilledArc (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int cx = args[1]->IntegerValue();
     int cy = args[2]->IntegerValue();
     int w = args[3]->IntegerValue();
@@ -1222,9 +1160,7 @@ static JSVAL gd_imageFilledArc (JSARGS args) {
  * @param {int} color - color index to render arc.
  */
 static JSVAL gd_imageFilledEllipse (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int cx = args[1]->IntegerValue();
     int cy = args[2]->IntegerValue();
     int w = args[3]->IntegerValue();
@@ -1256,9 +1192,7 @@ static JSVAL gd_imageFilledEllipse (JSARGS args) {
  * @param {int} color - color index to fill with.
  */
 static JSVAL gd_imageFillToBorder (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int x = args[1]->IntegerValue();
     int y = args[2]->IntegerValue();
     int border = args[3]->IntegerValue();
@@ -1288,9 +1222,7 @@ static JSVAL gd_imageFillToBorder (JSARGS args) {
  * @param {int} color - color index to fill with.
  */
 static JSVAL gd_imageFill (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int x = args[1]->IntegerValue();
     int y = args[2]->IntegerValue();
     int color = args[3]->IntegerValue();
@@ -1319,9 +1251,7 @@ static JSVAL gd_imageFill (JSARGS args) {
  * @param {int} color - Actual color of the foreground to be used when drawing antialised lines.
  */
 static JSVAL gd_imageSetAntiAliased (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int c = args[1]->IntegerValue();
     gdImageSetAntiAliased(im, c);
     return Undefined();
@@ -1340,9 +1270,7 @@ static JSVAL gd_imageSetAntiAliased (JSARGS args) {
  * @param {int} color - special color that the foreground should stand out mroe clearly against.
  */
 static JSVAL gd_imageSetAntiAliasedDontBlend (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int c = args[1]->IntegerValue();
     gdImageSetAntiAliased(im, c);
     return Undefined();
@@ -1373,11 +1301,8 @@ static JSVAL gd_imageSetAntiAliasedDontBlend (JSARGS args) {
  * @param {object} brushHandle - opaque handle to a GD image to be used as the brush.
  */
 static JSVAL gd_imageSetBrush (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdImagePtr brush = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
+    gdImagePtr brush = (gdImagePtr)JSOPAQUE(args[1]);
     gdImageSetBrush(im, brush);
     return Undefined();
 }
@@ -1401,11 +1326,8 @@ static JSVAL gd_imageSetBrush (JSARGS args) {
  * @param {object} tileHandle - opaque handle to a GD image to be used as the tile.
  */
 static JSVAL gd_imageSetTile (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdImagePtr brush = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
+    gdImagePtr brush = (gdImagePtr)JSOPAQUE(args[1]);
     gdImageSetTile(im, brush);
     return Undefined();
 }
@@ -1429,9 +1351,7 @@ static JSVAL gd_imageSetTile (JSARGS args) {
  * @param {array} style - array of integers as described above.
  */
 static JSVAL gd_imageSetStyle (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     Handle<Array>jStyle = Handle<Array>::Cast(args[1]->ToObject());
     int styleLength = jStyle->Length();
     int style[styleLength];
@@ -1455,9 +1375,7 @@ static JSVAL gd_imageSetStyle (JSARGS args) {
  * @param {int} thickness - thickness of lines to be drawn, in pixels.
  */
 static JSVAL gd_imageSetThickness (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int thickness = args[1]->IntegerValue();
     gdImageSetThickness(im, thickness);
     return Undefined();
@@ -1482,9 +1400,7 @@ static JSVAL gd_imageSetThickness (JSARGS args) {
  * @param {int} mode - 1 to enable blending mode, 0 to enable non-blending mode..
  */
 static JSVAL gd_imageAlphaBlending (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int blending = args[1]->IntegerValue();
     gdImageAlphaBlending(im, blending);
     return Undefined();
@@ -1508,9 +1424,7 @@ static JSVAL gd_imageAlphaBlending (JSARGS args) {
  * @return 
  */
 static JSVAL gd_imageSaveAlpha (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int saveFlag = args[1]->IntegerValue();
     gdImageSaveAlpha(im, saveFlag);
     return Undefined();
@@ -1538,9 +1452,7 @@ static JSVAL gd_imageSaveAlpha (JSARGS args) {
  * @param {int} y2 - y coordinate of lower right corner.
  */
 static JSVAL gd_imageSetClip (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int x1 = args[1]->IntegerValue();
     int y1 = args[2]->IntegerValue();
     int x2 = args[3]->IntegerValue();
@@ -1569,9 +1481,7 @@ static JSVAL gd_imageSetClip (JSARGS args) {
  * @return {object} clipInfo - object with coordinates of upper left/lower right of clip rectangle.
  */
 static JSVAL gd_imageGetClip (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int x1, y1, x2, y2;
     gdImageGetClip(im, &x1, &y1, &x2, &y2);
     Handle<Object>o = Object::New();
@@ -1579,7 +1489,7 @@ static JSVAL gd_imageGetClip (JSARGS args) {
     o->Set(String::New("y1"), Integer::New(y1));
     o->Set(String::New("x2"), Integer::New(x2));
     o->Set(String::New("y2"), Integer::New(y2));
-    return scope.Close(o);
+    return o;
 }
 
 // Query Functions
@@ -1600,12 +1510,10 @@ static JSVAL gd_imageGetClip (JSARGS args) {
  * @return {int} alpha - alpha value
  */
 static JSVAL gd_imageAlpha (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int color = args[1]->IntegerValue();
     int alpha = gdImageAlpha(im, color);
-    return scope.Close(Integer::New(alpha));
+    return Integer::New(alpha);
 }
 
 /**
@@ -1623,13 +1531,11 @@ static JSVAL gd_imageAlpha (JSARGS args) {
  * @return {int} color - color of pixel at specified location.
  */
 static JSVAL gd_imageGetPixel (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int x = args[1]->IntegerValue();
     int y = args[2]->IntegerValue();
     int color = gdImageGetPixel(im, x, y);
-    return scope.Close(Integer::New(color));
+    return Integer::New(color);
 }
 
 /**
@@ -1647,8 +1553,7 @@ static JSVAL gd_imageGetPixel (JSARGS args) {
  * @return {boolean} isSafe - true if the specified point is within the current clipping rectangle.
  */
 static JSVAL gd_imageBoundsSafe (JSARGS args) {
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int x = args[1]->IntegerValue();
     int y = args[2]->IntegerValue();
     return gdImageBoundsSafe(im, x, y) ? True() : False();
@@ -1668,12 +1573,10 @@ static JSVAL gd_imageBoundsSafe (JSARGS args) {
  * @return {int} blue - blue component.
  */
 static JSVAL gd_imageBlue (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int color = args[1]->IntegerValue();
     int blue = gdImageBlue(im, color);
-    return scope.Close(Integer::New(blue));
+    return Integer::New(blue);
 }
 
 /**
@@ -1690,12 +1593,10 @@ static JSVAL gd_imageBlue (JSARGS args) {
  * @return {int} green - green component.
  */
 static JSVAL gd_imageGreen (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int color = args[1]->IntegerValue();
     int green = gdImageGreen(im, color);
-    return scope.Close(Integer::New(green));
+    return Integer::New(green);
 }
 
 /**
@@ -1712,12 +1613,10 @@ static JSVAL gd_imageGreen (JSARGS args) {
  * @return {int} red - red component.
  */
 static JSVAL gd_imageRed (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int color = args[1]->IntegerValue();
     int red = gdImageRed(im, color);
-    return scope.Close(Integer::New(red));
+    return Integer::New(red);
 }
 
 /**
@@ -1733,10 +1632,8 @@ static JSVAL gd_imageRed (JSARGS args) {
  * @return {int} width - width of the image.
  */
 static JSVAL gd_imageSX (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
-    return scope.Close(Integer::New(gdImageSX(im)));
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
+    return Integer::New(gdImageSX(im));
 }
 
 /**
@@ -1752,10 +1649,8 @@ static JSVAL gd_imageSX (JSARGS args) {
  * @return {int} height - height of the image.
  */
 static JSVAL gd_imageSY (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
-    return scope.Close(Integer::New(gdImageSY(im)));
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
+    return Integer::New(gdImageSY(im));
 }
 
 // Fonts and text-handling functions
@@ -1772,8 +1667,7 @@ static JSVAL gd_imageSY (JSARGS args) {
  * @return {object} fontHandle - opaque handle to the font.
  */
 static JSVAL gd_fontGetSmall (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(External::New(gdFontGetSmall()));
+    return Opaque::New(gdFontGetSmall());
 }
 
 /**
@@ -1788,8 +1682,7 @@ static JSVAL gd_fontGetSmall (JSARGS args) {
  * @return {object} fontHandle - opaque handle to the font.
  */
 static JSVAL gd_fontGetLarge (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(External::New(gdFontGetLarge()));
+    return Opaque::New(gdFontGetLarge());
 }
 
 /**
@@ -1804,8 +1697,7 @@ static JSVAL gd_fontGetLarge (JSARGS args) {
  * @return {object} fontHandle - opaque handle to the font.
  */
 static JSVAL gd_fontGetMediumBold (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(External::New(gdFontGetMediumBold()));
+    return Opaque::New(gdFontGetMediumBold());
 }
 
 /**
@@ -1820,8 +1712,7 @@ static JSVAL gd_fontGetMediumBold (JSARGS args) {
  * @return {object} fontHandle - opaque handle to the font.
  */
 static JSVAL gd_fontGetGiant (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(External::New(gdFontGetGiant()));
+    return Opaque::New(gdFontGetGiant());
 }
 
 /**
@@ -1836,8 +1727,7 @@ static JSVAL gd_fontGetGiant (JSARGS args) {
  * @return {object} fontHandle - opaque handle to the font.
  */
 static JSVAL gd_fontGetTiny (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(External::New(gdFontGetTiny()));
+    return Opaque::New(gdFontGetTiny());
 }
 
 /**
@@ -1857,11 +1747,8 @@ static JSVAL gd_fontGetTiny (JSARGS args) {
  * @param {int} color - the color to render the character.
  */
 static JSVAL gd_imageChar (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdFontPtr font = (gdFontPtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
+    gdFontPtr font = (gdFontPtr)JSOPAQUE(args[1]);
     int x = args[2]->IntegerValue();
     int y = args[3]->IntegerValue();
     int c = args[4]->IntegerValue();
@@ -1887,11 +1774,8 @@ static JSVAL gd_imageChar (JSARGS args) {
  * @param {int} color - the color to render the character.
  */
 static JSVAL gd_imageCharUp (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdFontPtr font = (gdFontPtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
+    gdFontPtr font = (gdFontPtr)JSOPAQUE(args[1]);
     int x = args[2]->IntegerValue();
     int y = args[3]->IntegerValue();
     int c = args[4]->IntegerValue();
@@ -1917,11 +1801,8 @@ static JSVAL gd_imageCharUp (JSARGS args) {
  * @param {int} color - the color to render the string.
  */
 static JSVAL gd_imageString (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdFontPtr font = (gdFontPtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
+    gdFontPtr font = (gdFontPtr)JSOPAQUE(args[1]);
     int x = args[2]->IntegerValue();
     int y = args[3]->IntegerValue();
     String::AsciiValue s(args[4]);
@@ -1947,11 +1828,8 @@ static JSVAL gd_imageString (JSARGS args) {
  * @param {int} color - the color to render the string.
  */
 static JSVAL gd_imageString16 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdFontPtr font = (gdFontPtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
+    gdFontPtr font = (gdFontPtr)JSOPAQUE(args[1]);
     int x = args[2]->IntegerValue();
     int y = args[3]->IntegerValue();
     String::Utf8Value s(args[4]);
@@ -1977,11 +1855,8 @@ static JSVAL gd_imageString16 (JSARGS args) {
  * @param {int} color - the color to render the string.
  */
 static JSVAL gd_imageStringUp (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdFontPtr font = (gdFontPtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
+    gdFontPtr font = (gdFontPtr)JSOPAQUE(args[1]);
     int x = args[2]->IntegerValue();
     int y = args[3]->IntegerValue();
     String::AsciiValue s(args[4]);
@@ -2007,11 +1882,8 @@ static JSVAL gd_imageStringUp (JSARGS args) {
  * @param {int} color - the color to render the string.
  */
 static JSVAL gd_imageStringUp16 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdFontPtr font = (gdFontPtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
+    gdFontPtr font = (gdFontPtr)JSOPAQUE(args[1]);
     int x = args[2]->IntegerValue();
     int y = args[3]->IntegerValue();
     String::Utf8Value s(args[4]);
@@ -2021,9 +1893,8 @@ static JSVAL gd_imageStringUp16 (JSARGS args) {
 }
 
 static JSVAL gd_FTUseFontConfig (JSARGS args) {
-    HandleScope scope;
     int flag = args[0]->IntegerValue();
-    return scope.Close(Integer::New(gdFTUseFontConfig(flag)));
+    return Integer::New(gdFTUseFontConfig(flag));
 }
 
 
@@ -2052,13 +1923,11 @@ static JSVAL gd_FTUseFontConfig (JSARGS args) {
  * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
  */
 static JSVAL gd_imageColorAllocate (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int red = args[1]->IntegerValue();
     int green = args[2]->IntegerValue();
     int blue = args[3]->IntegerValue();
-    return scope.Close(Integer::New(gdImageColorAllocate(im, red, green, blue)));
+    return Integer::New(gdImageColorAllocate(im, red, green, blue));
 }
 
 /**
@@ -2082,14 +1951,12 @@ static JSVAL gd_imageColorAllocate (JSARGS args) {
  * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
  */
 static JSVAL gd_imageColorAllocateAlpha (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int red = args[1]->IntegerValue();
     int green = args[2]->IntegerValue();
     int blue = args[3]->IntegerValue();
     int alpha = args[4]->IntegerValue();
-    return scope.Close(Integer::New(gdImageColorAllocateAlpha(im, red, green, blue, alpha)));
+    return Integer::New(gdImageColorAllocateAlpha(im, red, green, blue, alpha));
 }
 
 /**
@@ -2116,13 +1983,11 @@ static JSVAL gd_imageColorAllocateAlpha (JSARGS args) {
  * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
  */
 static JSVAL gd_imageColorClosest (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int red = args[1]->IntegerValue();
     int green = args[2]->IntegerValue();
     int blue = args[3]->IntegerValue();
-    return scope.Close(Integer::New(gdImageColorClosest(im, red, green, blue)));
+    return Integer::New(gdImageColorClosest(im, red, green, blue));
 }
 
 /**
@@ -2150,14 +2015,12 @@ static JSVAL gd_imageColorClosest (JSARGS args) {
  * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
  */
 static JSVAL gd_imageColorClosestAlpha (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int red = args[1]->IntegerValue();
     int green = args[2]->IntegerValue();
     int blue = args[3]->IntegerValue();
     int alpha = args[4]->IntegerValue();
-    return scope.Close(Integer::New(gdImageColorClosestAlpha(im, red, green, blue, alpha)));
+    return Integer::New(gdImageColorClosestAlpha(im, red, green, blue, alpha));
 }
 
 /**
@@ -2184,13 +2047,11 @@ static JSVAL gd_imageColorClosestAlpha (JSARGS args) {
  * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
  */
 static JSVAL gd_imageColorClosestHWB (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int red = args[1]->IntegerValue();
     int green = args[2]->IntegerValue();
     int blue = args[3]->IntegerValue();
-    return scope.Close(Integer::New(gdImageColorClosestHWB(im, red, green, blue)));
+    return Integer::New(gdImageColorClosestHWB(im, red, green, blue));
 }
 
 /**
@@ -2215,13 +2076,11 @@ static JSVAL gd_imageColorClosestHWB (JSARGS args) {
  * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
  */
 static JSVAL gd_imageColorExact (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int red = args[1]->IntegerValue();
     int green = args[2]->IntegerValue();
     int blue = args[3]->IntegerValue();
-    return scope.Close(Integer::New(gdImageColorExact(im, red, green, blue)));
+    return Integer::New(gdImageColorExact(im, red, green, blue));
 }
 
 /**
@@ -2248,13 +2107,11 @@ static JSVAL gd_imageColorExact (JSARGS args) {
  * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
  */
 static JSVAL gd_imageColorResolve (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int red = args[1]->IntegerValue();
     int green = args[2]->IntegerValue();
     int blue = args[3]->IntegerValue();
-    return scope.Close(Integer::New(gdImageColorResolve(im, red, green, blue)));
+    return Integer::New(gdImageColorResolve(im, red, green, blue));
 }
 
 /**
@@ -2282,14 +2139,12 @@ static JSVAL gd_imageColorResolve (JSARGS args) {
  * @return {int} color - color index or rgba value that can be used as color value for other gd functions.
  */
 static JSVAL gd_imageColorResolveAlpha (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int red = args[1]->IntegerValue();
     int green = args[2]->IntegerValue();
     int blue = args[3]->IntegerValue();
     int alpha = args[4]->IntegerValue();
-    return scope.Close(Integer::New(gdImageColorResolveAlpha(im, red, green, blue, alpha)));
+    return Integer::New(gdImageColorResolveAlpha(im, red, green, blue, alpha));
 }
 
 /**
@@ -2305,10 +2160,8 @@ static JSVAL gd_imageColorResolveAlpha (JSARGS args) {
  * @return {int} colors - number of colors used.
  */
 static JSVAL gd_imageColorsTotal (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
-    return scope.Close(Integer::New(gdImageColorsTotal(im)));
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
+    return Integer::New(gdImageColorsTotal(im));
 }
 
 /**
@@ -2324,10 +2177,8 @@ static JSVAL gd_imageColorsTotal (JSARGS args) {
  * @return {boolean} isInterlaced - true if image is interlaced.
  */
 static JSVAL gd_imageGetInterlaced (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
-    return scope.Close(Integer::New(gdImageGetInterlaced(im)));
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
+    return Integer::New(gdImageGetInterlaced(im));
 }
 
 /**
@@ -2343,10 +2194,8 @@ static JSVAL gd_imageGetInterlaced (JSARGS args) {
  * @return {int} color - color index of transparent color or -1.
  */
 static JSVAL gd_imageGetTransparent (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
-    return scope.Close(Integer::New(gdImageGetTransparent(im)));
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
+    return Integer::New(gdImageGetTransparent(im));
 }
 
 /**
@@ -2366,9 +2215,7 @@ static JSVAL gd_imageGetTransparent (JSARGS args) {
  * @param {int} color - color index to deallocate.
  */
 static JSVAL gd_imageColorDeallocate (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int color = args[1]->IntegerValue();
     gdImageColorDeallocate(im, color);
     return Undefined();
@@ -2395,9 +2242,7 @@ static JSVAL gd_imageColorDeallocate (JSARGS args) {
  * @param {int} color - color index to set as the transparent color.
  */
 static JSVAL gd_imageColorTransparent (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im = (gdImagePtr) wrap->Value();
+    gdImagePtr im = (gdImagePtr)JSOPAQUE(args[0]);
     int color = args[1]->IntegerValue();
     gdImageColorTransparent(im, color);
     return Undefined();
@@ -2423,7 +2268,6 @@ static JSVAL gd_imageColorTransparent (JSARGS args) {
  * @return {int} color - rgba color value for use with drawing functions.
  */
 static JSVAL gd_TrueColor (JSARGS args) {
-    HandleScope scope;
     int red = args[0]->IntegerValue();
     int green = args[1]->IntegerValue();
     int blue = args[2]->IntegerValue();
@@ -2453,7 +2297,6 @@ static JSVAL gd_TrueColor (JSARGS args) {
  * @return {int} color - rgba color value for use with drawing functions.
  */
 static JSVAL gd_TrueColorAlpha (JSARGS args) {
-    HandleScope scope;
     int red = args[0]->IntegerValue();
     int green = args[1]->IntegerValue();
     int blue = args[2]->IntegerValue();
@@ -2482,11 +2325,8 @@ static JSVAL gd_TrueColorAlpha (JSARGS args) {
  * @param {int} h - height of the region
  */
 static JSVAL gd_imageCopy (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr dst = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdImagePtr src = (gdImagePtr) wrap->Value();
+    gdImagePtr dst = (gdImagePtr)JSOPAQUE(args[0]);
+    gdImagePtr src = (gdImagePtr)JSOPAQUE(args[1]);
     int dstX = args[2]->IntegerValue();
     int dstY = args[3]->IntegerValue();
     int srcX = args[4]->IntegerValue();
@@ -2518,11 +2358,8 @@ static JSVAL gd_imageCopy (JSARGS args) {
  * @param {int} srcH - height of the source region
  */
 static JSVAL gd_imageCopyResized (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr dst = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdImagePtr src = (gdImagePtr) wrap->Value();
+    gdImagePtr dst = (gdImagePtr)JSOPAQUE(args[0]);
+    gdImagePtr src = (gdImagePtr)JSOPAQUE(args[1]);
     int dstX = args[2]->IntegerValue();
     int dstY = args[3]->IntegerValue();
     int srcX = args[4]->IntegerValue();
@@ -2558,11 +2395,8 @@ static JSVAL gd_imageCopyResized (JSARGS args) {
  * @param {int} srcH - height of the source region
  */
 static JSVAL gd_imageCopyResampled (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr dst = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdImagePtr src = (gdImagePtr) wrap->Value();
+    gdImagePtr dst = (gdImagePtr)JSOPAQUE(args[0]);
+    gdImagePtr src = (gdImagePtr)JSOPAQUE(args[1]);
     int dstX = args[2]->IntegerValue();
     int dstY = args[3]->IntegerValue();
     int srcX = args[4]->IntegerValue();
@@ -2605,11 +2439,8 @@ static JSVAL gd_imageCopyResampled (JSARGS args) {
  * @param {int} angle - angle to rotate image.
  */
 static JSVAL gd_imageCopyRotated (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr dst = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdImagePtr src = (gdImagePtr) wrap->Value();
+    gdImagePtr dst = (gdImagePtr)JSOPAQUE(args[0]);
+    gdImagePtr src = (gdImagePtr)JSOPAQUE(args[1]);
     double dstX = args[2]->NumberValue();
     double dstY = args[3]->NumberValue();
     int srcX = args[4]->IntegerValue();
@@ -2648,11 +2479,8 @@ static JSVAL gd_imageCopyRotated (JSARGS args) {
  * @param {int} pct - pct weight to merge pixels.
  */
 static JSVAL gd_imageCopyMerge (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr dst = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdImagePtr src = (gdImagePtr) wrap->Value();
+    gdImagePtr dst = (gdImagePtr)JSOPAQUE(args[0]);
+    gdImagePtr src = (gdImagePtr)JSOPAQUE(args[1]);
     int dstX = args[2]->IntegerValue();
     int dstY = args[3]->IntegerValue();
     int srcX = args[4]->IntegerValue();
@@ -2685,11 +2513,8 @@ static JSVAL gd_imageCopyMerge (JSARGS args) {
  * @param {int} pct - pct weight to merge pixels.
  */
 static JSVAL gd_imageCopyMergeGray (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr dst = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdImagePtr src = (gdImagePtr) wrap->Value();
+    gdImagePtr dst = (gdImagePtr)JSOPAQUE(args[0]);
+    gdImagePtr src = (gdImagePtr)JSOPAQUE(args[1]);
     int dstX = args[2]->IntegerValue();
     int dstY = args[3]->IntegerValue();
     int srcX = args[4]->IntegerValue();
@@ -2714,11 +2539,8 @@ static JSVAL gd_imageCopyMergeGray (JSARGS args) {
  * @param {object} srcImage - source for resized image
  */
 static JSVAL gd_imagePaletteCopy (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr dst = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdImagePtr src = (gdImagePtr) wrap->Value();
+    gdImagePtr dst = (gdImagePtr)JSOPAQUE(args[0]);
+    gdImagePtr src = (gdImagePtr)JSOPAQUE(args[1]);
     gdImagePaletteCopy(dst, src);
     return Undefined();
 }
@@ -2739,10 +2561,9 @@ static JSVAL gd_imagePaletteCopy (JSARGS args) {
  * @return {object} newHandle - handle to a new image.
  */
 static JSVAL gd_imageSquareToCircle (JSARGS args) {
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr dst = (gdImagePtr) wrap->Value();
+    gdImagePtr dst = (gdImagePtr)JSOPAQUE(args[0]);
     int radius = args[1]->IntegerValue();
-    return External::New(gdImageSquareToCircle(dst, radius));
+    return Opaque::New(gdImageSquareToCircle(dst, radius));
 }
 
 /**
@@ -2762,9 +2583,7 @@ static JSVAL gd_imageSquareToCircle (JSARGS args) {
  * @param {int} pct - sharpening percentage
  */
 static JSVAL gd_imageSharpen (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr dst = (gdImagePtr) wrap->Value();
+    gdImagePtr dst = (gdImagePtr)JSOPAQUE(args[0]);
     int pct = args[1]->IntegerValue();
     gdImageSharpen(dst, pct);
     return Undefined();
@@ -2800,12 +2619,9 @@ static JSVAL gd_imageSharpen (JSARGS args) {
  * @return {int} mask - see bits defined above.
  */
 static JSVAL gd_imageCompare (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr im1 = (gdImagePtr) wrap->Value();
-    wrap = Local<External>::Cast(args[1]);
-    gdImagePtr im2 = (gdImagePtr) wrap->Value();
-    return scope.Close(Integer::New(gdImageCompare(im1, im2)));
+    gdImagePtr im1 = (gdImagePtr)JSOPAQUE(args[0]);
+    gdImagePtr im2 = (gdImagePtr)JSOPAQUE(args[1]);
+    return Integer::New(gdImageCompare(im1, im2));
 }
 
 /**
@@ -2829,9 +2645,7 @@ static JSVAL gd_imageCompare (JSARGS args) {
  * @param {int} interlace - set to 1 to enable interlace for the image, 0 to disable it.
  */
 static JSVAL gd_imageInterlace (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    gdImagePtr dst = (gdImagePtr) wrap->Value();
+    gdImagePtr dst = (gdImagePtr)JSOPAQUE(args[0]);
     int interlace = args[1]->IntegerValue();
     gdImageInterlace(dst, interlace);
     return Undefined();
@@ -2843,8 +2657,6 @@ static JSVAL gd_imageInterlace (JSARGS args) {
 ///////////////////////////////////////////////////////////////////////////////
 
 void init_gd_object () {
-    HandleScope scope;
-
     Handle<ObjectTemplate>gd = ObjectTemplate::New();
 
     // constants

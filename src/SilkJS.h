@@ -71,6 +71,23 @@ static inline void *JSEXTERN(Handle<Value>v) {
     Handle<External>wrap = Handle<External>::Cast(v);
     return (void *)wrap->Value();
 }
+
+
+class Opaque {
+public:
+    static Handle<Object>New(void *p) {
+        Handle<ObjectTemplate>t = ObjectTemplate::New();
+        t->SetInternalFieldCount(1);
+        Local<Object>o = t->NewInstance();
+        o->SetInternalField(0, External::New(p));
+        return o;
+    }
+};
+static inline void *JSOPAQUE(Handle<Value>v) {
+    Local<External>wrap = Local<External>::Cast(v->ToObject()->GetInternalField(0));
+    return wrap->Value();
+}
+
 #define BUFFER_STRING
 #undef BUFFER_STRING
 

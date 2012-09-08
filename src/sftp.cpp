@@ -19,7 +19,7 @@ struct SFTP {
 };
 
 static SFTP *HANDLE (Handle<Value> arg) {
-    return (SFTP *) JSEXTERN(arg);
+    return (SFTP *) JSOPAQUE(arg);
 }
 
 /**
@@ -40,7 +40,6 @@ static SFTP *HANDLE (Handle<Value> arg) {
  * @return {object} handle - handle to use with other SFTP methods.
  */
 static JSVAL sftp_connect (JSARGS args) {
-    HandleScope scope;
     String::AsciiValue host(args[0]);
     String::AsciiValue username(args[1]);
     String::AsciiValue password(args[2]);
@@ -51,7 +50,7 @@ static JSVAL sftp_connect (JSARGS args) {
 
     struct hostent *hp = gethostbyname(*host);
     if (!hp) {
-        return scope.Close(String::New("Failed to get IP address of server"));
+        return String::New("Failed to get IP address of server");
     }
 
     struct sockaddr_in s;
@@ -63,29 +62,29 @@ static JSVAL sftp_connect (JSARGS args) {
     if (sock < 0) {
         char msg[4096];
         sprintf(msg, "Failed to create socket: %s", strerror(errno));
-        return scope.Close(String::New(msg));
+        return String::New(msg);
     }
     if (connect(sock, (struct sockaddr *) &s, sizeof (s)) < 0) {
         char msg[4096];
         sprintf(msg, "Failed to connect: %s", strerror(errno));
         close(sock);
-        return scope.Close(String::New(msg));
+        return String::New(msg);
     }
     LIBSSH2_SESSION *session = libssh2_session_init();
     if (!session) {
         close(sock);
-        return scope.Close(String::New("Could not initialize SSH2 session"));
+        return String::New("Could not initialize SSH2 session");
     }
     if (libssh2_session_startup(session, sock)) {
         close(sock);
         sock = -1;
-        return scope.Close(String::New("Could not initialize SSH2 session"));
+        return String::New("Could not initialize SSH2 session");
     }
     libssh2_session_set_blocking(session, 1);
     if (libssh2_userauth_password(session, *username, *password)) {
         close(sock);
         libssh2_session_free(session);
-        return scope.Close(String::New("Invalid credentials"));
+        return String::New("Invalid credentials");
     }
 
     LIBSSH2_SFTP *sftp = libssh2_sftp_init(session);
@@ -95,14 +94,14 @@ static JSVAL sftp_connect (JSARGS args) {
         libssh2_session_last_error(session, &errmsg, &errlen, 0);
         libssh2_session_free(session);
         close(sock);
-        return scope.Close(String::New(errmsg));
+        return String::New(errmsg);
     }
 
     SFTP *p = new SFTP;
     p->sock = sock;
     p->session = session;
     p->sftp_session = sftp;
-    return scope.Close(External::New(p));
+    return Opaque::New(p);
 }
 
 /**
@@ -117,7 +116,6 @@ static JSVAL sftp_connect (JSARGS args) {
  * @param {object} handle - handle to open connect returned by SFTP.connect().
  */
 JSVAL sftp_close (JSARGS args) {
-    HandleScope scope;
     SFTP *handle = HANDLE(args[0]);
     if (handle->sftp_session) {
         libssh2_sftp_shutdown(handle->sftp_session);
@@ -158,13 +156,12 @@ JSVAL sftp_close (JSARGS args) {
  * @return {array} files - array of objects as specifed above, or string containing error message.
  */
 JSVAL sftp_readdir (JSARGS args) {
-    HandleScope scope;
     SFTP *handle = HANDLE(args[0]);
     String::Utf8Value path(args[1]);
 
     LIBSSH2_SFTP_HANDLE *sftp_handle = libssh2_sftp_opendir(handle->sftp_session, *path);
     if (!sftp_handle) {
-        return scope.Close(String::New("Could not open remote directory"));
+        return String::New("Could not open remote directory");
     }
 
     char mem[512],
@@ -206,7 +203,7 @@ JSVAL sftp_readdir (JSARGS args) {
         a->Set(aIndex++, o);
     }
     libssh2_sftp_closedir(sftp_handle);
-    return scope.Close(a);
+    return a;
 }
 
 /**
@@ -232,17 +229,16 @@ JSVAL sftp_readdir (JSARGS args) {
  * @returns {object} stat - object of the form described above.
  */
 JSVAL sftp_stat (JSARGS args) {
-    HandleScope scope;
     SFTP *handle = HANDLE(args[0]);
     String::Utf8Value path(args[1]);
     LIBSSH2_SFTP_HANDLE *sftp_handle = libssh2_sftp_open(handle->sftp_session, *path, LIBSSH2_FXF_READ, 0);
     if (!sftp_handle) {
-        return scope.Close(String::New("Could not get status for remote file"));
+        return String::New("Could not get status for remote file");
     }
     LIBSSH2_SFTP_ATTRIBUTES attrs;
     if (libssh2_sftp_fstat_ex(sftp_handle, &attrs, 0) < 0) {
         libssh2_sftp_close(sftp_handle);
-        return scope.Close(String::New("Could not get status for remote file"));
+        return String::New("Could not get status for remote file");
     }
 
     Handle<String> _permissions = String::New("permissions");
@@ -269,7 +265,7 @@ JSVAL sftp_stat (JSARGS args) {
     }
 
     libssh2_sftp_close(sftp_handle);
-    return scope.Close(o);
+    return o;
 }
 
 /**
@@ -286,7 +282,6 @@ JSVAL sftp_stat (JSARGS args) {
  * @returns {boolean} success - true if directory was created.
  */
 JSVAL sftp_mkdir (JSARGS args) {
-    HandleScope scope;
     SFTP *handle = HANDLE(args[0]);
     String::Utf8Value path(args[1]);
     int mode = 0755;
@@ -294,9 +289,9 @@ JSVAL sftp_mkdir (JSARGS args) {
         mode = args[2]->IntegerValue();
     }
     if (libssh2_sftp_mkdir(handle->sftp_session, *path, mode)) {
-        return scope.Close(String::New("Could not create directory"));
+        return String::New("Could not create directory");
     }
-    return scope.Close(True());
+    return True();
 }
 
 /**
@@ -313,13 +308,12 @@ JSVAL sftp_mkdir (JSARGS args) {
  * @returns {boolean} success - true if directory was removed.
  */
 JSVAL sftp_rmdir (JSARGS args) {
-    HandleScope scope;
     SFTP *handle = HANDLE(args[0]);
     String::Utf8Value path(args[1]);
     if (libssh2_sftp_rmdir(handle->sftp_session, *path)) {
-        return scope.Close(String::New("Could not remove directory"));
+        return String::New("Could not remove directory");
     }
-    return scope.Close(True());
+    return True();
 }
 
 /**
@@ -336,13 +330,12 @@ JSVAL sftp_rmdir (JSARGS args) {
  * @returns {boolean} success - true if directory was removed.
  */
 JSVAL sftp_unlink (JSARGS args) {
-    HandleScope scope;
     SFTP *handle = HANDLE(args[0]);
     String::Utf8Value path(args[1]);
     if (libssh2_sftp_unlink(handle->sftp_session, *path)) {
-        return scope.Close(String::New("Could not remove file"));
+        return String::New("Could not remove file");
     }
-    return scope.Close(True());
+    return True();
 }
 
 /**
@@ -365,14 +358,13 @@ JSVAL sftp_unlink (JSARGS args) {
  * If mode is not provided, the file mode of the file being sent will be used.
  */
 static JSVAL sftp_writeFile (JSARGS args) {
-    HandleScope scope;
     SFTP *handle = HANDLE(args[0]);
     String::Utf8Value srcPath(args[1]);
     String::Utf8Value dstPath(args[2]);
     int mode;
     struct stat fileinfo;
     if (stat(*srcPath, &fileinfo) != 0) {
-        return scope.Close(String::New(strerror(errno)));
+        return String::New(strerror(errno));
     }
     if (args.Length() > 3) {
         mode = args[3]->IntegerValue();
@@ -383,7 +375,7 @@ static JSVAL sftp_writeFile (JSARGS args) {
     mode &= 0777;
     int fd = open(*srcPath, O_RDONLY);
     if (fd < 0) {
-        return scope.Close(String::New(strerror(errno)));
+        return String::New(strerror(errno));
     }
     LIBSSH2_SFTP_HANDLE *sftp_handle = libssh2_sftp_open(handle->sftp_session, *dstPath, LIBSSH2_FXF_WRITE | LIBSSH2_FXF_CREAT | LIBSSH2_FXF_TRUNC, mode);
 
@@ -396,24 +388,22 @@ static JSVAL sftp_writeFile (JSARGS args) {
             libssh2_sftp_close(sftp_handle);
             close(fd);
             errno = eNum;
-            return scope.Close(False());
+            return False();
         }
         int rc = libssh2_sftp_write(sftp_handle, mem, nRead);
         if (rc < 0) {
             libssh2_sftp_close(sftp_handle);
             close(fd);
-            return scope.Close(False());
+            return False();
         }
         toWrite -= nRead;
     }
     close(fd);
     libssh2_sftp_close(sftp_handle);
-    return scope.Close(True());
+    return True();
 }
 
 void init_sftp_object () {
-    HandleScope scope;
-
     Handle<ObjectTemplate>sftp = ObjectTemplate::New();
     sftp->Set(String::New("connect"), FunctionTemplate::New(sftp_connect));
     sftp->Set(String::New("close"), FunctionTemplate::New(sftp_close));

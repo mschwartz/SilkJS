@@ -66,14 +66,13 @@ static size_t WriteMemoryCallback (void *contents, size_t size, size_t nmemb, vo
  * @return {object} o - status/response, see above.
  */
 static JSVAL request (JSARGS args) {
-    HandleScope scope;
     Handle<Object>o = args[0]->ToObject();
     String::Utf8Value method(o->Get(String::New("method"))->ToString());
     String::Utf8Value url(o->Get(String::New("url"))->ToString());
     CURLcode code;
     CURL *curl = curl_easy_init();
     if (!curl) {
-        return scope.Close(String::New("Could not initialize CURL"));
+        return String::New("Could not initialize CURL");
     }
     struct CURL_WRAPPER *w = new CURL_WRAPPER;
     w->memory = (char *) malloc(1);
@@ -89,7 +88,7 @@ static JSVAL request (JSARGS args) {
     }
     code = curl_easy_perform(curl);
     if (code != CURLE_OK) {
-        return scope.Close(String::New(curl_easy_strerror(code)));
+        return String::New(curl_easy_strerror(code));
     }
 
     // get returned info
@@ -103,7 +102,7 @@ static JSVAL request (JSARGS args) {
     curl_easy_cleanup(curl);
     free(w->memory);
     free(w);
-    return scope.Close(o);
+    return o;
 }
 
 void init_xhrHelper_object () {

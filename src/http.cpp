@@ -36,9 +36,8 @@
  * @return {object} stream - opaque stream handle
  */
 static JSVAL OpenStream (JSARGS args) {
-    HandleScope scope;
     InputStream *s = new InputStream(args[0]->IntegerValue());
-    return scope.Close(External::New(s));
+    return Opaque::New(s);
 }
 
 /**
@@ -53,9 +52,7 @@ static JSVAL OpenStream (JSARGS args) {
  * @param {object} stream - opaque handle to the stream to close.
  */
 static JSVAL CloseStream (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    InputStream *s = (InputStream *) wrap->Value();
+    InputStream *s = (InputStream *)JSOPAQUE(args[0]);
     delete s;
     return Undefined();
 }
@@ -73,10 +70,8 @@ static JSVAL CloseStream (JSARGS args) {
  * @return {int} byte - next byte from stream, or -1 on error or timeout.
  */
 static JSVAL ReadByte (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    InputStream *s = (InputStream *) wrap->Value();
-    return scope.Close(Integer::New(s->Read()));
+    InputStream *s = (InputStream *)JSOPAQUE(args[0]);
+    return Integer::New(s->Read());
 }
 
 /**
@@ -94,9 +89,7 @@ static JSVAL ReadByte (JSARGS args) {
  * @return {string} headers - raw HTTP headers, as a string.  If no headers could be read, null is returned.
  */
 static JSVAL ReadHeaders (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    InputStream *s = (InputStream *) wrap->Value();
+    InputStream *s = (InputStream *)JSOPAQUE(args[0]);
 
     string out;
     int newlineCount = 0;
@@ -121,7 +114,7 @@ static JSVAL ReadHeaders (JSARGS args) {
                 break;
         }
     }
-    return scope.Close(String::New(out.c_str(), out.size()));
+    return String::New(out.c_str(), out.size());
 }
 
 /**
@@ -140,9 +133,7 @@ static JSVAL ReadHeaders (JSARGS args) {
  * @return {string} postString - raw POST variables string.
  */
 static JSVAL ReadPost (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    InputStream *s = (InputStream *) wrap->Value();
+    InputStream *s = (InputStream *)JSOPAQUE(args[0]);
     long size = args[1]->IntegerValue();
 
     char buf[size];
@@ -150,7 +141,7 @@ static JSVAL ReadPost (JSARGS args) {
         return False();
     }
     Handle<String> out = String::New(buf, size);
-    return scope.Close(out);
+    return out;
 }
 
 /**
@@ -176,9 +167,7 @@ static JSVAL ReadPost (JSARGS args) {
  * @return {string} mimeString - transformed multi-part/mime stream as a JavaScript string.
  */
 static JSVAL ReadMime (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    InputStream *s = (InputStream *) wrap->Value();
+    InputStream *s = (InputStream *)JSOPAQUE(args[0]);
     long size = args[1]->IntegerValue();
     String::Utf8Value jsboundary(args[2]);
     char *boundary = *jsboundary;
@@ -254,12 +243,10 @@ static JSVAL ReadMime (JSARGS args) {
         }
     }
     delete [] in;
-    return scope.Close(String::New(out.c_str()));
+    return String::New(out.c_str());
 }
 
 void init_http_object () {
-    HandleScope scope;
-
     Handle<ObjectTemplate>http = ObjectTemplate::New();
     http->Set(String::New("openStream"), FunctionTemplate::New(OpenStream));
     http->Set(String::New("closeStream"), FunctionTemplate::New(CloseStream));

@@ -16,7 +16,7 @@ static inline netbuf *HANDLE (Handle<Value>v) {
         ThrowException(String::New("Handle is NULL"));
         return NULL;
     }
-    netbuf *nControl = (netbuf *) JSEXTERN(v);
+    netbuf *nControl = (netbuf *) JSOPAQUE(v);
     return nControl;
 }
 
@@ -30,7 +30,6 @@ static inline netbuf *HANDLE (Handle<Value>v) {
  * Performs any required initialization for the library.
  */
 static JSVAL ftp_init (JSARGS args) {
-    HandleScope scope;
     FtpInit();
     return Undefined();
 }
@@ -47,10 +46,9 @@ static JSVAL ftp_init (JSARGS args) {
  * @return {int} success - 1 if successful or 0 on error.
  */
 static JSVAL ftp_site (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
     String::Utf8Value cmd(args[1]->ToString());
-    return scope.Close(Integer::New(FtpSite(*cmd, n)));
+    return Integer::New(FtpSite(*cmd, n));
 }
 
 /**
@@ -66,9 +64,8 @@ static JSVAL ftp_site (JSARGS args) {
  * @return {string} response - last response string or NULL if handle is not valid.
  */
 static JSVAL ftp_lastResponse (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
-    return scope.Close(String::New(FtpLastResponse(n)));
+    return String::New(FtpLastResponse(n));
 }
 
 /**
@@ -86,13 +83,12 @@ static JSVAL ftp_lastResponse (JSARGS args) {
  * @return {string} response - system type or false if an error occurred.
  */
 static JSVAL ftp_systemType (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
     char buf[2048];
     if (!FtpSysType(buf, 2048, n)) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(String::New(buf));
+    return String::New(buf);
 }
 
 /**
@@ -112,13 +108,12 @@ static JSVAL ftp_systemType (JSARGS args) {
  * @return {int} size - size of remote file or false if an error occurred.
  */
 static JSVAL ftp_size (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
     String::Utf8Value path(args[1]->ToString());
     char mode = (char) args[2]->IntegerValue();
     int size;
     if (FtpSize(*path, &size, mode, n)) {
-        return scope.Close(Integer::New(size));
+        return Integer::New(size);
     }
     else {
         return False();
@@ -139,14 +134,13 @@ static JSVAL ftp_size (JSARGS args) {
  * @return {int} size - size of remote file or false if an error occurred.
  */
 static JSVAL ftp_fileModified (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
     String::Utf8Value path(args[1]->ToString());
     char buf[2048];
     if (!FtpModDate(*path, buf, 2048, n)) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(String::New(buf));
+    return String::New(buf);
 }
 
 /**
@@ -164,13 +158,12 @@ static JSVAL ftp_fileModified (JSARGS args) {
  * @return {object} handle - handle to open connection, or false if an error occurred.
  */
 static JSVAL ftp_connect (JSARGS args) {
-    HandleScope scope;
     netbuf *n;
     String::Utf8Value host(args[0]->ToString());
     if (!FtpConnect(*host, &n)) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(External::New(n));
+    return Opaque::New(n);
 }
 
 /**
@@ -186,11 +179,10 @@ static JSVAL ftp_connect (JSARGS args) {
  * @return {int} success - 1 if successful, 0 if an error occurred.
  */
 static JSVAL ftp_login (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
     String::Utf8Value username(args[1]->ToString());
     String::Utf8Value password(args[2]->ToString());
-    return scope.Close(Integer::New(FtpLogin(*username, *password, n)));
+    return Integer::New(FtpLogin(*username, *password, n));
 }
 
 /**
@@ -205,7 +197,6 @@ static JSVAL ftp_login (JSARGS args) {
  * @param {object} handle - handle returned by ftp.connect().
  */
 static JSVAL ftp_quit (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
     FtpQuit(n);
     return Undefined();
@@ -222,9 +213,8 @@ static JSVAL ftp_quit (JSARGS args) {
  * @return {int} success - 1 if successful, 0 if an error occurred.
  */
 static JSVAL ftp_pasv (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
-    return scope.Close(Integer::New(FtpOptions(FTPLIB_CONNMODE, FTPLIB_PASSIVE, n)));
+    return Integer::New(FtpOptions(FTPLIB_CONNMODE, FTPLIB_PASSIVE, n));
 }
 
 /**
@@ -238,9 +228,8 @@ static JSVAL ftp_pasv (JSARGS args) {
  * @return {int} success - 1 if successful, 0 if an error occurred.
  */
 static JSVAL ftp_active (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
-    return scope.Close(Integer::New(FtpOptions(FTPLIB_CONNMODE, FTPLIB_PORT, n)));
+    return Integer::New(FtpOptions(FTPLIB_CONNMODE, FTPLIB_PORT, n));
 }
 
 /**
@@ -255,10 +244,9 @@ static JSVAL ftp_active (JSARGS args) {
  * @return {int} success - 1 if successful, 0 if an error occurred.
  */
 static JSVAL ftp_chdir (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
     String::Utf8Value path(args[1]->ToString());
-    return scope.Close(Integer::New(FtpChdir(*path, n)));
+    return Integer::New(FtpChdir(*path, n));
 }
 
 /**
@@ -273,10 +261,9 @@ static JSVAL ftp_chdir (JSARGS args) {
  * @return {int} success - 1 if successful, 0 if an error occurred.
  */
 static JSVAL ftp_mkdir (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
     String::Utf8Value path(args[1]->ToString());
-    return scope.Close(Integer::New(FtpMkdir(*path, n)));
+    return Integer::New(FtpMkdir(*path, n));
 }
 
 /**
@@ -291,10 +278,9 @@ static JSVAL ftp_mkdir (JSARGS args) {
  * @return {int} success - 1 if successful, 0 if an error occurred.
  */
 static JSVAL ftp_rmdir (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
     String::Utf8Value path(args[1]->ToString());
-    return scope.Close(Integer::New(FtpRmdir(*path, n)));
+    return Integer::New(FtpRmdir(*path, n));
 }
 
 /**
@@ -310,11 +296,10 @@ static JSVAL ftp_rmdir (JSARGS args) {
  * @return {int} success - 1 if successful, 0 if an error occurred.
  */
 static JSVAL ftp_dir (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
     String::Utf8Value path(args[1]->ToString());
     String::Utf8Value output(args[2]->ToString());
-    return scope.Close(Integer::New(FtpDir(*output, *path, n)));
+    return Integer::New(FtpDir(*output, *path, n));
 }
 
 /**
@@ -328,13 +313,12 @@ static JSVAL ftp_dir (JSARGS args) {
  * @return {string} path - path of current remote directory.
  */
 static JSVAL ftp_getcwd (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
     char buf[2048];
     if (!FtpPwd(buf, 2048, n)) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(String::New(buf));
+    return String::New(buf);
 }
 
 /**
@@ -354,7 +338,6 @@ static JSVAL ftp_getcwd (JSARGS args) {
  * @return {int} success - 1 if successful, 0 if an error occurred.
  */
 static JSVAL ftp_get (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
     String::Utf8Value remotePath(args[1]->ToString());
     String::Utf8Value localPath(args[2]->ToString());
@@ -362,7 +345,7 @@ static JSVAL ftp_get (JSARGS args) {
     if (args.Length() > 3) {
         mode = (char) args[3]->IntegerValue();
     }
-    return scope.Close(Integer::New(FtpGet(*localPath, *remotePath, mode, n)));
+    return Integer::New(FtpGet(*localPath, *remotePath, mode, n));
 }
 
 /**
@@ -382,7 +365,6 @@ static JSVAL ftp_get (JSARGS args) {
  * @return {int} success - 1 if successful, 0 if an error occurred.
  */
 static JSVAL ftp_put (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
     String::Utf8Value localPath(args[1]->ToString());
     String::Utf8Value remotePath(args[2]->ToString());
@@ -390,7 +372,7 @@ static JSVAL ftp_put (JSARGS args) {
     if (args.Length() > 3) {
         mode = (char) args[3]->IntegerValue();
     }
-    return scope.Close(Integer::New(FtpPut(*localPath, *remotePath, mode, n)));
+    return Integer::New(FtpPut(*localPath, *remotePath, mode, n));
 }
 
 /**
@@ -405,10 +387,9 @@ static JSVAL ftp_put (JSARGS args) {
  * @return {int} success - 1 if successful, 0 if an error occurred.
  */
 static JSVAL ftp_unlink (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
     String::Utf8Value path(args[1]->ToString());
-    return scope.Close(Integer::New(FtpDelete(*path, n)));
+    return Integer::New(FtpDelete(*path, n));
 }
 
 /**
@@ -426,16 +407,13 @@ static JSVAL ftp_unlink (JSARGS args) {
  * @return {int} success - 1 if successful, 0 if an error occurred.
  */
 static JSVAL ftp_rename (JSARGS args) {
-    HandleScope scope;
     netbuf *n = HANDLE(args[0]);
     String::Utf8Value oldPath(args[1]->ToString());
     String::Utf8Value newPath(args[2]->ToString());
-    return scope.Close(Integer::New(FtpRename(*oldPath, *newPath, n)));
+    return Integer::New(FtpRename(*oldPath, *newPath, n));
 }
 
 void init_ftp_object () {
-    HandleScope scope;
-
     JSOBJT ftpObject = ObjectTemplate::New();
 
     ftpObject->Set(String::New("ASCII"), Integer::New(FTPLIB_ASCII));

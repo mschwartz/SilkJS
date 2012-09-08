@@ -64,11 +64,11 @@ static JSVAL status_to_string(JSARGS args) {
  * @return {object} newSurface - opaque handle to the newly created surface.
  */
 static JSVAL surface_create_similar(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     int format = args[1]->IntegerValue();
     int width = args[2]->IntegerValue();
     int height = args[3]->IntegerValue();
-    return External::New(cairo_surface_create_similar(surface, (cairo_content_t)format, width, height));
+    return Opaque::New(cairo_surface_create_similar(surface, (cairo_content_t)format, width, height));
 }
 
 /**
@@ -86,8 +86,8 @@ static JSVAL surface_create_similar(JSARGS args) {
  * @return {object} surface - the referenced cairo surface.
  */
 static JSVAL surface_reference(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
-    return External::New(cairo_surface_reference(surface));
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
+    return Opaque::New(cairo_surface_reference(surface));
 }
 
 /**
@@ -103,7 +103,7 @@ static JSVAL surface_reference(JSARGS args) {
  * @return {int} status - one of cairo.STATUS_SUCCESS, cairo.STATUS_NULL_POINTER, cairo.STATUS_NO_MEMORY, cairo.STATUS_READ_ERROR, cairo.STATUS_INVALID_CONTENT, cairo.STATUS_INVALID_FORMAT, or cairo.STATUS_INVALID_VISUAL.
  */
 static JSVAL surface_status(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_surface_status(surface));
 }
 
@@ -121,7 +121,7 @@ static JSVAL surface_status(JSARGS args) {
  * @param {object} surface - opaque handle to a cairo surface.
  */
 static JSVAL surface_destroy(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     cairo_surface_destroy(surface);
     return Undefined();
 }
@@ -142,7 +142,7 @@ static JSVAL surface_destroy(JSARGS args) {
  * @param {object} surface - opaque handle to a cairo surface.
  */
 static JSVAL surface_finish(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     cairo_surface_finish(surface);
     return Undefined();
 }
@@ -163,7 +163,7 @@ static JSVAL surface_finish(JSARGS args) {
  * @param {object} surface - opaque handle to a cairo surface.
  */
 static JSVAL surface_flush(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     cairo_surface_flush(surface);
     return Undefined();
 }
@@ -186,12 +186,12 @@ static JSVAL surface_flush(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL surface_get_device(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     cairo_device_t *device = cairo_surface_get_device(surface);
     if (device == NULL) {
         return Null();
     }
-    return External::New(device);
+    return Opaque::New(device);
 }
 #endif
 
@@ -222,10 +222,10 @@ static JSVAL surface_get_device(JSARGS args) {
  * @return {object} options - opaque handle to the font options for the surface, or null if the surface does not have an associated device.
  */
 static JSVAL surface_get_font_options(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     cairo_font_options_t *options = cairo_font_options_create();
     cairo_surface_get_font_options(surface, options);
-    return External::New(options);
+    return Opaque::New(options);
 }
 
 /**
@@ -247,7 +247,7 @@ static JSVAL surface_get_font_options(JSARGS args) {
  * @return {int} content - type content type of surface.
  */
 static JSVAL surface_get_content(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_surface_get_content(surface));
 }
 
@@ -265,7 +265,7 @@ static JSVAL surface_get_content(JSARGS args) {
  * @param {object} surface - opaque handle to a cairo surface.
  */
 static JSVAL surface_mark_dirty(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     cairo_surface_mark_dirty(surface);
     return Undefined();
 }
@@ -290,7 +290,7 @@ static JSVAL surface_mark_dirty(JSARGS args) {
  * @param {int} h - height of dirty rectangle
  */
 static JSVAL surface_mark_dirty_rectangle(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     int x = args[1]->IntegerValue();
     int y = args[2]->IntegerValue();
     int w = args[3]->IntegerValue();
@@ -317,7 +317,7 @@ static JSVAL surface_mark_dirty_rectangle(JSARGS args) {
  * @param {number} y_offset - the offset in the Y direction, in device units
  */
 static JSVAL surface_set_device_offset(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     double dx = args[1]->NumberValue();
     double dy = args[2]->NumberValue();
     cairo_surface_set_device_offset(surface, dx, dy);
@@ -342,7 +342,7 @@ static JSVAL surface_set_device_offset(JSARGS args) {
  * @return {object} offsets - offsets.x,offsets.y are floating point x_offset,y_offset values.
  */
 static JSVAL surface_get_device_offset(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     double dx;
     double dy;
     cairo_surface_get_device_offset(surface, &dx, &dy);
@@ -376,7 +376,7 @@ static JSVAL surface_get_device_offset(JSARGS args) {
  * @param {number} y_pixels_per_inch - vertical setting for pixels per inch.
  */
 static JSVAL surface_set_fallback_resolution(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     double dx = args[1]->NumberValue();
     double dy = args[2]->NumberValue();
     cairo_surface_set_fallback_resolution(surface, dx, dy);
@@ -401,7 +401,7 @@ static JSVAL surface_set_fallback_resolution(JSARGS args) {
  * @return {object} resolution - resolution.x,resolution.y are floating point pixels_per_inch values.
  */
 static JSVAL surface_get_fallback_resolution(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     double dx;
     double dy;
     cairo_surface_get_fallback_resolution(surface, &dx, &dy);
@@ -452,7 +452,7 @@ static JSVAL surface_get_fallback_resolution(JSARGS args) {
  * @return {int} type - one of the types above.
  */
 static JSVAL surface_get_type(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_surface_get_type(surface));
 }
 
@@ -469,7 +469,7 @@ static JSVAL surface_get_type(JSARGS args) {
  * @return {int} count - reference count of surface.  If the object is a nil object, 0 will be returned.
  */
 static JSVAL surface_get_reference_count(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_surface_get_reference_count(surface));
 }
 
@@ -489,7 +489,7 @@ static JSVAL surface_get_reference_count(JSARGS args) {
  * @param {object} surface - opaque handle to a cairo surface.
  */
 static JSVAL surface_copy_page(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     cairo_surface_copy_page(surface);
     return Undefined();
 }
@@ -508,7 +508,7 @@ static JSVAL surface_copy_page(JSARGS args) {
  * @param {object} surface - opaque handle to a cairo surface.
  */
 static JSVAL surface_show_page(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     cairo_surface_show_page(surface);
     return Undefined();
 }
@@ -530,7 +530,7 @@ static JSVAL surface_show_page(JSARGS args) {
  * @return {boolean} status - true if the surface supports show_text_glyphs().
  */
 static JSVAL surface_has_show_text_glyphs(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     return cairo_surface_has_show_text_glyphs(surface) ? True() : False();
 }
 
@@ -563,7 +563,7 @@ static JSVAL image_surface_create(JSARGS args) {
     int format = args[0]->IntegerValue();
     int width = args[1]->IntegerValue();
     int height = args[2]->IntegerValue();
-    return External::New(cairo_image_surface_create((cairo_format_t)format, width, height));
+    return Opaque::New(cairo_image_surface_create((cairo_format_t)format, width, height));
 }
 
 /**
@@ -588,7 +588,7 @@ static JSVAL image_surface_create(JSARGS args) {
  * @return {int} format - one of the above values.
  */
 static JSVAL image_surface_get_format(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_image_surface_get_format(surface));
 }
 
@@ -605,7 +605,7 @@ static JSVAL image_surface_get_format(JSARGS args) {
  * @return {int} width - width of the surface in pixels.
  */
 static JSVAL image_surface_get_width(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_image_surface_get_width(surface));
 }
 
@@ -622,7 +622,7 @@ static JSVAL image_surface_get_width(JSARGS args) {
  * @return {int} height - height of the surface in pixels.
  */
 static JSVAL image_surface_get_height(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_image_surface_get_height(surface));
 }
 
@@ -645,7 +645,7 @@ static JSVAL image_surface_get_height(JSARGS args) {
  * @return {object} imageData - object of the above form.
  */
 static JSVAL image_surface_get_data(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     int sx = args[1]->IntegerValue();
     int sy = args[2]->IntegerValue();
     int width = args[3]->IntegerValue();
@@ -713,7 +713,7 @@ static JSVAL image_surface_get_data(JSARGS args) {
  */
 static JSVAL surface_blur(JSARGS args) {
     // see implementation at https://github.com/LearnBoost/node-canvas/blob/master/src/CanvasRenderingContext2d.cc
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     int radius = args[1]->IntegerValue();
 
     // Steve Hanov, 2009
@@ -792,8 +792,8 @@ static JSVAL surface_blur(JSARGS args) {
  * @return {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_create(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
-    return External::New(cairo_create(surface));
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
+    return Opaque::New(cairo_create(surface));
 }
 
 /**
@@ -811,8 +811,8 @@ static JSVAL context_create(JSARGS args) {
  * @return {object} context - opaque handle to the referenced cairo context.
  */
 static JSVAL context_reference(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    return External::New(cairo_reference(context));
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    return Opaque::New(cairo_reference(context));
 }
 
 /**
@@ -828,7 +828,7 @@ static JSVAL context_reference(JSARGS args) {
  * @return {int} count - reference count of the context.
  */
 static JSVAL context_get_reference_count(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_get_reference_count(context));
 }
 
@@ -846,7 +846,7 @@ static JSVAL context_get_reference_count(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_destroy(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_destroy(context);
     return Undefined();
 }
@@ -905,7 +905,7 @@ static JSVAL context_destroy(JSARGS args) {
  * @return {int} status - see possible values above.
  */
 static JSVAL context_status(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_status(context));
 }
 
@@ -929,7 +929,7 @@ static JSVAL context_status(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_save(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_save(context);
     return Undefined();
 }
@@ -946,7 +946,7 @@ static JSVAL context_save(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_restore(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_restore(context);
     return Undefined();
 }
@@ -966,8 +966,8 @@ static JSVAL context_restore(JSARGS args) {
  * @return {object} surface - opaque handle to the cairo surface.
  */
 static JSVAL context_get_target(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    return External::New(cairo_get_target(context));
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    return Opaque::New(cairo_get_target(context));
 }
 
 /**
@@ -1008,7 +1008,7 @@ static JSVAL context_get_target(JSARGS args) {
  * ```
  */
 static JSVAL context_push_group(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_push_group(context);
     return Undefined();
 }
@@ -1033,7 +1033,7 @@ static JSVAL context_push_group(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_push_group_with_content(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_push_group_with_content(context, (cairo_content_t)args[0]->IntegerValue());
     return Undefined();
 }
@@ -1053,8 +1053,8 @@ static JSVAL context_push_group_with_content(JSARGS args) {
  * @return {object} pattern - opaque handle to a cairo pattern.
  */
 static JSVAL context_pop_group(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    return External::New(cairo_pop_group(context));
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    return Opaque::New(cairo_pop_group(context));
 }
 
 /**
@@ -1080,7 +1080,7 @@ static JSVAL context_pop_group(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_pop_group_to_source(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_pop_group_to_source(context);
     return Undefined();
 }
@@ -1100,8 +1100,8 @@ static JSVAL context_pop_group_to_source(JSARGS args) {
  * @return {object} surface - opaque handle to the cairo surface.
  */
 static JSVAL context_get_group_target(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    return External::New(cairo_get_group_target(context));
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    return Opaque::New(cairo_get_group_target(context));
 }
 
 /**
@@ -1125,7 +1125,7 @@ static JSVAL context_get_group_target(JSARGS args) {
  * @param {number} blue - blue component of color
  */
 static JSVAL context_set_source_rgb(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_set_source_rgb(context, args[1]->NumberValue(), args[2]->NumberValue(), args[3]->NumberValue());
     return Undefined();
 }
@@ -1152,7 +1152,7 @@ static JSVAL context_set_source_rgb(JSARGS args) {
  * @param {number} alpha - alpha component of color
  */
 static JSVAL context_set_source_rgba(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_set_source_rgba(context, args[1]->NumberValue(), args[2]->NumberValue(), args[3]->NumberValue(), args[4]->NumberValue());
     return Undefined();
 }
@@ -1176,8 +1176,8 @@ static JSVAL context_set_source_rgba(JSARGS args) {
  * @param {object} pattern - opaque handle to a cairo pattern.
  */
 static JSVAL context_set_source(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[1]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[1]);
     cairo_set_source(context, pattern);
     return Undefined();
 }
@@ -1201,8 +1201,8 @@ static JSVAL context_set_source(JSARGS args) {
  * @param {number} y - y coordinate of surface origin.
  */
 static JSVAL context_set_source_surface(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[1]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[1]);
     double x = args[2]->NumberValue();
     double y = args[3]->NumberValue();
     cairo_set_source_surface(context, surface, x, y);
@@ -1222,8 +1222,8 @@ static JSVAL context_set_source_surface(JSARGS args) {
  * @return {object} pattern - opaque handle to a cairo pattern.
  */
 static JSVAL context_get_source(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    return External::New(cairo_get_source(context));
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    return Opaque::New(cairo_get_source(context));
 }
 
 /**
@@ -1253,7 +1253,7 @@ static JSVAL context_get_source(JSARGS args) {
  * @param {int} mode - one of the above modes.
  */
 static JSVAL context_set_antialias(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_set_antialias(context, (cairo_antialias_t)args[1]->IntegerValue());
     return Undefined();
 }
@@ -1283,7 +1283,7 @@ static JSVAL context_set_antialias(JSARGS args) {
  * @return {int} mode - see list above.
  */
 static JSVAL context_get_antialias(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_get_antialias(context));
 }
 
@@ -1317,7 +1317,7 @@ static JSVAL context_get_antialias(JSARGS args) {
  * @param {number} offset - offset into pattern at which the stroke begins.
  */
 static JSVAL context_set_dash(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     Handle<Array>dashes = Handle<Array>::Cast(args[1]->ToObject());
     double offset = args[2]->NumberValue();
     
@@ -1350,7 +1350,7 @@ static JSVAL context_set_dash(JSARGS args) {
  * @return {int} count - length of dashes array.
  */
 static JSVAL context_get_dash_count(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_get_dash_count(context));
 }
 
@@ -1367,7 +1367,7 @@ static JSVAL context_get_dash_count(JSARGS args) {
  * @return {array} dashes = array of Number values of the dash array for the context.
  */
 static JSVAL context_get_dash(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     
     int count = cairo_get_dash_count(context);
     double *dashes = new double[count];
@@ -1405,7 +1405,7 @@ static JSVAL context_get_dash(JSARGS args) {
  * @param {int} rule - one of the above fill rules.
  */
 static JSVAL context_set_fill_rule(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     int rule = args[1]->IntegerValue();
     cairo_set_fill_rule(context, (cairo_fill_rule_t)rule);
     return Undefined();
@@ -1426,7 +1426,7 @@ static JSVAL context_set_fill_rule(JSARGS args) {
  * @return {int} rule - fill rule
  */
 static JSVAL context_get_fill_rule(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_get_fill_rule(context));
 }
 
@@ -1456,7 +1456,7 @@ static JSVAL context_get_fill_rule(JSARGS args) {
  * @param {int} line_cap - one of the above line_cap values.
  */
 static JSVAL context_set_line_cap(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     int line_cap = args[1]->IntegerValue();
     cairo_set_line_cap(context, (cairo_line_cap_t)line_cap);
     return Undefined();
@@ -1477,7 +1477,7 @@ static JSVAL context_set_line_cap(JSARGS args) {
  * @return {int} line_cap - line cap style.
  */
 static JSVAL context_get_line_cap(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_get_line_cap(context));
 }
 
@@ -1507,7 +1507,7 @@ static JSVAL context_get_line_cap(JSARGS args) {
  * @param {int} line_join - one of the above line_join values.
  */
 static JSVAL context_set_line_join(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     int line_join = args[1]->IntegerValue();
     cairo_set_line_join(context, (cairo_line_join_t)line_join);
     return Undefined();
@@ -1528,7 +1528,7 @@ static JSVAL context_set_line_join(JSARGS args) {
  * @return {int} line_join - line join style.
  */
 static JSVAL context_get_line_join(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_get_line_join(context));
 }
 
@@ -1551,7 +1551,7 @@ static JSVAL context_get_line_join(JSARGS args) {
  * @param {number} width - setting for line width.
  */
 static JSVAL context_set_line_width(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     double width = args[1]->NumberValue();
     cairo_set_line_width(context, width);
     return Undefined();
@@ -1572,7 +1572,7 @@ static JSVAL context_set_line_width(JSARGS args) {
  * @return {number} width - current line width.
  */
 static JSVAL context_get_line_width(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     return Number::New(cairo_get_line_width(context));
 }
 
@@ -1597,7 +1597,7 @@ static JSVAL context_get_line_width(JSARGS args) {
  * @param {number} limit - setting for miter limit.
  */
 static JSVAL context_set_miter_limit(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     double limit = args[1]->NumberValue();
     cairo_set_miter_limit(context, limit);
     return Undefined();
@@ -1616,7 +1616,7 @@ static JSVAL context_set_miter_limit(JSARGS args) {
  * @return {number} width - current line width.
  */
 static JSVAL context_get_miter_limit(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     return Number::New(cairo_get_miter_limit(context));
 }
 
@@ -1667,7 +1667,7 @@ static JSVAL context_get_miter_limit(JSARGS args) {
  * @param {int} operator - one of the above operators.
  */
 static JSVAL context_set_operator(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_set_operator(context, (cairo_operator_t)args[1]->IntegerValue());
     return Undefined();
 }
@@ -1685,7 +1685,7 @@ static JSVAL context_set_operator(JSARGS args) {
  * @param {int} operator - one of the operators, as described in cairo.context_set_operator().
  */
 static JSVAL context_get_operator(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_get_operator(context));
 }
 
@@ -1710,7 +1710,7 @@ static JSVAL context_get_operator(JSARGS args) {
  * @param {number} tolerance - setting for tolerance, in device units (typically pixels).
  */
 static JSVAL context_set_tolerance(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     double tolerance = args[1]->NumberValue();
     cairo_set_tolerance(context, tolerance);
     return Undefined();
@@ -1729,7 +1729,7 @@ static JSVAL context_set_tolerance(JSARGS args) {
  * @return {number} tolerance - current tolerance value.
  */
 static JSVAL context_get_tolerance(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     return Number::New(cairo_get_tolerance(context));
 }
 
@@ -1751,7 +1751,7 @@ static JSVAL context_get_tolerance(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_clip(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_clip(context);
     return Undefined();
 }
@@ -1774,7 +1774,7 @@ static JSVAL context_clip(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_clip_preserve(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_clip_preserve(context);
     return Undefined();
 }
@@ -1799,7 +1799,7 @@ static JSVAL context_clip_preserve(JSARGS args) {
  * @return {object} extents - see object description above.
  */
 static JSVAL context_clip_extents(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     double x1,y1, x2,y2;
     cairo_clip_extents(context, &x1,&y1, &x2,&y2);
     
@@ -1825,7 +1825,7 @@ static JSVAL context_clip_extents(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL context_in_clip(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     return cairo_in_clip(context, args[1]->NumberValue(), args[2]->NumberValue()) ? True() : False();
 }
 #endif
@@ -1846,7 +1846,7 @@ static JSVAL context_in_clip(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_reset_clip(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_reset_clip(context);
     return Undefined();
 }
@@ -1869,7 +1869,7 @@ static JSVAL context_reset_clip(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_fill(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_fill(context);
     return Undefined();
 }
@@ -1890,7 +1890,7 @@ static JSVAL context_fill(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_fill_preserve(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_fill_preserve(context);
     return Undefined();
 }
@@ -1921,7 +1921,7 @@ static JSVAL context_fill_preserve(JSARGS args) {
  * @return {object} extents - see object description above.
  */
 static JSVAL context_fill_extents(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     double x1,y1, x2,y2;
     cairo_fill_extents(context, &x1,&y1, &x2,&y2);
     
@@ -1948,7 +1948,7 @@ static JSVAL context_fill_extents(JSARGS args) {
  * @return {boolean} inFill - true if the point is inside the area that would be affected, false if not.
  */
 static JSVAL context_in_fill(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     return cairo_in_fill(context, args[1]->NumberValue(), args[2]->NumberValue()) ? True() : False();
 }
 
@@ -1967,8 +1967,8 @@ static JSVAL context_in_fill(JSARGS args) {
  * @return {object} pattern - opaque handle to a cairo pattern.
  */
 static JSVAL context_mask(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[1]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[1]);
     cairo_mask(context, pattern);
     return Undefined();
 }
@@ -1990,8 +1990,8 @@ static JSVAL context_mask(JSARGS args) {
  * @param {number} surface_y - y coordinate at which to place the origin of surface.
  */
 static JSVAL context_mask_surface(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[1]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[1]);
     cairo_mask_surface(context, surface, args[2]->NumberValue(), args[3]->NumberValue());
     return Undefined();
 }
@@ -2008,7 +2008,7 @@ static JSVAL context_mask_surface(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_paint(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_paint(context);
     return Undefined();
 }
@@ -2028,7 +2028,7 @@ static JSVAL context_paint(JSARGS args) {
  * @param {number} alpha - alpha value, between 0 (transparent) and 1 (opaque).
  */
 static JSVAL context_paint_with_alpha(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_paint_with_alpha(context, args[1]->NumberValue());
     return Undefined();
 }
@@ -2054,7 +2054,7 @@ static JSVAL context_paint_with_alpha(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_stroke(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_stroke(context);
     return Undefined();
 }
@@ -2075,7 +2075,7 @@ static JSVAL context_stroke(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_stroke_preserve(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_stroke_preserve(context);
     return Undefined();
 }
@@ -2106,7 +2106,7 @@ static JSVAL context_stroke_preserve(JSARGS args) {
  * @return {object} extents - see object description above.
  */
 static JSVAL context_stroke_extents(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     double x1,y1, x2,y2;
     cairo_stroke_extents(context, &x1,&y1, &x2,&y2);
     
@@ -2135,7 +2135,7 @@ static JSVAL context_stroke_extents(JSARGS args) {
  * @return {boolean} inStroke - true if the point is inside the area that would be affected, false if not.
  */
 static JSVAL context_in_stroke(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     return cairo_in_stroke(context, args[1]->NumberValue(), args[2]->NumberValue()) ? True() : False();
 }
 
@@ -2153,7 +2153,7 @@ static JSVAL context_in_stroke(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_copy_page(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_copy_page(context);
     return Undefined();
 }
@@ -2172,7 +2172,7 @@ static JSVAL context_copy_page(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_show_page(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_show_page(context);
     return Undefined();
 }
@@ -2195,7 +2195,7 @@ static JSVAL context_show_page(JSARGS args) {
  * @param {number} ty - amount to translate in the y direction.
  */
 static JSVAL context_translate(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_translate(context, args[1]->NumberValue(), args[2]->NumberValue());
     return Undefined();
 }
@@ -2216,7 +2216,7 @@ static JSVAL context_translate(JSARGS args) {
  * @param {number} sy - scale factor for the y dimension.
  */
 static JSVAL context_scale(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_scale(context, args[1]->NumberValue(), args[2]->NumberValue());
     return Undefined();
 }
@@ -2238,7 +2238,7 @@ static JSVAL context_scale(JSARGS args) {
  * @param {number} angle - angle in radians by which the user space axes will be rotated.
  */
 static JSVAL context_rotate(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_rotate(context, args[1]->NumberValue());
     return Undefined();
 }
@@ -2258,8 +2258,8 @@ static JSVAL context_rotate(JSARGS args) {
  * @param {object} matrix - opaque handle to a cairo matrix.
  */
 static JSVAL context_transform(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[1]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[1]);
     cairo_transform(context, matrix);
     return Undefined();
 }
@@ -2277,8 +2277,8 @@ static JSVAL context_transform(JSARGS args) {
  * @param {object} matrix - opaque handle to a cairo matrix.
  */
 static JSVAL context_set_matrix(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[1]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[1]);
     cairo_set_matrix(context, matrix);
     return Undefined();
 }
@@ -2299,10 +2299,10 @@ static JSVAL context_set_matrix(JSARGS args) {
  * @return {object} matrix - opaque handle to a cairo matrix.
  */
 static JSVAL context_get_matrix(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_matrix_t *matrix = new cairo_matrix_t;
     cairo_get_matrix(context, matrix);
-    return External::New(matrix);
+    return Opaque::New(matrix);
 }
 
 /**
@@ -2319,7 +2319,7 @@ static JSVAL context_get_matrix(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_identity_matrix(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_identity_matrix(context);
     return Undefined();
 }
@@ -2345,7 +2345,7 @@ static JSVAL context_identity_matrix(JSARGS args) {
  * @return {object} vector - JavaScript object of the form described above.
  */
 static JSVAL context_user_to_device(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     Local<String>_x = String::New("x");
     Local<String>_y = String::New("y");
     JSOBJ o = args[1]->ToObject();
@@ -2380,7 +2380,7 @@ static JSVAL context_user_to_device(JSARGS args) {
  * @return {object} vector - JavaScript object of the form described above.
  */
 static JSVAL context_user_to_device_distance(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     Local<String>_dx = String::New("dx");
     Local<String>_dy = String::New("dy");
     JSOBJ o = args[1]->ToObject();
@@ -2413,7 +2413,7 @@ static JSVAL context_user_to_device_distance(JSARGS args) {
  * @return {object} vector - JavaScript object of the form described above.
  */
 static JSVAL context_device_to_user(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     Local<String>_x = String::New("x");
     Local<String>_y = String::New("y");
     JSOBJ o = args[1]->ToObject();
@@ -2448,7 +2448,7 @@ static JSVAL context_device_to_user(JSARGS args) {
  * @return {object} vector - JavaScript object of the form described above.
  */
 static JSVAL context_device_to_user_distance(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     Local<String>_dx = String::New("dx");
     Local<String>_dy = String::New("dy");
     JSOBJ o = args[1]->ToObject();
@@ -2483,8 +2483,8 @@ static JSVAL context_device_to_user_distance(JSARGS args) {
  * @return {object} path - opaque handle to a cairo path
  */
 static JSVAL context_copy_path(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    return External::New(cairo_copy_path(context));
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    return Opaque::New(cairo_copy_path(context));
 }
 
 /**
@@ -2508,8 +2508,8 @@ static JSVAL context_copy_path(JSARGS args) {
  * @return {object} path - opaque handle to a cairo path
  */
 static JSVAL context_copy_path_flat(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    return External::New(cairo_copy_path_flat(context));
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    return Opaque::New(cairo_copy_path_flat(context));
 }
 
 /**
@@ -2527,8 +2527,8 @@ static JSVAL context_copy_path_flat(JSARGS args) {
  * @param {object} path - opaque handle to a cairo path
  */
 static JSVAL context_append_path(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    cairo_path_t *path = (cairo_path_t *)JSEXTERN(args[1]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    cairo_path_t *path = (cairo_path_t *)JSOPAQUE(args[1]);
     cairo_append_path(context, path);
     return Undefined();
 }
@@ -2547,7 +2547,7 @@ static JSVAL context_append_path(JSARGS args) {
  * @param {object} path - opaque handle to a cairo path
  */
 static JSVAL path_destroy(JSARGS args) {
-    cairo_path_t *path = (cairo_path_t *)JSEXTERN(args[0]);
+    cairo_path_t *path = (cairo_path_t *)JSOPAQUE(args[0]);
     cairo_path_destroy(path);
     return Undefined();
 }
@@ -2567,7 +2567,7 @@ static JSVAL path_destroy(JSARGS args) {
  * @return {boolean} hasPoint - true if a current point is defined.
  */
 static JSVAL context_has_current_point(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     return cairo_has_current_point(context) ? True() : False();
 }
 
@@ -2599,7 +2599,7 @@ static JSVAL context_has_current_point(JSARGS args) {
  * @return {object} point - object of the form described above.
  */
 static JSVAL context_get_current_point(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     double x,y;
     
     cairo_get_current_point(context, &x, &y);
@@ -2621,7 +2621,7 @@ static JSVAL context_get_current_point(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_new_path(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_new_path(context);
     return Undefined();
 }
@@ -2644,7 +2644,7 @@ static JSVAL context_new_path(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_new_sub_path(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_new_sub_path(context);
     return Undefined();
 }
@@ -2667,7 +2667,7 @@ static JSVAL context_new_sub_path(JSARGS args) {
  * @param {object} context - opaque handle to a cairo context.
  */
 static JSVAL context_close_path(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_close_path(context);
     return Undefined();
 }
@@ -2709,7 +2709,7 @@ static JSVAL context_close_path(JSARGS args) {
  * @param {number} angle2 - end angle in radians.
  */
 static JSVAL context_arc(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_arc(context,
               args[1]->NumberValue(),   // xc
               args[2]->NumberValue(),   // yc
@@ -2741,7 +2741,7 @@ static JSVAL context_arc(JSARGS args) {
  * @param {number} angle2 - end angle in radians.
  */
 static JSVAL context_arc_negative(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_arc_negative(context,
               args[1]->NumberValue(),   // xc
               args[2]->NumberValue(),   // yc
@@ -2774,7 +2774,7 @@ static JSVAL context_arc_negative(JSARGS args) {
  * @param {number} y3 - y coordinate of the third control point.
  */
 static JSVAL context_curve_to(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_curve_to(context,
               args[1]->NumberValue(),   // x1
               args[2]->NumberValue(),   // y1
@@ -2804,7 +2804,7 @@ static JSVAL context_curve_to(JSARGS args) {
  * @param {number} y - y coordinate of the end of the new line.
  */
 static JSVAL context_line_to(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_line_to(context,
               args[1]->NumberValue(),   // x
               args[2]->NumberValue()   // y
@@ -2830,7 +2830,7 @@ static JSVAL context_line_to(JSARGS args) {
  * @param {number} y - y coordinate of the end of the new position.
  */
 static JSVAL context_move_to(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     
     cairo_move_to(context,
               args[1]->NumberValue(),   // x
@@ -2864,7 +2864,7 @@ static JSVAL context_move_to(JSARGS args) {
  * @param {number} h - height of the rectangle.
  */
 static JSVAL context_rectangle(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     
     cairo_rectangle(context,
               args[1]->NumberValue(),  // x
@@ -2900,7 +2900,7 @@ static JSVAL context_rectangle(JSARGS args) {
  * @param {array} glyphs - array of objects as described above.
  */
 static JSVAL context_glyph_path(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     Handle<Array>glyphs = Handle<Array>::Cast(args[1]->ToObject());
     int num_glyphs = glyphs->Length();
     cairo_glyph_t *c_glyphs = new cairo_glyph_t[num_glyphs];
@@ -2941,7 +2941,7 @@ static JSVAL context_glyph_path(JSARGS args) {
  * @param {string} str - text
  */
 static JSVAL context_text_path(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     String::Utf8Value str(args[1]->ToString());
     cairo_text_path(context, *str);
     return Undefined();
@@ -2971,7 +2971,7 @@ static JSVAL context_text_path(JSARGS args) {
  * @param {number} dy3 - y offset to the third control point.
  */
 static JSVAL context_rel_curve_to(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_rel_curve_to(context,
               args[1]->NumberValue(),   // dx1
               args[2]->NumberValue(),   // dy1
@@ -3003,7 +3003,7 @@ static JSVAL context_rel_curve_to(JSARGS args) {
  * @param {number} dy - y offset to the end of the new line.
  */
 static JSVAL context_rel_line_to(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_rel_line_to(context,
               args[1]->NumberValue(),   // dx
               args[2]->NumberValue()    // dy
@@ -3031,7 +3031,7 @@ static JSVAL context_rel_line_to(JSARGS args) {
  * @param {number} dy - y offset to the end of the new position.
  */
 static JSVAL context_rel_move_to(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     
     cairo_rel_move_to(context,
               args[1]->NumberValue(),   // dx
@@ -3068,7 +3068,7 @@ static JSVAL context_rel_move_to(JSARGS args) {
  * @return {object} extents - see object description above.
  */
 static JSVAL context_path_extents(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     double x1,y1, x2,y2;
     cairo_path_extents(context, &x1,&y1, &x2,&y2);
     
@@ -3124,7 +3124,7 @@ static JSVAL context_path_extents(JSARGS args) {
  * @param {int} weight - the font weight for the font.
  */
 static JSVAL context_select_font_face(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     String::Utf8Value family(args[1]->ToString());
     cairo_select_font_face(context, *family, (cairo_font_slant_t)args[2]->IntegerValue(), (cairo_font_weight_t)args[3]->IntegerValue());
     return Undefined();
@@ -3147,7 +3147,7 @@ static JSVAL context_select_font_face(JSARGS args) {
  * @param {number} size - the new font size, in user space units.
  */
 static JSVAL context_set_font_size(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_set_font_size(context, args[1]->NumberValue());
     return Undefined();
 }
@@ -3167,8 +3167,8 @@ static JSVAL context_set_font_size(JSARGS args) {
  * @param {object} matrix - opaque handle to a cairo matrix.
  */
 static JSVAL context_set_font_matrix(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[1]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[1]);
     cairo_set_font_matrix(context, matrix);
     return Undefined();
 }
@@ -3188,10 +3188,10 @@ static JSVAL context_set_font_matrix(JSARGS args) {
  * @return {object} matrix - opaque handle to a cairo matrix.
  */
 static JSVAL context_get_font_matrix(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_matrix_t *matrix = new cairo_matrix_t;
     cairo_get_font_matrix(context, matrix);
-    return External::New(matrix);
+    return Opaque::New(matrix);
 }
 
 /**
@@ -3217,8 +3217,8 @@ static JSVAL context_get_font_matrix(JSARGS args) {
  * @param {object} options - opaque handle to a cairo font options object.
  */
 static JSVAL context_set_font_options(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[1]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSOPAQUE(args[1]);
     cairo_set_font_options(context, options);
     return Undefined();
 }
@@ -3246,10 +3246,10 @@ static JSVAL context_set_font_options(JSARGS args) {
  * @return {object} options - opaque handle to a cairo font options object.
  */
 static JSVAL context_get_font_options(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_font_options_t *options = cairo_font_options_create();
     cairo_get_font_options(context, options);
-    return External::New(options);
+    return Opaque::New(options);
 }
 
 /**
@@ -3275,8 +3275,8 @@ static JSVAL context_get_font_options(JSARGS args) {
  * @param {object} face - opaque handle to a cairo font face object.
  */
 static JSVAL context_set_font_face(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    cairo_font_face_t *face = (cairo_font_face_t *)JSEXTERN(args[1]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    cairo_font_face_t *face = (cairo_font_face_t *)JSOPAQUE(args[1]);
     cairo_set_font_face(context, face);
     return Undefined();
 }
@@ -3310,8 +3310,8 @@ static JSVAL context_set_font_face(JSARGS args) {
  * @return {object} font_face  - opaque handle to a cairo font face object.
  */
 static JSVAL context_get_font_face(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    return External::New(cairo_get_font_face(context));
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    return Opaque::New(cairo_get_font_face(context));
 }
 
 /**
@@ -3337,8 +3337,8 @@ static JSVAL context_get_font_face(JSARGS args) {
  * @param {object} scaled_font - opaque handle to a cairo scaled font object.
  */
 static JSVAL context_set_scaled_font(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[1]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSOPAQUE(args[1]);
     cairo_set_scaled_font(context, scaled_font);
     return Undefined();
 }
@@ -3370,8 +3370,8 @@ static JSVAL context_set_scaled_font(JSARGS args) {
  * @return {object} scaled_font  - opaque handle to a cairo scaled font object.
  */
 static JSVAL context_get_scaled_font(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
-    return External::New(cairo_get_scaled_font(context));
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
+    return Opaque::New(cairo_get_scaled_font(context));
 }
 
 /**
@@ -3393,7 +3393,7 @@ static JSVAL context_get_scaled_font(JSARGS args) {
  * @param {string} text - text to render.
  */
 static JSVAL context_show_text(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     String::Utf8Value text(args[1]->ToString());
     cairo_show_text(context, *text);
     return Undefined();
@@ -3422,7 +3422,7 @@ static JSVAL context_show_text(JSARGS args) {
  * @param {array} glyphs - array of objects as described above.
  */
 static JSVAL context_show_glyphs(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     Handle<Array>glyphs = Handle<Array>::Cast(args[1]->ToObject());
     int num_glyphs = glyphs->Length();
     cairo_glyph_t *c_glyphs = new cairo_glyph_t[num_glyphs];
@@ -3478,7 +3478,7 @@ static JSVAL context_show_glyphs(JSARGS args) {
  * @param {int} cluster_flags - currently 0 or cairo.TEXT_CLUSTER_FLAG_BACKWARD.
  */
 static JSVAL context_show_text_glyphs(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     String::Utf8Value text(args[1]->ToString());
     Handle<Array>glyphs = Handle<Array>::Cast(args[2]->ToObject());
     int num_glyphs = glyphs->Length();
@@ -3532,7 +3532,7 @@ static JSVAL context_show_text_glyphs(JSARGS args) {
  * @return {object} extents - object as described above.
  */
 static JSVAL context_font_extents(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     cairo_font_extents_t extents;
     cairo_font_extents(context, &extents);
     JSOBJ o = Object::New();
@@ -3571,7 +3571,7 @@ static JSVAL context_font_extents(JSARGS args) {
  * @return {object} extents - object as described above.
  */
 static JSVAL context_text_extents(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     String::Utf8Value text(args[1]->ToString());
     cairo_text_extents_t extents;
     cairo_text_extents(context, *text, &extents);
@@ -3624,7 +3624,7 @@ static JSVAL context_text_extents(JSARGS args) {
  * @return {object} extents - object as described above.
  */
 static JSVAL context_glyph_extents(JSARGS args) {
-    cairo_t *context = (cairo_t *) JSEXTERN(args[0]);
+    cairo_t *context = (cairo_t *) JSOPAQUE(args[0]);
     Handle<Array>glyphs = Handle<Array>::Cast(args[2]->ToObject());
     int num_glyphs = glyphs->Length();
     cairo_glyph_t *c_glyphs = new cairo_glyph_t[num_glyphs];
@@ -3699,7 +3699,7 @@ static JSVAL context_glyph_extents(JSARGS args) {
 static JSVAL toy_font_face_create(JSARGS args) {
     String::Utf8Value family(args[0]->ToString());
     cairo_font_face_t *font_face = cairo_toy_font_face_create(*family, (cairo_font_slant_t)args[1]->IntegerValue(), (cairo_font_weight_t)args[2]->IntegerValue());
-    return External::New(font_face);
+    return Opaque::New(font_face);
 }
 #endif
 
@@ -3727,7 +3727,7 @@ static JSVAL toy_font_face_create(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 8
 static JSVAL toy_font_face_get_family(JSARGS args) {
-    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSOPAQUE(args[0]);
     return String::New(cairo_toy_font_face_get_family(font_face));
 }
 #endif
@@ -3762,7 +3762,7 @@ static JSVAL toy_font_face_get_family(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 8
 static JSVAL toy_font_face_get_slant(JSARGS args) {
-    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSOPAQUE(args[0]);
     return Integer::New(cairo_toy_font_face_get_slant(font_face));
 }
 #endif
@@ -3796,7 +3796,7 @@ static JSVAL toy_font_face_get_slant(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 8
 static JSVAL toy_font_face_get_weight(JSARGS args) {
-    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSOPAQUE(args[0]);
     return Integer::New(cairo_toy_font_face_get_weight(font_face));
 }
 #endif
@@ -3820,8 +3820,8 @@ static JSVAL toy_font_face_get_weight(JSARGS args) {
  * @return {object} font_face - opaque handle to the referenced cairo font face object.
  */
 static JSVAL font_face_reference(JSARGS args) {
-    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
-    return External::New(cairo_font_face_reference(font_face));
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSOPAQUE(args[0]);
+    return Opaque::New(cairo_font_face_reference(font_face));
 }
 
 /**
@@ -3838,7 +3838,7 @@ static JSVAL font_face_reference(JSARGS args) {
  * @param {object} font_face - opaque handle to a cairo font face object.
  */
 static JSVAL font_face_destroy(JSARGS args) {
-    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSOPAQUE(args[0]);
     cairo_font_face_destroy(font_face);
     return Undefined();
 }
@@ -3856,7 +3856,7 @@ static JSVAL font_face_destroy(JSARGS args) {
  * @return {int} status - cairo.STATUS_SUCCESS or another error such as cairo.STATUS_NO_MEMORY.
  */
 static JSVAL font_face_status(JSARGS args) {
-    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSOPAQUE(args[0]);
     return Integer::New(cairo_font_face_status(font_face));
 }
 
@@ -3894,7 +3894,7 @@ static JSVAL font_face_status(JSARGS args) {
  * @return {int} type - one of the above types.
  */
 static JSVAL font_face_get_type(JSARGS args) {
-    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSOPAQUE(args[0]);
     return Integer::New(cairo_font_face_get_type(font_face));
 }
 
@@ -3911,7 +3911,7 @@ static JSVAL font_face_get_type(JSARGS args) {
  * @return {int} count - current reference count of font_face.  If a nil font_face, 0 will be returned.
  */
 static JSVAL font_face_get_reference_count(JSARGS args) {
-    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSOPAQUE(args[0]);
     return Integer::New(cairo_font_face_get_reference_count(font_face));
 }
 
@@ -3947,11 +3947,11 @@ static JSVAL font_face_get_reference_count(JSARGS args) {
  * @return {object} scaled_font - opaque handle to a scaled font.
  */
 static JSVAL scaled_font_create(JSARGS args) {
-    cairo_font_face_t *font_face = (cairo_font_face_t *)JSEXTERN(args[0]);
-    cairo_matrix_t *font_matrix = (cairo_matrix_t *) JSEXTERN(args[1]);
-    cairo_matrix_t *ctm = (cairo_matrix_t *) JSEXTERN(args[2]);
-    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[3]);
-    return External::New(cairo_scaled_font_create(font_face, font_matrix, ctm, options));
+    cairo_font_face_t *font_face = (cairo_font_face_t *)JSOPAQUE(args[0]);
+    cairo_matrix_t *font_matrix = (cairo_matrix_t *) JSOPAQUE(args[1]);
+    cairo_matrix_t *ctm = (cairo_matrix_t *) JSOPAQUE(args[2]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSOPAQUE(args[3]);
+    return Opaque::New(cairo_scaled_font_create(font_face, font_matrix, ctm, options));
 }
 
 /**
@@ -3971,8 +3971,8 @@ static JSVAL scaled_font_create(JSARGS args) {
  * @return {object} scaled_font - opaque handle to referenced scaled font.
  */
 static JSVAL scaled_font_reference(JSARGS args) {
-    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
-    return External::New(cairo_scaled_font_reference(scaled_font));
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSOPAQUE(args[0]);
+    return Opaque::New(cairo_scaled_font_reference(scaled_font));
 }
 
 /**
@@ -3989,7 +3989,7 @@ static JSVAL scaled_font_reference(JSARGS args) {
  * @param {object} scaled_font - opaque handle to a cairo scaled_font object.
  */
 static JSVAL scaled_font_destroy(JSARGS args) {
-    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSOPAQUE(args[0]);
     cairo_scaled_font_destroy(scaled_font);
     return Undefined();
 }
@@ -4008,7 +4008,7 @@ static JSVAL scaled_font_destroy(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 4
 static JSVAL scaled_font_get_reference_count(JSARGS args) {
-    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSOPAQUE(args[0]);
     return Integer::New(cairo_scaled_font_get_reference_count(scaled_font));
 }
 #endif
@@ -4026,7 +4026,7 @@ static JSVAL scaled_font_get_reference_count(JSARGS args) {
  * @return {int} status - cairo.STATUS_SUCCESS or another error such as cairo.STATUS_NO_MEMORY.
  */
 static JSVAL scaled_font_status(JSARGS args) {
-    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSOPAQUE(args[0]);
     return Integer::New(cairo_scaled_font_status(scaled_font));
 }
 
@@ -4051,7 +4051,7 @@ static JSVAL scaled_font_status(JSARGS args) {
  * @return {object} extents - object as described above.
  */
 static JSVAL scaled_font_extents(JSARGS args) {
-    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSOPAQUE(args[0]);
     cairo_font_extents_t extents;
     cairo_scaled_font_extents(scaled_font, &extents);
     JSOBJ o = Object::New();
@@ -4091,7 +4091,7 @@ static JSVAL scaled_font_extents(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 2
 static JSVAL scaled_font_text_extents(JSARGS args) {
-    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSOPAQUE(args[0]);
     String::Utf8Value text(args[1]->ToString());
     cairo_text_extents_t extents;
     cairo_scaled_font_text_extents(scaled_font, *text, &extents);
@@ -4145,7 +4145,7 @@ static JSVAL scaled_font_text_extents(JSARGS args) {
  * @return {object} extents - object as described above.
  */
 static JSVAL scaled_font_glyph_extents(JSARGS args) {
-    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSOPAQUE(args[0]);
     Handle<Array>glyphs = Handle<Array>::Cast(args[2]->ToObject());
     int num_glyphs = glyphs->Length();
     cairo_glyph_t *c_glyphs = new cairo_glyph_t[num_glyphs];
@@ -4191,8 +4191,8 @@ static JSVAL scaled_font_glyph_extents(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 2
 static JSVAL scaled_font_get_font_face(JSARGS args) {
-    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
-    return External::New(cairo_scaled_font_get_font_face(scaled_font));
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSOPAQUE(args[0]);
+    return Opaque::New(cairo_scaled_font_get_font_face(scaled_font));
 }
 #endif
 
@@ -4218,10 +4218,10 @@ static JSVAL scaled_font_get_font_face(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 2
 static JSVAL scaled_font_get_font_options(JSARGS args) {
-    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSOPAQUE(args[0]);
     cairo_font_options_t *options = cairo_font_options_create();
     cairo_scaled_font_get_font_options(scaled_font, options);
-    return External::New(options);
+    return Opaque::New(options);
 }
 #endif
 
@@ -4241,10 +4241,10 @@ static JSVAL scaled_font_get_font_options(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 2
 static JSVAL scaled_font_get_font_matrix(JSARGS args) {
-    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSOPAQUE(args[0]);
     cairo_matrix_t *matrix = new cairo_matrix_t;
     cairo_scaled_font_get_font_matrix(scaled_font, matrix);
-    return External::New(matrix);
+    return Opaque::New(matrix);
 }
 #endif
 
@@ -4266,10 +4266,10 @@ static JSVAL scaled_font_get_font_matrix(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 2
 static JSVAL scaled_font_get_ctm(JSARGS args) {
-    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSOPAQUE(args[0]);
     cairo_matrix_t *matrix = new cairo_matrix_t;
     cairo_scaled_font_get_ctm(scaled_font, matrix);
-    return External::New(matrix);
+    return Opaque::New(matrix);
 }
 #endif
 
@@ -4293,10 +4293,10 @@ static JSVAL scaled_font_get_ctm(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 8
 static JSVAL scaled_font_get_scale_matrix(JSARGS args) {
-    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSOPAQUE(args[0]);
     cairo_matrix_t *matrix = new cairo_matrix_t;
     cairo_scaled_font_get_scale_matrix(scaled_font, matrix);
-    return External::New(matrix);
+    return Opaque::New(matrix);
 }
 #endif
 
@@ -4336,7 +4336,7 @@ static JSVAL scaled_font_get_scale_matrix(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 2
 static JSVAL scaled_font_get_type(JSARGS args) {
-    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSEXTERN(args[0]);
+    cairo_scaled_font_t *scaled_font = (cairo_scaled_font_t *)JSOPAQUE(args[0]);
     return Integer::New(cairo_scaled_font_get_type(scaled_font));
 }
 #endif
@@ -4361,7 +4361,7 @@ static JSVAL scaled_font_get_type(JSARGS args) {
  * @return {object} options - opaque handle to a font options object.
  */
 static JSVAL font_options_create(JSARGS args) {
-    return External::New(cairo_font_options_create());
+    return Opaque::New(cairo_font_options_create());
 }
 
 /**
@@ -4381,8 +4381,8 @@ static JSVAL font_options_create(JSARGS args) {
  * @return {object} copy - opaque handle to a copy of the original font options object.
  */
 static JSVAL font_options_copy(JSARGS args) {
-    cairo_font_options_t *original = (cairo_font_options_t *)JSEXTERN(args[0]);
-    return External::New(cairo_font_options_copy(original));
+    cairo_font_options_t *original = (cairo_font_options_t *)JSOPAQUE(args[0]);
+    return Opaque::New(cairo_font_options_copy(original));
 }
 
 /**
@@ -4398,7 +4398,7 @@ static JSVAL font_options_copy(JSARGS args) {
  * @return 
  */
 static JSVAL font_options_destroy(JSARGS args) {
-    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSOPAQUE(args[0]);
     cairo_font_options_destroy(options);
     return Undefined();
 }
@@ -4416,7 +4416,7 @@ static JSVAL font_options_destroy(JSARGS args) {
  * @return {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_NO_MEMORY.
  */
 static JSVAL font_options_status(JSARGS args) {
-    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSOPAQUE(args[0]);
     return Integer::New(cairo_font_options_status(options));
 }
 
@@ -4435,8 +4435,8 @@ static JSVAL font_options_status(JSARGS args) {
  * @param {object} other - opaque handle to a font options object.
  */
 static JSVAL font_options_merge(JSARGS args) {
-    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
-    cairo_font_options_t *other = (cairo_font_options_t *)JSEXTERN(args[1]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSOPAQUE(args[0]);
+    cairo_font_options_t *other = (cairo_font_options_t *)JSOPAQUE(args[1]);
     cairo_font_options_merge(options, other);
     return Undefined();
 }
@@ -4454,7 +4454,7 @@ static JSVAL font_options_merge(JSARGS args) {
  * @return {int} hash - the hash value for the font options object, cast to a 32-bit value.
  */
 static JSVAL font_options_hash(JSARGS args) {
-    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSOPAQUE(args[0]);
     return Integer::New(cairo_font_options_hash(options));
 }
 
@@ -4472,8 +4472,8 @@ static JSVAL font_options_hash(JSARGS args) {
  * @return {boolean} is_equal - true if the two font options objects are equal.
  */
 static JSVAL font_options_equal(JSARGS args) {
-    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
-    cairo_font_options_t *other = (cairo_font_options_t *)JSEXTERN(args[1]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSOPAQUE(args[0]);
+    cairo_font_options_t *other = (cairo_font_options_t *)JSOPAQUE(args[1]);
     return cairo_font_options_equal(options, other) ? True() : False();
 }
 
@@ -4502,7 +4502,7 @@ static JSVAL font_options_equal(JSARGS args) {
  * @param {int} mode - one of the above modes.
  */
 static JSVAL font_options_set_antialias(JSARGS args) {
-    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSOPAQUE(args[0]);
     cairo_font_options_set_antialias(options, (cairo_antialias_t)args[1]->IntegerValue());
     return Undefined();
 }
@@ -4529,7 +4529,7 @@ static JSVAL font_options_set_antialias(JSARGS args) {
  * @return {int} mode - one of the above modes.
  */
 static JSVAL font_options_get_antialias(JSARGS args) {
-    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSOPAQUE(args[0]);
     return Integer::New(cairo_font_options_get_antialias(options));
 }
 
@@ -4556,7 +4556,7 @@ static JSVAL font_options_get_antialias(JSARGS args) {
  * @return {int} subpixel_order - one of the above values.
  */
 static JSVAL font_options_set_subpixel_order(JSARGS args) {
-    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSOPAQUE(args[0]);
     cairo_font_options_set_subpixel_order(options, (cairo_subpixel_order_t)args[1]->IntegerValue());
     return Undefined();
 }
@@ -4582,7 +4582,7 @@ static JSVAL font_options_set_subpixel_order(JSARGS args) {
  * @return {int} subpixel_order - one of the above values.
  */
 static JSVAL font_options_get_subpixel_order(JSARGS args) {
-    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSOPAQUE(args[0]);
     return Integer::New(cairo_font_options_get_subpixel_order(options));
 }
 
@@ -4609,7 +4609,7 @@ static JSVAL font_options_get_subpixel_order(JSARGS args) {
  * @return {int} hint_style - one of the above values.
  */
 static JSVAL font_options_set_hint_style(JSARGS args) {
-    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSOPAQUE(args[0]);
     cairo_font_options_set_hint_style(options, (cairo_hint_style_t)args[1]->IntegerValue());
     return Undefined();
 }
@@ -4635,7 +4635,7 @@ static JSVAL font_options_set_hint_style(JSARGS args) {
  * @return {int} hint_style - one of the above values.
  */
 static JSVAL font_options_get_hint_style(JSARGS args) {
-    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSOPAQUE(args[0]);
     return Integer::New(cairo_font_options_get_hint_style(options));
 }
 
@@ -4662,7 +4662,7 @@ static JSVAL font_options_get_hint_style(JSARGS args) {
  * @return {int} hint_metrics - one of the above values.
  */
 static JSVAL font_options_set_hint_metrics(JSARGS args) {
-    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSOPAQUE(args[0]);
     cairo_font_options_set_hint_metrics(options, (cairo_hint_metrics_t)args[1]->IntegerValue());
     return Undefined();
 }
@@ -4686,7 +4686,7 @@ static JSVAL font_options_set_hint_metrics(JSARGS args) {
  * @return {int} hint_metrics - one of the above values.
  */
 static JSVAL font_options_get_hint_metrics(JSARGS args) {
-    cairo_font_options_t *options = (cairo_font_options_t *)JSEXTERN(args[0]);
+    cairo_font_options_t *options = (cairo_font_options_t *)JSOPAQUE(args[0]);
     return Integer::New(cairo_font_options_get_hint_metrics(options));
 }
 
@@ -4710,7 +4710,7 @@ static JSVAL font_options_get_hint_metrics(JSARGS args) {
  */
 static JSVAL image_surface_create_from_png(JSARGS args) {
     String::Utf8Value filename(args[0]->ToString());
-    return External::New(cairo_image_surface_create_from_png(*filename));
+    return Opaque::New(cairo_image_surface_create_from_png(*filename));
 }
 
 /**
@@ -4732,7 +4732,7 @@ static JSVAL image_surface_create_from_png(JSARGS args) {
  * @return {int} status - either cairo.STATUS_SUCCESS, or one of the above values if an error occurred.
  */
 static JSVAL surface_write_to_png(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
     String::Utf8Value filename(args[1]->ToString());
     return Integer::New(cairo_surface_write_to_png(surface, *filename));
 }
@@ -4764,7 +4764,7 @@ static JSVAL surface_write_to_png(JSARGS args) {
  * @param {number} blue - blue component of color.
  */
 static JSVAL pattern_add_color_stop_rgb(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     cairo_pattern_add_color_stop_rgb(
         pattern,
         args[1]->NumberValue(),     // offset
@@ -4800,7 +4800,7 @@ static JSVAL pattern_add_color_stop_rgb(JSARGS args) {
  * @param {number} alpha - alpha component of color.
  */
 static JSVAL pattern_add_color_stop_rgba(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     cairo_pattern_add_color_stop_rgba(
         pattern,
         args[1]->NumberValue(),     // offset
@@ -4829,7 +4829,7 @@ static JSVAL pattern_add_color_stop_rgba(JSARGS args) {
  * This function will throw an exception if the pattern is not a gradient pattern.
  */
 static JSVAL pattern_get_stop_color_count(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     int count;
     cairo_status_t status = cairo_pattern_get_color_stop_count(pattern, &count);
     if (status == CAIRO_STATUS_SUCCESS) {
@@ -4867,7 +4867,7 @@ static JSVAL pattern_get_stop_color_count(JSARGS args) {
  * This function will throw an exception if the index is invalid or the pattern is not a gradient pattern.
  */
 static JSVAL pattern_get_color_stop_rgba(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     double offset, red, green, blue, alpha;
     cairo_status_t status = cairo_pattern_get_color_stop_rgba(pattern, args[1]->IntegerValue(), &offset, &red, &green, &blue, &alpha);
     if (status != CAIRO_STATUS_SUCCESS) {
@@ -4903,7 +4903,7 @@ static JSVAL pattern_get_color_stop_rgba(JSARGS args) {
  * @return {object} pattern - opaque handle to newly created pattern.
  */
 static JSVAL pattern_create_rgb(JSARGS args) {
-    return External::New(cairo_pattern_create_rgb(
+    return Opaque::New(cairo_pattern_create_rgb(
         args[1]->NumberValue(),     // red
         args[2]->NumberValue(),     // green
         args[3]->NumberValue()      // blue
@@ -4932,7 +4932,7 @@ static JSVAL pattern_create_rgb(JSARGS args) {
  * @return {object} pattern - opaque handle to newly created pattern.
  */
 static JSVAL pattern_create_rgba(JSARGS args) {
-    return External::New(cairo_pattern_create_rgba(
+    return Opaque::New(cairo_pattern_create_rgba(
         args[1]->NumberValue(),     // red
         args[2]->NumberValue(),     // green
         args[3]->NumberValue(),     // blue
@@ -4964,7 +4964,7 @@ static JSVAL pattern_create_rgba(JSARGS args) {
  * This function will throw an exception if the pattern is not a solid color pattern.
  */
 static JSVAL pattern_get_rgba(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     double red, green, blue, alpha;
     cairo_status_t status = cairo_pattern_get_rgba(pattern, &red, &green, &blue, &alpha);
     if (status != CAIRO_STATUS_SUCCESS) {
@@ -4995,8 +4995,8 @@ static JSVAL pattern_get_rgba(JSARGS args) {
  * @return {object} pattern - opaque handle to a cairo pattern.
  */
 static JSVAL pattern_create_for_surface(JSARGS args) {
-    cairo_surface_t *surface = (cairo_surface_t *) JSEXTERN(args[0]);
-    return External::New(cairo_pattern_create_for_surface(surface));
+    cairo_surface_t *surface = (cairo_surface_t *) JSOPAQUE(args[0]);
+    return Opaque::New(cairo_pattern_create_for_surface(surface));
 }
 
 /**
@@ -5018,13 +5018,13 @@ static JSVAL pattern_create_for_surface(JSARGS args) {
  * This function will throw an exception if the pattern is not a surface pattern.
  */
 static JSVAL pattern_get_surface(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     cairo_surface_t *surface;
     cairo_status_t status = cairo_pattern_get_surface(pattern, &surface);
     if (status != CAIRO_STATUS_SUCCESS) {
         ThrowException(String::New(cairo_status_to_string(status)));
     }
-    return External::New(surface);
+    return Opaque::New(surface);
 }
 
 /**
@@ -5051,7 +5051,7 @@ static JSVAL pattern_get_surface(JSARGS args) {
  * @return {object} pattern - opaque handle to newly created pattern.
  */
 static JSVAL pattern_create_linear(JSARGS args) {
-    return External::New(cairo_pattern_create_linear(
+    return Opaque::New(cairo_pattern_create_linear(
         args[0]->NumberValue(),     // x0
         args[1]->NumberValue(),     // y0
         args[2]->NumberValue(),     // x1
@@ -5083,7 +5083,7 @@ static JSVAL pattern_create_linear(JSARGS args) {
  * This function will throw an exception if the pattern is not a linear gradient pattern.
  */
 static JSVAL pattern_get_linear_points(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     double x0,y0, x1,y1;
     cairo_status_t status = cairo_pattern_get_linear_points(pattern, &x0,&y0, &x1,&y1);
     if (status != CAIRO_STATUS_SUCCESS) {
@@ -5123,7 +5123,7 @@ static JSVAL pattern_get_linear_points(JSARGS args) {
  * @return {object} pattern - opaque handle to newly created pattern.
  */
 static JSVAL pattern_create_radial(JSARGS args) {
-    return External::New(cairo_pattern_create_radial(
+    return Opaque::New(cairo_pattern_create_radial(
         args[0]->NumberValue(),     // cx0
         args[1]->NumberValue(),     // cy0
         args[2]->NumberValue(),     // radius0
@@ -5159,7 +5159,7 @@ static JSVAL pattern_create_radial(JSARGS args) {
  * This function will throw an exception if the pattern is not a solid color pattern.
  */
 static JSVAL pattern_get_radial_circles(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     double x0,y0,r0, x1,y1,r1;
     cairo_status_t status = cairo_pattern_get_radial_circles(pattern, &x0,&y0,&r0, &x1,&y1,&r1);
     if (status != CAIRO_STATUS_SUCCESS) {
@@ -5192,8 +5192,8 @@ static JSVAL pattern_get_radial_circles(JSARGS args) {
  * @return {object} pattern - opaque handle to the referenced cairo pattern.
  */
 static JSVAL pattern_reference(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
-    return External::New(cairo_pattern_reference(pattern));
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
+    return Opaque::New(cairo_pattern_reference(pattern));
 }
 
 /**
@@ -5211,7 +5211,7 @@ static JSVAL pattern_reference(JSARGS args) {
  * @return {int} status - cairo.STATUS_SUCCESS, cairo.STATUS_NO_MEMORY, cairo.STATUS_INVALID_MATRIX, or cairo.STATUS_PATTERN_TYPE_MISMATCH.
  */
 static JSVAL pattern_status(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_pattern_status(pattern));
 }
 
@@ -5239,7 +5239,7 @@ static JSVAL pattern_status(JSARGS args) {
  * @param {int} extend - one of the above values.
  */
 static JSVAL pattern_set_extend(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     cairo_pattern_set_extend(pattern, (cairo_extend_t)args[1]->IntegerValue());
     return Undefined();
 }
@@ -5268,7 +5268,7 @@ static JSVAL pattern_set_extend(JSARGS args) {
  * @return {int} extend - one of the above values.
  */
 static JSVAL pattern_get_extend(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_pattern_get_extend(pattern));
     
 }
@@ -5301,7 +5301,7 @@ static JSVAL pattern_get_extend(JSARGS args) {
  * @param {int} filter - one of the above values.
  */
 static JSVAL pattern_set_filter(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     cairo_pattern_set_filter(pattern, (cairo_filter_t)args[1]->IntegerValue());
     return Undefined();
 }
@@ -5330,7 +5330,7 @@ static JSVAL pattern_set_filter(JSARGS args) {
  * @return {int} filter - one of the above values.
  */
 static JSVAL pattern_get_filter(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_pattern_get_filter(pattern));
 }
 
@@ -5362,8 +5362,8 @@ static JSVAL pattern_get_filter(JSARGS args) {
  * @param {object} matrix - opaque handle to a cairo matrix.
  */
 static JSVAL pattern_set_matrix(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[1]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[1]);
     cairo_pattern_set_matrix(pattern, matrix);
     return Undefined();
 }
@@ -5383,10 +5383,10 @@ static JSVAL pattern_set_matrix(JSARGS args) {
  * @return {object} matrix - opaque handle to a cairo matrix.
  */
 static JSVAL pattern_get_matrix(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     cairo_matrix_t *matrix = new cairo_matrix_t;
     cairo_pattern_get_matrix(pattern, matrix);
-    return External::New(matrix);
+    return Opaque::New(matrix);
 }
 
 /**
@@ -5423,7 +5423,7 @@ static JSVAL pattern_get_matrix(JSARGS args) {
  * @return {int} type - one of the above types.
  */
 static JSVAL pattern_get_type(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_pattern_get_type(pattern));
 }
 
@@ -5440,7 +5440,7 @@ static JSVAL pattern_get_type(JSARGS args) {
  * @return {int} count - reference count.
  */
 static JSVAL pattern_get_reference_count(JSARGS args) {
-    cairo_pattern_t *pattern = (cairo_pattern_t *) JSEXTERN(args[0]);
+    cairo_pattern_t *pattern = (cairo_pattern_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_pattern_get_reference_count(pattern));
 }
 
@@ -5474,7 +5474,7 @@ static JSVAL pattern_get_reference_count(JSARGS args) {
 static JSVAL matrix_create(JSARGS args) {
     cairo_matrix_t *matrix = new cairo_matrix_t;
     cairo_matrix_init_identity(matrix);
-    return External::New(matrix);
+    return Opaque::New(matrix);
 }
 
 /**
@@ -5501,7 +5501,7 @@ static JSVAL matrix_create(JSARGS args) {
  * @param {number} y0 - y translation component of the affine transformation.
  */
 static JSVAL matrix_init(JSARGS args) {
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[0]);
     cairo_matrix_init(
         matrix, 
         args[1]->NumberValue(),     // xx
@@ -5531,10 +5531,10 @@ static JSVAL matrix_init(JSARGS args) {
  * @return {object} clone - opaque handle to a new matrix.
  */
 static JSVAL matrix_clone(JSARGS args) {
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[0]);
     cairo_matrix_t *clone = new cairo_matrix_t;
     memcpy(clone, matrix, sizeof(cairo_matrix_t));
-    return External::New(clone);
+    return Opaque::New(clone);
 }
 
 
@@ -5550,7 +5550,7 @@ static JSVAL matrix_clone(JSARGS args) {
  * @param {object} matrix - opaque handle to a matrix.
  */
 static JSVAL matrix_init_identity(JSARGS args) {
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[0]);
     cairo_matrix_init_identity(matrix);
     return Undefined();
 }
@@ -5569,7 +5569,7 @@ static JSVAL matrix_init_identity(JSARGS args) {
  * @param {number} ty - amount to translate in the y direction.
  */
 static JSVAL matrix_init_translate(JSARGS args) {
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[0]);
     cairo_matrix_init_translate(matrix, args[1]->NumberValue(), args[2]->NumberValue());
     return Undefined();
 }
@@ -5588,7 +5588,7 @@ static JSVAL matrix_init_translate(JSARGS args) {
  * @param {number} sy - scake factir in the y direction.
  */
 static JSVAL matrix_init_scale(JSARGS args) {
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[0]);
     cairo_matrix_init_scale(matrix, args[1]->NumberValue(), args[2]->NumberValue());
     return Undefined();
 }
@@ -5610,7 +5610,7 @@ static JSVAL matrix_init_scale(JSARGS args) {
  * @param {number} radians angle of rotation, in radians.
  */
 static JSVAL matrix_init_rotate(JSARGS args) {
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[0]);
     cairo_matrix_init_rotate(matrix, args[1]->NumberValue());
     return Undefined();
 }
@@ -5631,7 +5631,7 @@ static JSVAL matrix_init_rotate(JSARGS args) {
  * @param {number} ty - amount to translate in the y direction.
  */
 static JSVAL matrix_translate(JSARGS args) {
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[0]);
     cairo_matrix_translate(matrix, args[1]->NumberValue(), args[2]->NumberValue());    
     return Undefined();
 }
@@ -5652,7 +5652,7 @@ static JSVAL matrix_translate(JSARGS args) {
  * @param {number} sy - scale factor in the y direction.
  */
 static JSVAL matrix_scale(JSARGS args) {
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[0]);
     cairo_matrix_scale(matrix, args[1]->NumberValue(), args[2]->NumberValue());    
     return Undefined();
 }
@@ -5676,7 +5676,7 @@ static JSVAL matrix_scale(JSARGS args) {
  * @param {number} radians angle of rotation, in radians.
  */
 static JSVAL matrix_rotate(JSARGS args) {
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[0]);
     cairo_matrix_rotate(matrix, args[1]->NumberValue());
     return Undefined();
 }
@@ -5696,7 +5696,7 @@ static JSVAL matrix_rotate(JSARGS args) {
  * @return {int} status - one of cairo.STATUS_SUCCESS or cairo.STATUS_INVALID_MATRIX.
  */
 static JSVAL matrix_invert(JSARGS args) {
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_matrix_invert(matrix));
 }
 
@@ -5718,11 +5718,11 @@ static JSVAL matrix_invert(JSARGS args) {
  * @return {object} matrix - opaque handle to a matrix.
  */
 static JSVAL matrix_multiply(JSARGS args) {
-    cairo_matrix_t *a = (cairo_matrix_t *) JSEXTERN(args[0]);
-    cairo_matrix_t *b = (cairo_matrix_t *) JSEXTERN(args[1]);
+    cairo_matrix_t *a = (cairo_matrix_t *) JSOPAQUE(args[0]);
+    cairo_matrix_t *b = (cairo_matrix_t *) JSOPAQUE(args[1]);
     cairo_matrix_t *result = new cairo_matrix_t;
     cairo_matrix_multiply(result, a, b);
-    return External::New(result);
+    return Opaque::New(result);
 }
 
 /**
@@ -5759,7 +5759,7 @@ static JSVAL matrix_multiply(JSARGS args) {
  * @return {object} vector - object with modified dx,dy values.
  */
 static JSVAL matrix_transform_distance(JSARGS args) {
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[0]);
     Local<String>_dx = String::New("dx");
     Local<String>_dy = String::New("dy");
     JSOBJ o = args[1]->ToObject();
@@ -5792,7 +5792,7 @@ static JSVAL matrix_transform_distance(JSARGS args) {
  * @return {object} point - object with modified x,y values.
  */
 static JSVAL matrix_transform_point(JSARGS args) {
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[0]);
     Local<String>_x = String::New("x");
     Local<String>_y = String::New("y");
     JSOBJ o = args[1]->ToObject();
@@ -5814,7 +5814,7 @@ static JSVAL matrix_transform_point(JSARGS args) {
  * Free resources used by a matrix.
  */
 static JSVAL matrix_destroy(JSARGS args) {
-    cairo_matrix_t *matrix = (cairo_matrix_t *) JSEXTERN(args[0]);
+    cairo_matrix_t *matrix = (cairo_matrix_t *) JSOPAQUE(args[0]);
     delete matrix;
     return Undefined();
 }
@@ -5843,7 +5843,7 @@ static JSVAL matrix_destroy(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_create(JSARGS args) {
-    return External::New(cairo_region_create());
+    return Opaque::New(cairo_region_create());
 }
 #endif
 
@@ -5887,7 +5887,7 @@ static JSVAL region_create_rectangle(JSARGS args) {
         o->Get(_w)->IntegerValue(),
         o->Get(_h)->IntegerValue()
     };
-    return External::New(cairo_region_create_rectangle(&rect));
+    return Opaque::New(cairo_region_create_rectangle(&rect));
 }
 #endif
 
@@ -5938,7 +5938,7 @@ static JSVAL region_create_rectangles(JSARGS args) {
     }
     cairo_region_t *region = cairo_region_create_rectangles(rects, numRectangles);
     delete [] rects;
-    return External::New(region);
+    return Opaque::New(region);
     
 }
 #endif
@@ -5965,8 +5965,8 @@ static JSVAL region_create_rectangles(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_copy(JSARGS args) {
-    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
-    return External::New(cairo_region_copy(region));
+    cairo_region_t *region = (cairo_region_t *) JSOPAQUE(args[0]);
+    return Opaque::New(cairo_region_copy(region));
 }
 #endif
 
@@ -5988,8 +5988,8 @@ static JSVAL region_copy(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_reference(JSARGS args) {
-    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
-    return External::New(cairo_region_reference(region));
+    cairo_region_t *region = (cairo_region_t *) JSOPAQUE(args[0]);
+    return Opaque::New(cairo_region_reference(region));
 }
 #endif
 
@@ -6008,7 +6008,7 @@ static JSVAL region_reference(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_destroy(JSARGS args) {
-    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *region = (cairo_region_t *) JSOPAQUE(args[0]);
     cairo_region_destroy(region);
     return Undefined();
 }
@@ -6030,7 +6030,7 @@ static JSVAL region_destroy(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_status(JSARGS args) {
-    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *region = (cairo_region_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_region_status(region));
 }
 #endif
@@ -6058,7 +6058,7 @@ static JSVAL region_status(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_get_extents(JSARGS args) {
-    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *region = (cairo_region_t *) JSOPAQUE(args[0]);
     cairo_rectangle_int_t rect;
     cairo_region_get_extents(region, &rect);
     
@@ -6087,7 +6087,7 @@ static JSVAL region_get_extents(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_num_rectangles(JSARGS args) {
-    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *region = (cairo_region_t *) JSOPAQUE(args[0]);
     return Integer::New(cairo_region_num_rectangles(region));
 }
 #endif
@@ -6115,7 +6115,7 @@ static JSVAL region_num_rectangles(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_get_rectangle(JSARGS args) {
-    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *region = (cairo_region_t *) JSOPAQUE(args[0]);
     int nth = args[1]->IntegerValue();
     cairo_rectangle_int_t rect;
     cairo_region_get_rectangle(region, nth, &rect);
@@ -6145,7 +6145,7 @@ static JSVAL region_get_rectangle(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_is_empty(JSARGS args) {
-    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *region = (cairo_region_t *) JSOPAQUE(args[0]);
     return cairo_region_is_empty(region) ? True() : False();
 }
 #endif
@@ -6168,7 +6168,7 @@ static JSVAL region_is_empty(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_contains_point(JSARGS args) {
-    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *region = (cairo_region_t *) JSOPAQUE(args[0]);
     return cairo_region_contains_point(region, args[1]->IntegerValue(), args[1]->IntegerValue()) ? True() : False();
 }
 #endif
@@ -6203,7 +6203,7 @@ static JSVAL region_contains_point(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_contains_rectangle(JSARGS args) {
-    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *region = (cairo_region_t *) JSOPAQUE(args[0]);
     Local<String>_x = String::New("x");
     Local<String>_y = String::New("y");
     Local<String>_w = String::New("width");
@@ -6236,8 +6236,8 @@ static JSVAL region_contains_rectangle(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_equal(JSARGS args) {
-    cairo_region_t *a = (cairo_region_t *) JSEXTERN(args[0]);
-    cairo_region_t *b = (cairo_region_t *) JSEXTERN(args[1]);
+    cairo_region_t *a = (cairo_region_t *) JSOPAQUE(args[0]);
+    cairo_region_t *b = (cairo_region_t *) JSOPAQUE(args[1]);
     return cairo_region_equal(a, b) ? True() : False();
 }
 #endif
@@ -6259,7 +6259,7 @@ static JSVAL region_equal(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_translate(JSARGS args) {
-    cairo_region_t *region = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *region = (cairo_region_t *) JSOPAQUE(args[0]);
     cairo_region_translate(region, args[1]->IntegerValue(), args[2]->IntegerValue());
     return Undefined();
 }
@@ -6282,8 +6282,8 @@ static JSVAL region_translate(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_intersect(JSARGS args) {
-    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
-    cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
+    cairo_region_t *dst = (cairo_region_t *) JSOPAQUE(args[0]);
+    cairo_region_t *other = (cairo_region_t *) JSOPAQUE(args[1]);
     return Integer::New(cairo_region_intersect(dst, other));
 }
 #endif
@@ -6312,7 +6312,7 @@ static JSVAL region_intersect(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_intersect_rectangle(JSARGS args) {
-    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *dst = (cairo_region_t *) JSOPAQUE(args[0]);
     Local<String>_x = String::New("x");
     Local<String>_y = String::New("y");
     Local<String>_w = String::New("width");
@@ -6345,8 +6345,8 @@ static JSVAL region_intersect_rectangle(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_subtract(JSARGS args) {
-    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
-    cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
+    cairo_region_t *dst = (cairo_region_t *) JSOPAQUE(args[0]);
+    cairo_region_t *other = (cairo_region_t *) JSOPAQUE(args[1]);
     return Integer::New(cairo_region_subtract(dst, other));
 }
 #endif
@@ -6375,7 +6375,7 @@ static JSVAL region_subtract(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_subtract_rectangle(JSARGS args) {
-    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *dst = (cairo_region_t *) JSOPAQUE(args[0]);
     Local<String>_x = String::New("x");
     Local<String>_y = String::New("y");
     Local<String>_w = String::New("width");
@@ -6408,8 +6408,8 @@ static JSVAL region_subtract_rectangle(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_union(JSARGS args) {
-    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
-    cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
+    cairo_region_t *dst = (cairo_region_t *) JSOPAQUE(args[0]);
+    cairo_region_t *other = (cairo_region_t *) JSOPAQUE(args[1]);
     return Integer::New(cairo_region_union(dst, other));
 }
 #endif
@@ -6438,7 +6438,7 @@ static JSVAL region_union(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_union_rectangle(JSARGS args) {
-    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *dst = (cairo_region_t *) JSOPAQUE(args[0]);
     Local<String>_x = String::New("x");
     Local<String>_y = String::New("y");
     Local<String>_w = String::New("width");
@@ -6473,8 +6473,8 @@ static JSVAL region_union_rectangle(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_xor(JSARGS args) {
-    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
-    cairo_region_t *other = (cairo_region_t *) JSEXTERN(args[1]);
+    cairo_region_t *dst = (cairo_region_t *) JSOPAQUE(args[0]);
+    cairo_region_t *other = (cairo_region_t *) JSOPAQUE(args[1]);
     return Integer::New(cairo_region_xor(dst, other));
 }
 #endif
@@ -6505,7 +6505,7 @@ static JSVAL region_xor(JSARGS args) {
  */
 #if CAIRO_VERSION_MINOR >= 10
 static JSVAL region_xor_rectangle(JSARGS args) {
-    cairo_region_t *dst = (cairo_region_t *) JSEXTERN(args[0]);
+    cairo_region_t *dst = (cairo_region_t *) JSOPAQUE(args[0]);
     Local<String>_x = String::New("x");
     Local<String>_y = String::New("y");
     Local<String>_w = String::New("width");

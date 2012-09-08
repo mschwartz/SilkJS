@@ -33,7 +33,7 @@ static inline CHANDLE *HANDLE (Handle<Value>v) {
         ThrowException(String::New("Handle is NULL"));
         return NULL;
     }
-    CHANDLE *w = (CHANDLE *) JSEXTERN(v);
+    CHANDLE *w = (CHANDLE *) JSOPAQUE(v);
     return w;
 }
 
@@ -80,9 +80,8 @@ static size_t WriteHeaderCallback (void *contents, size_t size, size_t nmemb, vo
  * @return {string} msg - string describing the error.
  */
 static JSVAL error (JSARGS args) {
-    HandleScope scope;
     CURLcode eNumber = (CURLcode) args[0]->IntegerValue();
-    return scope.Close(String::New(curl_easy_strerror(eNumber)));
+    return String::New(curl_easy_strerror(eNumber));
 }
 
 /**
@@ -121,7 +120,7 @@ static JSVAL init (JSARGS args) {
     curl_easy_setopt(curl, CURLOPT_HEADERDATA, (void *) w);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "SilkJS/1.0");
-    return External::New(w);
+    return Opaque::New(w);
 }
 
 /**
@@ -136,17 +135,16 @@ static JSVAL init (JSARGS args) {
  * @return {int} status - 0 for success, otherwise an error code.
  */
 static JSVAL setMethod (JSARGS args) {
-    HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
     String::Utf8Value method(args[1]->ToString());
     if (!strcasecmp(*method, "post")) {
-        return scope.Close(Integer::New(curl_easy_setopt(h->curl, CURLOPT_POST, 1)));
+        return Integer::New(curl_easy_setopt(h->curl, CURLOPT_POST, 1));
     }
     else if (!strcasecmp(*method, "get")) {
-        return scope.Close(Integer::New(curl_easy_setopt(h->curl, CURLOPT_HTTPGET, 1)));
+        return Integer::New(curl_easy_setopt(h->curl, CURLOPT_HTTPGET, 1));
     }
     else {
-        return scope.Close(Integer::New(curl_easy_setopt(h->curl, CURLOPT_CUSTOMREQUEST, *method)));
+        return Integer::New(curl_easy_setopt(h->curl, CURLOPT_CUSTOMREQUEST, *method));
     }
 }
 
@@ -164,10 +162,9 @@ static JSVAL setMethod (JSARGS args) {
  * @return {int} status - 0 for success, otherwise an error code.
  */
 static JSVAL followRedirects (JSARGS args) {
-    HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
     long flag = (long) args[0]->IntegerValue();
-    return scope.Close(Integer::New(curl_easy_setopt(h->curl, CURLOPT_FOLLOWLOCATION, flag)));
+    return Integer::New(curl_easy_setopt(h->curl, CURLOPT_FOLLOWLOCATION, flag));
 }
 
 /**
@@ -190,10 +187,9 @@ static JSVAL followRedirects (JSARGS args) {
  * @return {int} status - 0 for success, otherwise an error code.
  */
 static JSVAL setCookie (JSARGS args) {
-    HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
     String::Utf8Value cookie_string(args[1]->ToString());
-    return scope.Close(Integer::New(curl_easy_setopt(h->curl, CURLOPT_COOKIE, *cookie_string)));
+    return Integer::New(curl_easy_setopt(h->curl, CURLOPT_COOKIE, *cookie_string));
 }
 
 /**
@@ -392,11 +388,10 @@ static JSVAL perform (JSARGS args) {
  * @return {int} status - 200 for OK, etc.
  */
 static JSVAL getResponseCode (JSARGS args) {
-    HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
     long status;
     curl_easy_getinfo(h->curl, CURLINFO_RESPONSE_CODE, &status);
-    return scope.Close(Integer::New(status));
+    return Integer::New(status);
 }
 
 /**
@@ -412,14 +407,13 @@ static JSVAL getResponseCode (JSARGS args) {
  * @return {string} contentType - MIME string / content-type
  */
 static JSVAL getContentType (JSARGS args) {
-    HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
     char *contentType;
     curl_easy_getinfo(h->curl, CURLINFO_CONTENT_TYPE, &contentType);
     if (!contentType) {
         contentType = "";
     }
-    return scope.Close(String::New(contentType));
+    return String::New(contentType);
 }
 
 /**
@@ -457,12 +451,11 @@ static JSVAL getResponseHeaders (JSARGS args) {
  * @return {string} responseText - the response text of the completed CURL request.
  */
 static JSVAL getResponseText (JSARGS args) {
-    HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
     if (!h->size) {
-        return scope.Close(String::New("{}"));
+        return String::New("{}");
     }
-    return scope.Close(String::New(h->memory, h->size));
+    return String::New(h->memory, h->size);
 }
 
 /**
@@ -475,7 +468,6 @@ static JSVAL getResponseText (JSARGS args) {
  * @param {object} handle - CURL handle
  */
 static JSVAL destroy (JSARGS args) {
-    HandleScope scope;
     CHANDLE *h = HANDLE(args[0]);
     if (h->slist) {
         curl_slist_free_all(h->slist);
@@ -492,8 +484,6 @@ static JSVAL destroy (JSARGS args) {
 }
 
 void init_curl_object () {
-    HandleScope scope;
-
     JSOBJT curlObject = ObjectTemplate::New();
     curlObject->Set(String::New("error"), FunctionTemplate::New(error));
     curlObject->Set(String::New("init"), FunctionTemplate::New(init));

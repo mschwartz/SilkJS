@@ -46,7 +46,7 @@ static inline M* HANDLE (Handle<Value>v) {
         ThrowException(String::New("Handle is NULL"));
         return NULL;
     }
-    return (M *) JSEXTERN(v);
+    return (M *) JSOPAQUE(v);
 }
 
 /**
@@ -64,17 +64,16 @@ static inline M* HANDLE (Handle<Value>v) {
  * @return {object} handle - opaque handle used for other memcached methods, or false if an error occurred.
  */
 JSVAL _memcached_connect (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value options(args[0]);
     M *handle = memcached_create(NULL);
     S *servers = memcached_servers_parse(*options);
     if (memcached_server_push(handle, servers) != MEMCACHED_SUCCESS) {
         memcached_server_list_free(servers);
         memcached_free(handle);
-        return scope.Close(False());
+        return False();
     }
     memcached_server_list_free(servers);
-    return scope.Close(External::New(handle));
+    return Opaque::New(handle);
 }
 
 /**
@@ -89,7 +88,6 @@ JSVAL _memcached_connect (JSARGS args) {
  * @param {object} handle - handle to memcached connection.
  */
 JSVAL _memcached_close (JSARGS args) {
-    HandleScope scope;
     M* handle = HANDLE(args[0]);
     memcached_free(handle);
     return Undefined();
@@ -108,10 +106,9 @@ JSVAL _memcached_close (JSARGS args) {
  * @return {string} msg - text of the error message.
  */
 JSVAL _memcached_error (JSARGS args) {
-    HandleScope scope;
     M* handle = HANDLE(args[0]);
     R rc = (R) args[1]->IntegerValue();
-    return scope.Close(String::New(memcached_strerror(handle, rc)));
+    return String::New(memcached_strerror(handle, rc));
 }
 
 /**
@@ -128,7 +125,6 @@ JSVAL _memcached_error (JSARGS args) {
  * @return {object} o - see description at top of the page, or false if an error occurred.
  */
 JSVAL _memcached_get (JSARGS args) {
-    HandleScope scope;
     M* handle = HANDLE(args[0]);
     String::Utf8Value key(args[1]);
     size_t value_length;
@@ -136,14 +132,14 @@ JSVAL _memcached_get (JSARGS args) {
     R rc;
     char *res = memcached_get(handle, *key, strlen(*key), &value_length, &flags, &rc);
     if (!res) {
-        return scope.Close(False());
+        return False();
     }
     JSOBJ o = Object::New();
     o->Set(String::New("value"), String::New(res));
     o->Set(String::New("flags"), Integer::New(flags));
     o->Set(String::New("rc"), Integer::New(rc));
     free(res);
-    return scope.Close(o);
+    return o;
 }
 
 /**
@@ -164,7 +160,6 @@ JSVAL _memcached_get (JSARGS args) {
  * @return {object} o - has of objects of the form described at top of the page, or false if an error occurred.
  */
 JSVAL _memcached_mget (JSARGS args) {
-    HandleScope scope;
     M* handle = HANDLE(args[0]);
     Handle<Array> aKeys = Handle<Array>::Cast(args[1]);
     int numKeys = aKeys->Length();
@@ -193,7 +188,7 @@ JSVAL _memcached_mget (JSARGS args) {
         free(return_value);
         result->Set(String::New(return_key), o);
     }
-    return scope.Close(result);
+    return result;
 }
 
 /**
@@ -217,7 +212,6 @@ JSVAL _memcached_mget (JSARGS args) {
  * @return {int} rc - result code; 0 if no error, otherwise the error code.
  */
 JSVAL _memcached_set (JSARGS args) {
-    HandleScope scope;
     M *handle = HANDLE(args[0]);
     String::Utf8Value key(args[1]);
     String::Utf8Value value(args[2]);
@@ -229,7 +223,7 @@ JSVAL _memcached_set (JSARGS args) {
     if (args.Length() > 4) {
         flags = args[4]->IntegerValue();
     }
-    return scope.Close(Integer::New(memcached_set(handle, *key, strlen(*key), *value, strlen(*value), expiration, flags)));
+    return Integer::New(memcached_set(handle, *key, strlen(*key), *value, strlen(*value), expiration, flags));
 }
 
 /**
@@ -253,7 +247,6 @@ JSVAL _memcached_set (JSARGS args) {
  * @return {int} rc - result code; 0 if no error, otherwise the error code.
  */
 JSVAL _memcached_add (JSARGS args) {
-    HandleScope scope;
     M *handle = HANDLE(args[0]);
     String::Utf8Value key(args[1]);
     String::Utf8Value value(args[2]);
@@ -266,7 +259,7 @@ JSVAL _memcached_add (JSARGS args) {
         flags = args[4]->IntegerValue();
     }
 
-    return scope.Close(Integer::New(memcached_add(handle, *key, strlen(*key), *value, strlen(*value), expiration, flags)));
+    return Integer::New(memcached_add(handle, *key, strlen(*key), *value, strlen(*value), expiration, flags));
 }
 
 /**
@@ -290,7 +283,6 @@ JSVAL _memcached_add (JSARGS args) {
  * @return {int} rc - result code; 0 if no error, otherwise the error code.
  */
 JSVAL _memcached_replace (JSARGS args) {
-    HandleScope scope;
     M *handle = HANDLE(args[0]);
     String::Utf8Value key(args[1]);
     String::Utf8Value value(args[2]);
@@ -302,7 +294,7 @@ JSVAL _memcached_replace (JSARGS args) {
     if (args.Length() > 4) {
         flags = args[4]->IntegerValue();
     }
-    return scope.Close(Integer::New(memcached_replace(handle, *key, strlen(*key), *value, strlen(*value), expiration, flags)));
+    return Integer::New(memcached_replace(handle, *key, strlen(*key), *value, strlen(*value), expiration, flags));
 }
 
 /**
@@ -326,7 +318,6 @@ JSVAL _memcached_replace (JSARGS args) {
  * @return {int} rc - result code; 0 if no error, otherwise the error code.
  */
 JSVAL _memcached_prepend (JSARGS args) {
-    HandleScope scope;
     M *handle = HANDLE(args[0]);
     String::Utf8Value key(args[1]);
     String::Utf8Value value(args[2]);
@@ -338,7 +329,7 @@ JSVAL _memcached_prepend (JSARGS args) {
     if (args.Length() > 4) {
         flags = args[4]->IntegerValue();
     }
-    return scope.Close(Integer::New(memcached_prepend(handle, *key, strlen(*key), *value, strlen(*value), expiration, flags)));
+    return Integer::New(memcached_prepend(handle, *key, strlen(*key), *value, strlen(*value), expiration, flags));
 }
 
 /**
@@ -362,7 +353,6 @@ JSVAL _memcached_prepend (JSARGS args) {
  * @return {int} rc - result code; 0 if no error, otherwise the error code.
  */
 JSVAL _memcached_append (JSARGS args) {
-    HandleScope scope;
     M *handle = HANDLE(args[0]);
     String::Utf8Value key(args[1]);
     String::Utf8Value value(args[2]);
@@ -374,7 +364,7 @@ JSVAL _memcached_append (JSARGS args) {
     if (args.Length() > 4) {
         flags = args[4]->IntegerValue();
     }
-    return scope.Close(Integer::New(memcached_append(handle, *key, strlen(*key), *value, strlen(*value), expiration, flags)));
+    return Integer::New(memcached_append(handle, *key, strlen(*key), *value, strlen(*value), expiration, flags));
 }
 
 /**
@@ -391,14 +381,13 @@ JSVAL _memcached_append (JSARGS args) {
  * @return {int} rc - result code; 0 if no error, otherwise the error code.
  */
 JSVAL _memcached_remove (JSARGS args) {
-    HandleScope scope;
     M *handle = HANDLE(args[0]);
     String::Utf8Value key(args[1]);
     time_t expiration = 0;
     if (args.Length() > 2) {
         expiration = args[2]->IntegerValue();
     }
-    return scope.Close(Integer::New(memcached_delete(handle, *key, strlen(*key), expiration)));
+    return Integer::New(memcached_delete(handle, *key, strlen(*key), expiration));
 }
 
 /**
@@ -416,13 +405,12 @@ JSVAL _memcached_remove (JSARGS args) {
  * @return {int} rc - result code; 0 if no error, otherwise the error code.
  */
 JSVAL _memcached_flush (JSARGS args) {
-    HandleScope scope;
     M *handle = HANDLE(args[0]);
     time_t expiration = 0;
     if (args.Length() > 1) {
         expiration = args[1]->IntegerValue();
     }
-    return scope.Close(Integer::New(memcached_flush(handle, expiration)));
+    return Integer::New(memcached_flush(handle, expiration));
 }
 
 struct CTX {
@@ -447,8 +435,6 @@ JSVAL _memcached_keys (JSARGS args) {
 }
 
 void init_memcached_object () {
-    HandleScope scope;
-
     Handle<ObjectTemplate>memcached = ObjectTemplate::New();
     // constants
     memcached->Set(String::New("DEFAULT_PORT"), Integer::New(MEMCACHED_DEFAULT_PORT));

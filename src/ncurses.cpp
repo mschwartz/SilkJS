@@ -6,41 +6,31 @@
 // see man initscr
 
 static JSVAL ncurses_initscr (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(External::New(initscr()));
+    return Opaque::New(initscr());
 }
 
 static JSVAL ncurses_endwin (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(endwin()));
+    return Integer::New(endwin());
 }
 
 static JSVAL ncurses_isendwin (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Boolean::New(isendwin()));
+    return Boolean::New(isendwin());
 }
 
 static JSVAL ncurses_newterm (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value type(args[0]->ToString());
-    Local<External>wrap = Local<External>::Cast(args[1]);
-    FILE *outfd = (FILE *) wrap->Value();
-    wrap = Local<External>::Cast(args[2]);
-    FILE *infd = (FILE *) wrap->Value();
-    return scope.Close(External::New(newterm(*type, outfd, infd)));
+    FILE *outfd = (FILE *) JSOPAQUE(args[1]);
+    FILE *infd = (FILE *) JSOPAQUE(args[2]);
+    return Opaque::New(newterm(*type, outfd, infd));
 }
 
 static JSVAL ncurses_set_term (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    SCREEN *screen = (SCREEN *) wrap->Value();
-    return scope.Close(External::New(set_term(screen)));
+    SCREEN *screen = (SCREEN *)JSOPAQUE(args[0]);
+    return Opaque::New(set_term(screen));
 }
 
 static JSVAL ncurses_delscreen (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    SCREEN *screen = (SCREEN *) wrap->Value();
+    SCREEN *screen = (SCREEN *)JSOPAQUE(args[0]);
     delscreen(screen);
     return Undefined();
 }
@@ -48,278 +38,217 @@ static JSVAL ncurses_delscreen (JSARGS args) {
 // see man cbreak
 
 static JSVAL ncurses_cbreak (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(cbreak()));
+    return Integer::New(cbreak());
 }
 
 static JSVAL ncurses_nocbreak (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(nocbreak()));
+    return Integer::New(nocbreak());
 }
 
 static JSVAL ncurses_echo (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(echo()));
+    return Integer::New(echo());
 }
 
 static JSVAL ncurses_noecho (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(noecho()));
+    return Integer::New(noecho());
 }
 
 static JSVAL ncurses_halfdelay (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(halfdelay(args[0]->IntegerValue())));
+    return Integer::New(halfdelay(args[0]->IntegerValue()));
 }
 
 static JSVAL ncurses_intrflush (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(intrflush(window, args[1]->BooleanValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(intrflush(window, args[1]->BooleanValue()));
 }
 
 static JSVAL ncurses_keypad (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(keypad(window, args[1]->BooleanValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(keypad(window, args[1]->BooleanValue()));
 }
 
 static JSVAL ncurses_meta (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(meta(window, args[1]->BooleanValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(meta(window, args[1]->BooleanValue()));
 }
 
 static JSVAL ncurses_nodelay (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(nodelay(window, args[1]->BooleanValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(nodelay(window, args[1]->BooleanValue()));
 }
 
 static JSVAL ncurses_raw (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(raw()));
+    return Integer::New(raw());
 }
 
 static JSVAL ncurses_noraw (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(noraw()));
+    return Integer::New(noraw());
 }
 
 static JSVAL ncurses_noqiflush (JSARGS args) {
-    HandleScope scope;
     noqiflush();
     return Undefined();
 }
 
 static JSVAL ncurses_qiflush (JSARGS args) {
-    HandleScope scope;
     qiflush();
     return Undefined();
 }
 
 static JSVAL ncurses_notimeout (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(nodelay(window, args[1]->BooleanValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(nodelay(window, args[1]->BooleanValue()));
 }
 
 static JSVAL ncurses_timeout (JSARGS args) {
-    HandleScope scope;
     timeout(args[0]->IntegerValue());
     return Undefined();
 }
 
 static JSVAL ncurses_wtimeout (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     wtimeout(window, args[1]->IntegerValue());
     return Undefined();
 }
 
 static JSVAL ncurses_typeahead (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(typeahead(args[0]->IntegerValue())));
+    return Integer::New(typeahead(args[0]->IntegerValue()));
 }
 
 // see man attroff
 
 static JSVAL ncurses_attroff (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(attroff(args[0]->IntegerValue())));
+    return Integer::New(attroff(args[0]->IntegerValue()));
 }
 
 static JSVAL ncurses_wattroff (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wattroff(window, args[1]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wattroff(window, args[1]->IntegerValue()));
 }
 
 static JSVAL ncurses_attron (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(attron(args[0]->IntegerValue())));
+    return Integer::New(attron(args[0]->IntegerValue()));
 }
 
 static JSVAL ncurses_wattron (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wattron(window, args[1]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wattron(window, args[1]->IntegerValue()));
 }
 
 static JSVAL ncurses_attrset (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(attrset(args[0]->IntegerValue())));
+    return Integer::New(attrset(args[0]->IntegerValue()));
 }
 
 static JSVAL ncurses_wattrset (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wattrset(window, args[1]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wattrset(window, args[1]->IntegerValue()));
 }
 
 static JSVAL ncurses_color_set (JSARGS args) {
     HandleScope scope;
-    return scope.Close(Integer::New(color_set(args[0]->IntegerValue(), NULL)));
+    return Integer::New(color_set(args[0]->IntegerValue(), NULL));
 }
 
 static JSVAL ncurses_wcolor_set (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wcolor_set(window, args[1]->IntegerValue(), NULL)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wcolor_set(window, args[1]->IntegerValue(), NULL));
 }
 
 static JSVAL ncurses_standend (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(standend()));
+    return Integer::New(standend());
 }
 
 static JSVAL ncurses_wstandend (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wstandend(window)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wstandend(window));
 }
 
 static JSVAL ncurses_standout (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(standout()));
+    return Integer::New(standout());
 }
 
 static JSVAL ncurses_wstandout (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wstandout(window)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wstandout(window));
 }
 
 static JSVAL ncurses_attr_get (JSARGS args) {
-    HandleScope scope;
     Local<Object>ret = Object::New();
     attr_t attrs;
     short pair;
     ret->Set(String::New("success"), Integer::New(attr_get(&attrs, &pair, NULL)));
     ret->Set(String::New("attrs"), Integer::New(attrs));
     ret->Set(String::New("pair"), Integer::New(pair));
-    return scope.Close(ret);
+    return ret;
 }
 
 static JSVAL ncurses_wattr_get (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     Local<Object>ret = Object::New();
     attr_t attrs;
     short pair;
     ret->Set(String::New("success"), Integer::New(wattr_get(window, &attrs, &pair, NULL)));
     ret->Set(String::New("attrs"), Integer::New(attrs));
     ret->Set(String::New("pair"), Integer::New(pair));
-    return scope.Close(ret);
+    return ret;
 }
 
 static JSVAL ncurses_attr_off (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(attr_off(args[0]->IntegerValue(), NULL)));
+    return Integer::New(attr_off(args[0]->IntegerValue(), NULL));
 }
 
 static JSVAL ncurses_wattr_off (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wattr_off(window, args[1]->IntegerValue(), NULL)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wattr_off(window, args[1]->IntegerValue(), NULL));
 }
 
 static JSVAL ncurses_attr_on (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(attr_on(args[0]->IntegerValue(), NULL)));
+    return Integer::New(attr_on(args[0]->IntegerValue(), NULL));
 }
 
 static JSVAL ncurses_wattr_on (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wattr_on(window, args[1]->IntegerValue(), NULL)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wattr_on(window, args[1]->IntegerValue(), NULL));
 }
 
 static JSVAL ncurses_attr_set (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(attr_set(args[0]->IntegerValue(), args[1]->IntegerValue(), NULL)));
+    return Integer::New(attr_set(args[0]->IntegerValue(), args[1]->IntegerValue(), NULL));
 }
 
 static JSVAL ncurses_wattr_set (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wattr_set(window, args[1]->IntegerValue(), args[2]->IntegerValue(), NULL)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wattr_set(window, args[1]->IntegerValue(), args[2]->IntegerValue(), NULL));
 }
 
 static JSVAL ncurses_chgat (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(chgat(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue(), NULL)));
+    return Integer::New(chgat(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue(), NULL));
 }
 
 static JSVAL ncurses_wchgat (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wchgat(window, args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue(), NULL)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wchgat(window, args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue(), NULL));
 }
 
 static JSVAL ncurses_mvchgat (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(mvchgat(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue(), args[4]->IntegerValue(), NULL)));
+    return Integer::New(mvchgat(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue(), args[4]->IntegerValue(), NULL));
 }
 
 static JSVAL ncurses_mvwchgat (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(mvwchgat(window, args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue(), args[4]->IntegerValue(), args[5]->IntegerValue(), NULL)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(mvwchgat(window, args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue(), args[4]->IntegerValue(), args[5]->IntegerValue(), NULL));
 }
 // macros
 
 static JSVAL ncurses_COLOR_PAIR (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(COLOR_PAIR(args[0]->IntegerValue())));
+    return Integer::New(COLOR_PAIR(args[0]->IntegerValue()));
 }
 
 static JSVAL ncurses_PAIR_NUMBER (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(PAIR_NUMBER(args[0]->IntegerValue())));
+    return Integer::New(PAIR_NUMBER(args[0]->IntegerValue()));
 }
 
 static JSVAL ncurses_KEY_F (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(KEY_F(args[0]->IntegerValue())));
+    return Integer::New(KEY_F(args[0]->IntegerValue()));
 }
 
 // see man printw
@@ -328,132 +257,104 @@ static JSVAL ncurses_KEY_F (JSARGS args) {
  * printw(s) - does not support printf() style format strings, varargs
  */
 static JSVAL ncurses_printw (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value str(args[0]->ToString());
-    return scope.Close(Integer::New(printw("%s", *str)));
+    return Integer::New(printw("%s", *str));
 }
 
 /*
  * wprintw(window, s) - does not support printf() style format strings, varargs
  */
 static JSVAL ncurses_wprintw (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     String::Utf8Value str(args[1]->ToString());
-    return scope.Close(Integer::New(wprintw(window, "%s", *str)));
+    return Integer::New(wprintw(window, "%s", *str));
 }
 
 /*
  * mvprintw(y, x, s) - does not support printf() style format strings, varargs
  */
 static JSVAL ncurses_mvprintw (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value str(args[2]->ToString());
-    return scope.Close(Integer::New(mvprintw(args[0]->IntegerValue(), args[1]->IntegerValue(), "%s", *str)));
+    return Integer::New(mvprintw(args[0]->IntegerValue(), args[1]->IntegerValue(), "%s", *str));
 }
 
 /*
  * mvwprintw(window, y, x, s) - does not support printf() style format strings, varargs
  */
 static JSVAL ncurses_mvwprintw (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     String::Utf8Value str(args[3]->ToString());
-    return scope.Close(Integer::New(mvwprintw(window, args[1]->IntegerValue(), args[2]->IntegerValue(), "%s", *str)));
+    return Integer::New(mvwprintw(window, args[1]->IntegerValue(), args[2]->IntegerValue(), "%s", *str));
 }
 
 // see man refresh
 
 static JSVAL ncurses_refresh (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(refresh()));
+    return Integer::New(refresh());
 }
 
 static JSVAL ncurses_wrefresh (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wrefresh(window)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wrefresh(window));
 }
 
 static JSVAL ncurses_wnoutrefresh (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wnoutrefresh(window)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wnoutrefresh(window));
 }
 
 static JSVAL ncurses_doupdate (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(doupdate()));
+    return Integer::New(doupdate());
 }
 
 static JSVAL ncurses_redrawwin (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(redrawwin(window)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(redrawwin(window));
 }
 
 static JSVAL ncurses_wredrawln (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wredrawln(window, args[1]->IntegerValue(), args[2]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wredrawln(window, args[1]->IntegerValue(), args[2]->IntegerValue()));
 }
 
 // see man addch
 
 static JSVAL ncurses_addch (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(addch(args[0]->IntegerValue())));
+    return Integer::New(addch(args[0]->IntegerValue()));
 }
 
 static JSVAL ncurses_waddch (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(waddch(window, args[1]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(waddch(window, args[1]->IntegerValue()));
 }
 
 static JSVAL ncurses_mvaddch (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(mvaddch(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue())));
+    return Integer::New(mvaddch(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue()));
 }
 
 static JSVAL ncurses_mvwaddch (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(mvwaddch(window, args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(mvwaddch(window, args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue()));
 }
 
 static JSVAL ncurses_echochar (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(echochar(args[0]->IntegerValue())));
+    return Integer::New(echochar(args[0]->IntegerValue()));
 }
 
 static JSVAL ncurses_wechochar (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wechochar(window, args[1]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wechochar(window, args[1]->IntegerValue()));
 }
 
 // see man move
 
 static JSVAL ncurses_move (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(move(args[0]->IntegerValue(), args[1]->IntegerValue())));
+    return Integer::New(move(args[0]->IntegerValue(), args[1]->IntegerValue()));
 }
 
 static JSVAL ncurses_wmove (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wmove(window, args[1]->IntegerValue(), args[2]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wmove(window, args[1]->IntegerValue(), args[2]->IntegerValue()));
 }
 
 //.see man getyx
@@ -461,11 +362,9 @@ static JSVAL ncurses_wmove (JSARGS args) {
 // if window is not passed, then stdscr is used.
 
 static JSVAL ncurses_getyx (JSARGS args) {
-    HandleScope scope;
     WINDOW *window = stdscr;
     if (args.Length() > 0) {
-        Local<External>wrap = Local<External>::Cast(args[0]);
-        window = (WINDOW *) wrap->Value();
+        window = (WINDOW *)JSOPAQUE(args[0]);
     }
     Local<Object>o = Object::New();
     int row, col;
@@ -474,15 +373,13 @@ static JSVAL ncurses_getyx (JSARGS args) {
     o->Set(String::New("col"), Integer::New(col));
     o->Set(String::New("y"), Integer::New(row));
     o->Set(String::New("x"), Integer::New(col));
-    return scope.Close(o);
+    return o;
 }
 
 static JSVAL ncurses_getparyx (JSARGS args) {
-    HandleScope scope;
     WINDOW *window = stdscr;
     if (args.Length() > 0) {
-        Local<External>wrap = Local<External>::Cast(args[0]);
-        window = (WINDOW *) wrap->Value();
+        window = (WINDOW *)JSOPAQUE(args[0]);
     }
     Local<Object>o = Object::New();
     int row, col;
@@ -491,15 +388,13 @@ static JSVAL ncurses_getparyx (JSARGS args) {
     o->Set(String::New("col"), Integer::New(col));
     o->Set(String::New("y"), Integer::New(row));
     o->Set(String::New("x"), Integer::New(col));
-    return scope.Close(o);
+    return o;
 }
 
 static JSVAL ncurses_getbegyx (JSARGS args) {
-    HandleScope scope;
     WINDOW *window = stdscr;
     if (args.Length() > 0) {
-        Local<External>wrap = Local<External>::Cast(args[0]);
-        window = (WINDOW *) wrap->Value();
+        window = (WINDOW *)JSOPAQUE(args[0]);
     }
     Local<Object>o = Object::New();
     int row, col;
@@ -508,15 +403,13 @@ static JSVAL ncurses_getbegyx (JSARGS args) {
     o->Set(String::New("col"), Integer::New(col));
     o->Set(String::New("y"), Integer::New(row));
     o->Set(String::New("x"), Integer::New(col));
-    return scope.Close(o);
+    return o;
 }
 
 static JSVAL ncurses_getmaxyx (JSARGS args) {
-    HandleScope scope;
     WINDOW *window = stdscr;
     if (args.Length() > 0) {
-        Local<External>wrap = Local<External>::Cast(args[0]);
-        window = (WINDOW *) wrap->Value();
+        window = (WINDOW *)JSOPAQUE(args[0]);
     }
     Local<Object>o = Object::New();
     int row, col;
@@ -525,276 +418,227 @@ static JSVAL ncurses_getmaxyx (JSARGS args) {
     o->Set(String::New("col"), Integer::New(col));
     o->Set(String::New("y"), Integer::New(row));
     o->Set(String::New("x"), Integer::New(col));
-    return scope.Close(o);
+    return o;
 }
 
 // see man addstr
 
 static JSVAL ncurses_addstr (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value str(args[0]->ToString());
-    return scope.Close(Integer::New(addstr(*str)));
+    return Integer::New(addstr(*str));
 }
 
 static JSVAL ncurses_addnstr (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value str(args[0]->ToString());
-    return scope.Close(Integer::New(addnstr(*str, args[1]->IntegerValue())));
+    return Integer::New(addnstr(*str, args[1]->IntegerValue()));
 }
 
 static JSVAL ncurses_waddstr (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     String::Utf8Value str(args[1]->ToString());
-    return scope.Close(Integer::New(waddstr(window, *str)));
+    return Integer::New(waddstr(window, *str));
 }
 
 static JSVAL ncurses_waddnstr (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     String::Utf8Value str(args[1]->ToString());
-    return scope.Close(Integer::New(waddnstr(window, *str, args[2]->IntegerValue())));
+    return Integer::New(waddnstr(window, *str, args[2]->IntegerValue()));
 }
 
 static JSVAL ncurses_mvaddstr (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value str(args[2]->ToString());
-    return scope.Close(Integer::New(mvaddstr(args[0]->IntegerValue(), args[1]->IntegerValue(), *str)));
+    return Integer::New(mvaddstr(args[0]->IntegerValue(), args[1]->IntegerValue(), *str));
 }
 
 static JSVAL ncurses_mvaddnstr (JSARGS args) {
-    HandleScope scope;
     String::Utf8Value str(args[2]->ToString());
-    return scope.Close(Integer::New(mvaddnstr(args[0]->IntegerValue(), args[1]->IntegerValue(), *str, args[3]->IntegerValue())));
+    return Integer::New(mvaddnstr(args[0]->IntegerValue(), args[1]->IntegerValue(), *str, args[3]->IntegerValue()));
 }
 
 static JSVAL ncurses_mvwaddstr (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     String::Utf8Value str(args[3]->ToString());
-    return scope.Close(Integer::New(mvwaddstr(window, args[1]->IntegerValue(), args[2]->IntegerValue(), *str)));
+    return Integer::New(mvwaddstr(window, args[1]->IntegerValue(), args[2]->IntegerValue(), *str));
 }
 
 static JSVAL ncurses_mvwaddnstr (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     String::Utf8Value str(args[3]->ToString());
-    return scope.Close(Integer::New(mvwaddnstr(window, args[1]->IntegerValue(), args[2]->IntegerValue(), *str, args[4]->IntegerValue())));
+    return Integer::New(mvwaddnstr(window, args[1]->IntegerValue(), args[2]->IntegerValue(), *str, args[4]->IntegerValue()));
 }
 
 // see man getch
 
 static JSVAL ncurses_getch (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(getch()));
+    return Integer::New(getch());
 }
 
 static JSVAL ncurses_wgetch (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wgetch(window)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wgetch(window));
 }
 
 static JSVAL ncurses_mvgetch (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(mvgetch(args[0]->IntegerValue(), args[1]->IntegerValue())));
+    return Integer::New(mvgetch(args[0]->IntegerValue(), args[1]->IntegerValue()));
 }
 
 static JSVAL ncurses_mvwgetch (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(mvwgetch(window, args[1]->IntegerValue(), args[2]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(mvwgetch(window, args[1]->IntegerValue(), args[2]->IntegerValue()));
 }
 
 static JSVAL ncurses_ungetch (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(ungetch(args[0]->IntegerValue())));
+    return Integer::New(ungetch(args[0]->IntegerValue()));
 }
 
 static JSVAL ncurses_has_key (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(has_key(args[0]->IntegerValue())));
+    return Integer::New(has_key(args[0]->IntegerValue()));
 }
 
 // see man getstr
 
 static JSVAL ncurses_getstr (JSARGS args) {
-    HandleScope scope;
     char buf[1024 * 1024];
     int ret = getstr(buf);
     if (ret != OK) {
-        return scope.Close(Integer::New(ERR));
+        return Integer::New(ERR);
     }
-    return scope.Close(String::New(buf));
+    return String::New(buf);
 }
 
 static JSVAL ncurses_getnstr (JSARGS args) {
-    HandleScope scope;
     int n = args[0]->IntegerValue();
     char buf[n + 1];
     int ret = getnstr(buf, n);
     if (ret != OK) {
-        return scope.Close(Integer::New(ERR));
+        return Integer::New(ERR);
     }
-    return scope.Close(String::New(buf));
+    return String::New(buf);
 }
 
 static JSVAL ncurses_wgetstr (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     char buf[1024 * 1024];
     int ret = wgetstr(window, buf);
     if (ret != OK) {
-        return scope.Close(Integer::New(ERR));
+        return Integer::New(ERR);
     }
-    return scope.Close(String::New(buf));
+    return String::New(buf);
 }
 
 static JSVAL ncurses_wgetnstr (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     int n = args[1]->IntegerValue();
     char buf[n + 1];
     int ret = wgetnstr(window, buf, n);
     if (ret != OK) {
-        return scope.Close(Integer::New(ERR));
+        return Integer::New(ERR);
     }
-    return scope.Close(String::New(buf));
+    return String::New(buf);
 }
 
 static JSVAL ncurses_mvgetstr (JSARGS args) {
-    HandleScope scope;
     char buf[1024 * 1024];
     int ret = mvgetstr(args[0]->IntegerValue(), args[1]->IntegerValue(), buf);
     if (ret != OK) {
-        return scope.Close(Integer::New(ERR));
+        return Integer::New(ERR);
     }
-    return scope.Close(String::New(buf));
+    return String::New(buf);
 }
 
 static JSVAL ncurses_mvgetnstr (JSARGS args) {
-    HandleScope scope;
     int n = args[2]->IntegerValue();
     char buf[n + 1];
     int ret = mvgetnstr(args[0]->IntegerValue(), args[1]->IntegerValue(), buf, n);
     if (ret != OK) {
-        return scope.Close(Integer::New(ERR));
+        return Integer::New(ERR);
     }
-    return scope.Close(String::New(buf));
+    return String::New(buf);
 }
 
 static JSVAL ncurses_mvwgetstr (JSARGS args) {
-    HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     WINDOW *window = (WINDOW *) wrap->Value();
     char buf[1024 * 1024];
     int ret = mvwgetstr(window, args[1]->IntegerValue(), args[2]->IntegerValue(), buf);
     if (ret != OK) {
-        return scope.Close(Integer::New(ERR));
+        return Integer::New(ERR);
     }
-    return scope.Close(String::New(buf));
+    return String::New(buf);
 }
 
 static JSVAL ncurses_mvwgetnstr (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     int n = args[3]->IntegerValue();
     char buf[n + 1];
     int ret = mvwgetnstr(window, args[1]->IntegerValue(), args[2]->IntegerValue(), buf, n);
     if (ret != OK) {
-        return scope.Close(Integer::New(ERR));
+        return Integer::New(ERR);
     }
-    return scope.Close(String::New(buf));
+    return String::New(buf);
 }
 
 // see man erase
 
 static JSVAL ncurses_erase (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(erase()));
+    return Integer::New(erase());
 }
 
 static JSVAL ncurses_werase (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(werase(window)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(werase(window));
 }
 
 static JSVAL ncurses_clear (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(clear()));
+    return Integer::New(clear());
 }
 
 static JSVAL ncurses_wclear (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wclear(window)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wclear(window));
 }
 
 static JSVAL ncurses_clrtobot (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(clrtobot()));
+    return Integer::New(clrtobot());
 }
 
 static JSVAL ncurses_wclrtobot (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wclrtobot(window)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wclrtobot(window));
 }
 
 static JSVAL ncurses_clrtoeol (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(clrtoeol()));
+    return Integer::New(clrtoeol());
 }
 
 static JSVAL ncurses_wclrtoeol (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wclrtoeol(window)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wclrtoeol(window));
 }
 
 // see man start_color
 
 static JSVAL ncurses_start_color (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(start_color()));
+    return Integer::New(start_color());
 }
 
 static JSVAL ncurses_init_pair (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(init_pair(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue())));
+    return Integer::New(init_pair(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue()));
 }
 
 static JSVAL ncurses_init_color (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(init_color(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue())));
+    return Integer::New(init_color(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue()));
 }
 
 static JSVAL ncurses_has_colors (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Boolean::New(has_colors()));
+    return Boolean::New(has_colors());
 }
 
 static JSVAL ncurses_can_change_color (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Boolean::New(can_change_color()));
+    return Boolean::New(can_change_color());
 }
 
 static JSVAL ncurses_color_content (JSARGS args) {
-    HandleScope scope;
     short r, g, b;
     int ret = color_content(args[0]->IntegerValue(), &r, &g, &b);
     Local<Object>o = Object::New();
@@ -802,96 +646,74 @@ static JSVAL ncurses_color_content (JSARGS args) {
     o->Set(String::New("r"), Integer::New(r));
     o->Set(String::New("g"), Integer::New(g));
     o->Set(String::New("b"), Integer::New(b));
-    return scope.Close(o);
+    return o;
 }
 
 static JSVAL ncurses_pair_content (JSARGS args) {
-    HandleScope scope;
     short f, b;
     int ret = pair_content(args[0]->IntegerValue(), &f, &b);
     Local<Object>o = Object::New();
     o->Set(String::New("success"), Integer::New(ret));
     o->Set(String::New("f"), Integer::New(f));
     o->Set(String::New("b"), Integer::New(b));
-    return scope.Close(o);
+    return o;
 }
 
 // see man newwin
 
 static JSVAL ncurses_newwin (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(External::New(newwin(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue())));
+    return Opaque::New(newwin(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue()));
 }
 
 static JSVAL ncurses_delwin (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(delwin(window)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(delwin(window));
 }
 
 static JSVAL ncurses_mvwin (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(mvwin(window, args[1]->IntegerValue(), args[2]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(mvwin(window, args[1]->IntegerValue(), args[2]->IntegerValue()));
 }
 
 static JSVAL ncurses_subwin (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(External::New(subwin(window, args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue(), args[4]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Opaque::New(subwin(window, args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue(), args[4]->IntegerValue()));
 }
 
 static JSVAL ncurses_derwin (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(External::New(derwin(window, args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue(), args[4]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Opaque::New(derwin(window, args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue(), args[4]->IntegerValue()));
 }
 
 static JSVAL ncurses_mvderwin (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(mvderwin(window, args[1]->IntegerValue(), args[2]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(mvderwin(window, args[1]->IntegerValue(), args[2]->IntegerValue()));
 }
 
 static JSVAL ncurses_dupwin (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(External::New(dupwin(window)));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Opaque::New(dupwin(window));
 }
 
 static JSVAL ncurses_wsyncup (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     wsyncup(window);
     return Undefined();
 }
 
 static JSVAL ncurses_syncok (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(syncok(window, args[1]->BooleanValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(syncok(window, args[1]->BooleanValue()));
 }
 
 static JSVAL ncurses_wcursyncup (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     wcursyncup(window);
     return Undefined();
 }
 
 static JSVAL ncurses_wsyncdown (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     wsyncdown(window);
     return Undefined();
 }
@@ -899,8 +721,7 @@ static JSVAL ncurses_wsyncdown (JSARGS args) {
 // see man border
 
 static JSVAL ncurses_border (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(border(
+    return Integer::New(border(
         args[0]->IntegerValue(), // ls
         args[1]->IntegerValue(), // rs 
         args[2]->IntegerValue(), // ts 
@@ -909,14 +730,13 @@ static JSVAL ncurses_border (JSARGS args) {
         args[5]->IntegerValue(), // tr
         args[6]->IntegerValue(), // bl
         args[7]->IntegerValue() // br
-        )));
+        ));
 }
 
 static JSVAL ncurses_wborder (JSARGS args) {
-    HandleScope scope;
     Local<External>wrap = Local<External>::Cast(args[0]);
     WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wborder(
+    return Integer::New(wborder(
         window,
         JSCHAR(args[1]), // ls
         JSCHAR(args[2]), // ls
@@ -933,62 +753,48 @@ static JSVAL ncurses_wborder (JSARGS args) {
         //		args[6]->IntegerValue(),	// tr
         //		args[7]->IntegerValue(),	// bl
         //		args[8]->IntegerValue()		// br
-        )));
+        ));
 }
 
 static JSVAL ncurses_box (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(box(window, args[1]->IntegerValue(), args[2]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(box(window, args[1]->IntegerValue(), args[2]->IntegerValue()));
 }
 
 static JSVAL ncurses_hline (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(hline(args[0]->IntegerValue(), args[1]->IntegerValue())));
+    return Integer::New(hline(args[0]->IntegerValue(), args[1]->IntegerValue()));
 }
 
 static JSVAL ncurses_whline (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(whline(window, args[1]->IntegerValue(), args[2]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(whline(window, args[1]->IntegerValue(), args[2]->IntegerValue()));
 }
 
 static JSVAL ncurses_vline (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(vline(args[0]->IntegerValue(), args[1]->IntegerValue())));
+    return Integer::New(vline(args[0]->IntegerValue(), args[1]->IntegerValue()));
 }
 
 static JSVAL ncurses_wvline (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(wvline(window, args[1]->IntegerValue(), args[2]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wvline(window, args[1]->IntegerValue(), args[2]->IntegerValue()));
 }
 
 static JSVAL ncurses_mvhline (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(mvhline(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue())));
+    return Integer::New(mvhline(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue()));
 }
 
 static JSVAL ncurses_mvwhline (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(mvwhline(window, args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue(), args[4]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(mvwhline(window, args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue(), args[4]->IntegerValue()));
 }
 
 static JSVAL ncurses_mvvline (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(mvvline(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue())));
+    return Integer::New(mvvline(args[0]->IntegerValue(), args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue()));
 }
 
 static JSVAL ncurses_mvwvline (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
-    return scope.Close(Integer::New(mvwvline(window, args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue(), args[4]->IntegerValue())));
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(mvwvline(window, args[1]->IntegerValue(), args[2]->IntegerValue(), args[3]->IntegerValue(), args[4]->IntegerValue()));
 }
 
 
@@ -1044,35 +850,30 @@ void ncurses_set_TABSIZE (Local<String>property, Local<Value>value, const Access
 }
 
 static JSVAL ncurses_get_curscr (Local<String>property, const AccessorInfo& info) {
-    return External::New(curscr);
+    return Opaque::New(curscr);
 }
 
 void ncurses_set_curscr (Local<String>property, Local<Value>value, const AccessorInfo& info) {
-    Local<External>wrap = Local<External>::Cast(value);
-    curscr = (WINDOW *) wrap->Value();
+    curscr = (WINDOW *)JSOPAQUE(value);
 }
 
 static JSVAL ncurses_get_newscr (Local<String>property, const AccessorInfo& info) {
-    return External::New(newscr);
+    return Opaque::New(newscr);
 }
 
 void ncurses_set_newscr (Local<String>property, Local<Value>value, const AccessorInfo& info) {
-    Local<External>wrap = Local<External>::Cast(value);
-    newscr = (WINDOW *) wrap->Value();
+    newscr = (WINDOW *)JSOPAQUE(value);
 }
 
 static JSVAL ncurses_get_stdscr (Local<String>property, const AccessorInfo& info) {
-    return External::New(stdscr);
+    return Opaque::New(stdscr);
 }
 
 void ncurses_set_stdscr (Local<String>property, Local<Value>value, const AccessorInfo& info) {
-    Local<External>wrap = Local<External>::Cast(value);
-    stdscr = (WINDOW *) wrap->Value();
+    stdscr = (WINDOW *) JSOPAQUE(value);
 }
 
 void init_ncurses_object () {
-    HandleScope scope;
-
     Handle<ObjectTemplate>ncurses = ObjectTemplate::New();
 
     ncurses->Set(String::New("ERR"), Integer::New(ERR));
@@ -1164,7 +965,6 @@ void init_ncurses_object () {
 
     ncurses->Set(String::New("move"), FunctionTemplate::New(ncurses_move));
     ncurses->Set(String::New("wmove"), FunctionTemplate::New(ncurses_wmove));
-
 
     ncurses->Set(String::New("getyx"), FunctionTemplate::New(ncurses_getyx));
     ncurses->Set(String::New("getparyx"), FunctionTemplate::New(ncurses_getparyx));

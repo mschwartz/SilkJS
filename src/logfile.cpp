@@ -76,7 +76,7 @@ static inline STATE* HANDLE (Handle<Value>v) {
         ThrowException(String::New("Handle is NULL"));
         return NULL;
     }
-    STATE *state = (STATE *) JSEXTERN(v);
+    STATE *state = (STATE *) JSOPAQUE(v);
     return state;
 }
 
@@ -130,13 +130,12 @@ static void flush_logfile (STATE *state) {
  * @returns {object} handle - handle to logfile
  */
 static JSVAL logfile_init (JSARGS args) {
-    HandleScope scope;
     String::AsciiValue filename(args[0]);
     STATE *state = new STATE(*filename);
     if (!state->alive) {
         ThrowException(String::New("Could not initialize log file"));
     }
-    return scope.Close(External::New(state));
+    return Opaque::New(state);
 }
 
 /**
@@ -157,7 +156,6 @@ static JSVAL logfile_init (JSARGS args) {
  * 
  */
 static JSVAL logfile_write (JSARGS args) {
-    HandleScope scope;
     STATE *state = HANDLE(args[0]);
     String::AsciiValue buf(args[1]);
     int len;
@@ -189,7 +187,6 @@ static JSVAL logfile_write (JSARGS args) {
  * @param {object} handle - handle of logfile to flush.
  */
 static JSVAL logfile_flush (JSARGS args) {
-    HandleScope scope;
     STATE *state = HANDLE(args[0]);
 
     lock_logfile(state);
@@ -210,14 +207,12 @@ static JSVAL logfile_flush (JSARGS args) {
  * @param {object} handle - handle to logfile to destroy.
  */
 static JSVAL logfile_destroy (JSARGS args) {
-    HandleScope scope;
     STATE *state = HANDLE(args[0]);
     delete state;
     return Undefined();
 }
 
 void init_logfile_object () {
-    HandleScope scope;
     Handle<ObjectTemplate>logfile = ObjectTemplate::New();
 
     logfile->Set(String::New("init"), FunctionTemplate::New(logfile_init));

@@ -15,25 +15,20 @@ static JSVAL sem_Init (JSARGS args) {
 }
 
 static JSVAL sem_Destroy (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(sem_destroy(&mutex)));
+    return Integer::New(sem_destroy(&mutex));
 }
 
 static JSVAL sem_Wait (JSARGS args) {
-    HandleScope scope;
     int ret = sem_wait(&mutex);
     printf("wait %d\n", ret);
-    return scope.Close(Integer::New(ret));
+    return Integer::New(ret);
 }
 
 static JSVAL sem_Post (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(sem_post(&mutex)));
+    return Integer::New(sem_post(&mutex));
 }
 
 void init_sem_object () {
-    HandleScope scope;
-
     Handle<ObjectTemplate>sem = ObjectTemplate::New();
     sem->Set(String::New("init"), FunctionTemplate::New(sem_Init));
     sem->Set(String::New("destroy"), FunctionTemplate::New(sem_Destroy));

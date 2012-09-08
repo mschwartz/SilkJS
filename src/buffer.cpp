@@ -45,7 +45,6 @@ static inline void bufferWrite (Buffer *buf, const char *data, long len) {
  * @return {object} buf - opaque handel to newly created buffer.
  */
 static JSVAL buffer_create (JSARGS args) {
-    HandleScope scope;
     Buffer *buf = new Buffer;
 #ifndef BUFFER_STRING
     buf->mem = new unsigned char[16384];
@@ -53,7 +52,7 @@ static JSVAL buffer_create (JSARGS args) {
     buf->size = 16384;
     buf->pos = 0;
 #endif
-    return scope.Close(External::New(buf));
+    return Opaque::New(buf);
 }
 
 /**
@@ -68,9 +67,7 @@ static JSVAL buffer_create (JSARGS args) {
  * @param {object} buf - buffer to reset
  */
 static JSVAL buffer_reset (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    Buffer *buf = (Buffer *) wrap->Value();
+    Buffer *buf = (Buffer *)JSOPAQUE(args[0]);
 #ifdef BUFFER_STRING
     buf->s.clear();
 #else
@@ -92,9 +89,7 @@ static JSVAL buffer_reset (JSARGS args) {
  * @param {object} buf - buffer to free.
  */
 static JSVAL buffer_destroy (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    Buffer *buf = (Buffer *) wrap->Value();
+    Buffer *buf = (Buffer *)JSOPAQUE(args[0]);
 #ifndef BUFFER_STRING
     delete[] buf->mem;
 #endif
@@ -114,9 +109,7 @@ static JSVAL buffer_destroy (JSARGS args) {
  * @param {string{ str - string to add to buffer.
  */
 static JSVAL buffer_write (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    Buffer *buf = (Buffer *) wrap->Value();
+    Buffer *buf = (Buffer *)JSOPAQUE(args[0]);
     String::Utf8Value data(args[1]);
     bufferWrite(buf, *data, data.length());
     //#ifdef BUFFER_STRING
@@ -149,9 +142,7 @@ static JSVAL buffer_write (JSARGS args) {
  * @param {string} base64Str - base64 encoded binary data to add to buffer as binary.
  */
 static JSVAL buffer_write64 (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    Buffer *buf = (Buffer *) wrap->Value();
+    Buffer *buf = (Buffer *)JSOPAQUE(args[0]);
     String::Utf8Value data(args[1]);
 #ifdef BUFFER_STRING
     buf->s += Base64Decode(*data);
@@ -174,13 +165,11 @@ static JSVAL buffer_write64 (JSARGS args) {
  * @return {string s - buffer contents as JavaScript string.
  */
 static JSVAL buffer_read (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    Buffer *buf = (Buffer *) wrap->Value();
+    Buffer *buf = (Buffer *)JSOPAQUE(args[0]);
 #ifdef BUFFER_STRING
-    return scope.Close(String::New(buf->s.c_str(), buf->s.size()));
+    return String::New(buf->s.c_str(), buf->s.size());
 #else
-    return scope.Close(String::New((char *) buf->mem, buf->pos));
+    return String::New((char *) buf->mem, buf->pos);
 #endif
 }
 
@@ -197,19 +186,15 @@ static JSVAL buffer_read (JSARGS args) {
  * @return {int} size - size of buffer in bytes.
  */
 static JSVAL buffer_size (JSARGS args) {
-    HandleScope scope;
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    Buffer *buf = (Buffer *) wrap->Value();
+    Buffer *buf = (Buffer *)JSOPAQUE(args[0]);
 #ifdef BUFFER_STRING
-    return scope.Close(Integer::New(buf->s.size()));
+    return Integer::New(buf->s.size());
 #else
-    return scope.Close(Integer::New(buf->pos));
+    return Integer::New(buf->pos);
 #endif
 }
 
 void init_buffer_object () {
-    HandleScope scope;
-
     Handle<ObjectTemplate>buffer = ObjectTemplate::New();
     buffer->Set(String::New("create"), FunctionTemplate::New(buffer_create));
     buffer->Set(String::New("reset"), FunctionTemplate::New(buffer_reset));
