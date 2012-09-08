@@ -74,7 +74,8 @@ $(V8DIR):
 	svn checkout http://v8.googlecode.com/svn/trunk/ v8-read-only
 
 $(V8):
-	cd $(V8DIR) && svn update && make dependencies && GYP_GENERATORS=make make GYPFLAGS="-Dcomponent=shared_library -Dv8_enable_extra_checks=0" -j 4 $(V8VERSION)
+	# cd $(V8DIR) && svn update && make dependencies && GYP_GENERATORS=make make GYPFLAGS="-Dcomponent=shared_library -Dv8_enable_extra_checks=0" -j 4 $(V8VERSION)
+	cd $(V8DIR) && svn update && make dependencies && GYP_GENERATORS=make make GYPFLAGS="-Dcomponent=shared_library" -j 4 $(V8VERSION)
 
 update:
 	cd $(V8DIR) && svn update && make dependencies && GYP_GENERATORS=make make $(V8VERSION)
