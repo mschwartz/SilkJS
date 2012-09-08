@@ -37,8 +37,7 @@
  * @return {string} message - error message.
  */
 static JSVAL process_error (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(String::New(strerror(errno)));
+    return String::New(strerror(errno));
 }
 
 /**
@@ -54,9 +53,8 @@ static JSVAL process_error (JSARGS args) {
  * @return {int} success - 0 on success, 1 if an error occurred.
  */
 static JSVAL process_kill (JSARGS args) {
-    HandleScope scope;
     pid_t pid = args[0]->IntegerValue();
-    return scope.Close(Integer::New(kill(pid, SIGKILL)));
+    return Integer::New(kill(pid, SIGKILL));
 }
 
 /**
@@ -71,8 +69,7 @@ static JSVAL process_kill (JSARGS args) {
  * @return {int} my_pid - process ID (pid) of the current process.
  */
 static JSVAL process_getpid (JSARGS args) {
-    HandleScope scope;
-    return scope.Close(Integer::New(getpid()));
+    return Integer::New(getpid());
 }
 
 /**
@@ -367,7 +364,6 @@ static timeval addTime (timeval& t1, timeval& t2) {
 }
 
 static JSVAL process_rusage (JSARGS args) {
-    HandleScope scope;
     struct rusage r;
     getrusage(RUSAGE_SELF, &r);
     JSOBJ o = Object::New();
@@ -388,7 +384,7 @@ static JSVAL process_rusage (JSARGS args) {
     o->Set(String::New("nsignals"), Integer::New(r.ru_nsignals));
     o->Set(String::New("nvcsw"), Integer::New(r.ru_nvcsw));
     o->Set(String::New("nivcsw"), Integer::New(r.ru_nivcsw));
-    return scope.Close(o);
+    return o;
 }
 
 /**
@@ -402,17 +398,14 @@ static JSVAL process_rusage (JSARGS args) {
  * @return {string} username - name of user or false if error.
  */
 static JSVAL process_getlogin (JSARGS args) {
-    HandleScope scope;
     char *s = getlogin();
     if (!s) {
-        return scope.Close(False());
+        return False();
     }
-    return scope.Close(String::New(s));
+    return String::New(s);
 }
 
 void init_process_object () {
-    HandleScope scope;
-
     Handle<ObjectTemplate>process = ObjectTemplate::New();
     process->Set(String::New("env"), FunctionTemplate::New(process_env));
     process->Set(String::New("setenv"), FunctionTemplate::New(process_setenv));
