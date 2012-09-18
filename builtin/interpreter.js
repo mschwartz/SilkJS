@@ -16,7 +16,7 @@ function main() {
             else if (e === 'SIGTERM') {
                 break;
             }
-            console.dir(e);
+            console.log(e.stack);
         }
     }
 }
