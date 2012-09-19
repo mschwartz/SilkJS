@@ -77,7 +77,6 @@ static JSVAL compileScript (JSARGS args) {
 // runScript(context, script)
 
 static JSVAL runScript (JSARGS args) {
-    // Local<External>wrap = Local<External>::Cast(args[0]);
     ScriptWrapper *wrapper = (ScriptWrapper *) JSOPAQUE(args[0]); // wrap->Value();
 
     //	Persistent<Context>context = Context::New(NULL, ObjectTemplate::New());

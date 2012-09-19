@@ -80,7 +80,7 @@ static JSVAL parser(JSARGS args) {
     ptr->start = Persistent<Function>::New(Local<Function>::Cast(args[1]));
     ptr->end = Persistent<Function>::New(Local<Function>::Cast(args[2]));
     ptr->charHandler = Persistent<Function>::New(Local<Function>::Cast(args[3]));
-    return External::New(ptr);
+    return Opaque::New(ptr);
 }
 
 

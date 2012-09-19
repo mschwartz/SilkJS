@@ -557,8 +557,7 @@ static JSVAL ncurses_mvgetnstr (JSARGS args) {
 }
 
 static JSVAL ncurses_mvwgetstr (JSARGS args) {
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     char buf[1024 * 1024];
     int ret = mvwgetstr(window, args[1]->IntegerValue(), args[2]->IntegerValue(), buf);
     if (ret != OK) {
@@ -734,8 +733,7 @@ static JSVAL ncurses_border (JSARGS args) {
 }
 
 static JSVAL ncurses_wborder (JSARGS args) {
-    Local<External>wrap = Local<External>::Cast(args[0]);
-    WINDOW *window = (WINDOW *) wrap->Value();
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
     return Integer::New(wborder(
         window,
         JSCHAR(args[1]), // ls
