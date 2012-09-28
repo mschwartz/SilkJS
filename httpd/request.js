@@ -63,7 +63,7 @@ req = (function() {
 				uriParts[1].split('&').each(function(part) {
 					part = part.split('=');
                     try {
-    					req.queryParams[part[0]] = data[part[0]] = decodeURIComponent(part[1].replace(/\+/g, ' '));
+						req.queryParams[part[0]] = data[part[0]] = decodeURIComponent(part[1].replace(/\+/g, ' '));
                     }
                     catch (e) {
 //                        console.dir(uriParts);
@@ -115,7 +115,7 @@ req = (function() {
 						}
 						else {
                             lines.shift(); lines.shift(); lines.shift();
-                            if (lines[lines.length-1] == '') {
+                            if (lines[lines.length-1] === '') {
                                 lines.pop();
                             }
 							data[name] = lines.join('\n');
@@ -124,7 +124,7 @@ req = (function() {
 				}
 				else {
 					post = http.readPost(stream, contentLength);
-					if (headers['content-type'].match(/^application\/x-www-form-urlencoded/i)) {
+					if (headers['content-type'] && headers['content-type'].match(/^application\/x-www-form-urlencoded/i)) {
 						post.split('&').each(function(part) {
 							part = part.split('=');
 							data[part[0]] = decodeURIComponent(part[1].replace(/\+/gm, ' '));
