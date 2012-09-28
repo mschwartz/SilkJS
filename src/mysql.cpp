@@ -754,13 +754,17 @@ JSVAL getScalar (JSARGS args) {
     MYSQL_FIELD *fields = mysql_fetch_fields(result);
     MYSQL_ROW row = mysql_fetch_row(result);
     if (!row) {
+        mysql_free_result(result);
         return False();
     }
 
     if (row[0] == NULL) {
+        mysql_free_result(result);
         return Null();
     }
     else {
+        Handle<Number>n;
+        Handle<String>s;
         switch (fields[0].type) {
             case MYSQL_TYPE_TINY:
             case MYSQL_TYPE_SHORT:
@@ -768,15 +772,24 @@ JSVAL getScalar (JSARGS args) {
             case MYSQL_TYPE_TIMESTAMP:
             case MYSQL_TYPE_LONGLONG:
             case MYSQL_TYPE_INT24:
-                return Number::New(atol(row[0]));
+                n = Number::New(atol(row[0]));
+                mysql_free_result(result);
+                return n;
             case MYSQL_TYPE_FLOAT:
-                return Number::New(atof(row[0]));
+                n = Number::New(atof(row[0]));
+                mysql_free_result(result);
+                return n;
             case MYSQL_TYPE_DOUBLE:
-                return Number::New(atof(row[0]));
+                n = Number::New(atof(row[0]));
+                mysql_free_result(result);
+                return n;
             case MYSQL_TYPE_NULL:
+                mysql_free_result(result);
                 return Null();
             default:
-                return String::New(row[0], lengths[0]);
+                s = String::New(row[0], lengths[0]);
+                mysql_free_result(result);
+                return s;
         }
     }
 }
