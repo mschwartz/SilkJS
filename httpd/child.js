@@ -455,13 +455,19 @@ HttpChild = (function() {
                     }
                     req.data = {};
                     res.data = {};
-                    res.flush();
-                    res.reset();
-                    var end_time = time.getrusage();
-                    var elapsed = end_time - start_time;
-                    elapsed = '' + elapsed;
-                    elapsed = elapsed.substr(0, 8);
-                    logfile.write(req.remote_addr + ' ' + req.method + ' ' + req.uri + ' completed in ' + elapsed + 's\n');
+                    try {
+                        res.flush();
+                        res.reset();
+                        var end_time = time.getrusage();
+                        var elapsed = end_time - start_time;
+                        elapsed = '' + elapsed;
+                        elapsed = elapsed.substr(0, 8);
+                        logfile.write(req.remote_addr + ' ' + req.method + ' ' + req.uri + ' completed in ' + elapsed + 's\n');
+                    }
+                    catch (e) {
+                        console.dir(e.stack);
+                        keepAlive = false;
+                    }
                 }
                 net.close(sock);
                 req.close();
