@@ -4,6 +4,7 @@ HttpChild = (function() {
     var requestsHandled;
 
     var mimeTypes = require('MimeTypes'),
+		Showdown = require('github-flavored-markdown'),
         time = require('builtin/time');
 
     function errorHandler(e) {
