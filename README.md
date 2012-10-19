@@ -105,7 +105,7 @@ Then point your browser at http://localhost:9090/
 
 ## Useful Links
 
-Home Site: http://silkjs.org/ (POWERED BY SILKJS, not Apache, not ngnix)
+Home Site: http://silkjs.net/ (POWERED BY SILKJS, not Apache, not ngnix)
 
 Google Group: http://groups.google.com/group/SilkJS
 
