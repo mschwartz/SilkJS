@@ -317,6 +317,31 @@ static JSVAL ncurses_wredrawln (JSARGS args) {
     return Integer::New(wredrawln(window, args[1]->IntegerValue(), args[2]->IntegerValue()));
 }
 
+static JSVAL ncurses_bkgdset(JSARGS args) {
+    bkgdset(args[0]->IntegerValue());
+    return Undefined();
+}
+
+static JSVAL ncurses_bkgd(JSARGS args) {
+    return Integer::New(bkgd(args[0]->IntegerValue()));
+}
+
+static JSVAL ncurses_wbkgdset(JSARGS args) {
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    wbkgdset(window, args[1]->IntegerValue());
+    return Undefined();
+}
+
+static JSVAL ncurses_wbkgd(JSARGS args) {
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(wbkgd(window, args[1]->IntegerValue()));
+}
+
+static JSVAL ncurses_getbkgd(JSARGS args) {
+    WINDOW *window = (WINDOW *)JSOPAQUE(args[0]);
+    return Integer::New(getbkgd(window));
+}
+
 // see man addch
 
 static JSVAL ncurses_addch (JSARGS args) {
@@ -350,6 +375,13 @@ static JSVAL ncurses_wechochar (JSARGS args) {
 
 static JSVAL ncurses_move (JSARGS args) {
     return Integer::New(move(args[0]->IntegerValue(), args[1]->IntegerValue()));
+}
+
+static JSVAL ncurses_mvcur(JSARGS args) {
+    int row, col;
+    getyx(stdscr, row, col);
+    mvcur(row, col, args[0]->IntegerValue(), args[1]->IntegerValue());
+    return Undefined();
 }
 
 static JSVAL ncurses_wmove (JSARGS args) {
@@ -902,6 +934,12 @@ void init_ncurses_object () {
     ncurses->Set(String::New("wtimeout"), FunctionTemplate::New(ncurses_wtimeout));
     ncurses->Set(String::New("typeahead"), FunctionTemplate::New(ncurses_typeahead));
 
+    ncurses->Set(String::New("bkgdset"), FunctionTemplate::New(ncurses_bkgdset));
+    ncurses->Set(String::New("wbkgdset"), FunctionTemplate::New(ncurses_wbkgdset));
+    ncurses->Set(String::New("bkgd"), FunctionTemplate::New(ncurses_bkgd));
+    ncurses->Set(String::New("wbkgd"), FunctionTemplate::New(ncurses_wbkgd));
+    ncurses->Set(String::New("getbkgd"), FunctionTemplate::New(ncurses_getbkgd));
+
     ncurses->Set(String::New("attroff"), FunctionTemplate::New(ncurses_attroff));
     ncurses->Set(String::New("wattroff"), FunctionTemplate::New(ncurses_wattroff));
     ncurses->Set(String::New("attron"), FunctionTemplate::New(ncurses_attron));
@@ -931,8 +969,8 @@ void init_ncurses_object () {
     ncurses->Set(String::New("KEY_F"), FunctionTemplate::New(ncurses_KEY_F));
     ncurses->Set(String::New("A_NORMAL"), Integer::New(A_NORMAL));
     ncurses->Set(String::New("A_STANDOUT"), Integer::New(A_STANDOUT));
-    ncurses->Set(String::New("A_NORMAL"), Integer::New(A_UNDERLINE));
-    ncurses->Set(String::New("A_UNDERLINE"), Integer::New(A_REVERSE));
+    ncurses->Set(String::New("A_UNDERLINE"), Integer::New(A_UNDERLINE));
+    ncurses->Set(String::New("A_REVERSE"), Integer::New(A_REVERSE));
     ncurses->Set(String::New("A_BLINK"), Integer::New(A_BLINK));
     ncurses->Set(String::New("A_DIM"), Integer::New(A_DIM));
     ncurses->Set(String::New("A_BOLD"), Integer::New(A_BOLD));
@@ -940,6 +978,14 @@ void init_ncurses_object () {
     ncurses->Set(String::New("A_INVIS"), Integer::New(A_INVIS));
     ncurses->Set(String::New("A_ALTCHARSET"), Integer::New(A_ALTCHARSET));
     ncurses->Set(String::New("A_CHARTEXT"), Integer::New(A_CHARTEXT));
+    ncurses->Set(String::New("COLOR_BLACK"), Integer::New(COLOR_BLACK));
+    ncurses->Set(String::New("COLOR_RED"), Integer::New(COLOR_RED));
+    ncurses->Set(String::New("COLOR_GREEN"), Integer::New(COLOR_GREEN));
+    ncurses->Set(String::New("COLOR_YELLOW"), Integer::New(COLOR_YELLOW));
+    ncurses->Set(String::New("COLOR_BLUE"), Integer::New(COLOR_BLUE));
+    ncurses->Set(String::New("COLOR_MAGENTA"), Integer::New(COLOR_MAGENTA));
+    ncurses->Set(String::New("COLOR_CYAN"), Integer::New(COLOR_CYAN));
+    ncurses->Set(String::New("COLOR_WHITE"), Integer::New(COLOR_WHITE));
 
 
     ncurses->Set(String::New("printw"), FunctionTemplate::New(ncurses_printw));
@@ -961,6 +1007,7 @@ void init_ncurses_object () {
     ncurses->Set(String::New("echochar"), FunctionTemplate::New(ncurses_echochar));
     ncurses->Set(String::New("wechochar"), FunctionTemplate::New(ncurses_wechochar));
 
+    ncurses->Set(String::New("mvcur"), FunctionTemplate::New(ncurses_mvcur));
     ncurses->Set(String::New("move"), FunctionTemplate::New(ncurses_move));
     ncurses->Set(String::New("wmove"), FunctionTemplate::New(ncurses_wmove));
 
