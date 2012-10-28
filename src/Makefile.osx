@@ -72,7 +72,7 @@ install:	SilkJS perms
 	mv /usr/local/silkjs/examples /usr/local/silkjs/bin
 	chmod 755 /usr/local/silkjs/bin/* /usr/local/silkjs/httpd/main.js
 	cp silkjs /usr/local/silkjs/bin
-	install_name_tool -change $(CURDIR)/$(V8LIB_DIR)/libv8.dylib @rpath/libv8.dylib /usr/local/silkjs/bin/silkjs
+	install_name_tool -change /usr/local/lib/libv8.dylib @rpath/libv8.dylib /usr/local/silkjs/bin/silkjs
 	ln -sf /usr/local/silkjs/bin/silkjs /usr/local/bin
 	ln -sf /usr/local/silkjs/httpd/main.js /usr/local/bin/httpd-silk.js
 

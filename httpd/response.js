@@ -131,7 +131,7 @@ res = function() {
 						out += '; Expires='+cookie.expires;
 					}
 					if (cookie.path) {
-						out += '; Path='+encodeURIComponent(cookie.path);
+						out += '; Path='+cookie.path;
 					}
 					if (cookie.domain) {
 						out += '; Domain='+encodeURIComponent(cookie.domain);
@@ -225,5 +225,6 @@ res = function() {
 			buffer.destroy(buf);
 		}
 		
-	}
+	};
+	
 }();
