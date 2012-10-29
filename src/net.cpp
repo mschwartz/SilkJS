@@ -204,10 +204,10 @@ static JSVAL net_accept (JSARGS args) {
     //#else
     //	setsockopt( sock, IPPROTO_TCP, TCP_NODELAY, (char *)&yes, sizeof(yes) );
     //#endif
-    //	{
-    //		int x;
-    //		x = fcntl(sock, F_GETFL, 0);
-    //		fcntl(sock, F_SETFL, x | O_NONBLOCK);
+//    	{
+ //   		int x;
+  //  		x = fcntl(sock, F_GETFL, 0);
+   // 		fcntl(sock, F_SETFL, x | O_NONBLOCK);
     //	}
     strcpy(remote_addr, inet_ntoa(their_addr.sin_addr));
 
@@ -419,6 +419,9 @@ static JSVAL net_writebuffer (JSARGS args) {
         if (count < 0) {
             return ThrowException(String::Concat(String::New("Write Error: "), String::New(strerror(errno))));
         }
+		else if (count == 0) {
+			return ThrowException(String::New("Write Error: End of File"));
+		}
         size -= count;
         s += count;
         written += count;
