@@ -2,10 +2,12 @@ ARCH := $(shell getconf LONG_BIT)
 
 RELEASE := $(shell lsb_release -sr)
 
+GROUP = admin
 ifeq ($(RELEASE),12.04)
 	GROUP=sudo
-else
-	GROUP=admin
+endif
+ifeq ($(RELEASE),12.10)
+	GROUP=sudo
 endif
 
 CORE=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o v8.o http.o md5.o popen.o linenoise.o async.o time.o
@@ -33,7 +35,7 @@ INCDIRS=    -I$(V8DIR)/include -I/usr/include/mysql
 
 LIBDIRS=    -L$(V8LIB_DIR)/ 
 
-CFLAGS = -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-strict-aliasing -fvisibility=hidden -Wall -W -Wno-ignored-qualifiers -Wno-unused-function -Wno-unused-parameter -Wnon-virtual-dtor -m$(ARCH) -O3 -fomit-frame-pointer -fdata-sections -ffunction-sections -ansi -fno-strict-aliasing
+CFLAGS = -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-strict-aliasing -fvisibility=hidden -Wall -W -Wno-ignored-qualifiers -Wno-unused-function -Wno-unused-parameter -Wnon-virtual-dtor -m$(ARCH) -O3 -fomit-frame-pointer -fdata-sections -ffunction-sections -ansi -fno-strict-aliasing -DNEW_MEMCACHED
 
 %.o: %.cpp SilkJS.h 
 	g++ $(CFLAGS) -c $(INCDIRS) -o $*.o $*.cpp

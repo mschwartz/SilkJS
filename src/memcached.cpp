@@ -27,7 +27,8 @@
 #include <libmemcached/memcached.h>
 
 #define M memcached_st
-#ifdef __LIBMEMCACHED_MEMCACHED_H__
+//#ifdef __LIBMEMCACHED_MEMCACHED_H__
+#ifdef NEW_MEMCACHED
  #define R memcached_return_t
  #define dump_fn_type const memcached_st
 #else
