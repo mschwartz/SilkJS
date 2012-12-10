@@ -28,6 +28,9 @@
 
 #define M memcached_st
 //#ifdef __LIBMEMCACHED_MEMCACHED_H__
+#ifdef __APPLE__
+#define NEW_MEMCACHED
+#endif
 #ifdef NEW_MEMCACHED
  #define R memcached_return_t
  #define dump_fn_type const memcached_st
