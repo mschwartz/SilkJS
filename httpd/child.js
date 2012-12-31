@@ -448,6 +448,7 @@ HttpChild = (function() {
                     catch (e) {
                         if (e !== 'RES.STOP') {
                             errorHandler(e);
+                            keepAlive = false;
 //                          Error.exceptionHandler(e);
                         }
                     }
