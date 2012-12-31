@@ -81,10 +81,15 @@ req = (function() {
 			// process cookies
             req.cookies = {};
 			if (headers['cookie']) {
-				headers['cookie'].split(/;\s*/).each(function(cookie) {
-					var cookieParts = cookie.split('=');
-					req.cookies[cookieParts[0]] = data[cookieParts[0]] = decodeURIComponent(cookieParts[1].replace(/\+/g, ' '));
-				});
+				try {
+					headers['cookie'].split(/;\s*/).each(function(cookie) {
+						var cookieParts = cookie.split('=');
+						req.cookies[cookieParts[0]] = data[cookieParts[0]] = decodeURIComponent(cookieParts[1].replace(/\+/g, ' '));
+					});
+				}
+				catch (e) {
+					
+				}
 			}
 
 			// process POST data
