@@ -189,12 +189,8 @@ res = function() {
 				}
 			}
 			res.contentLength = size;
-			try {
-				res.sendHeaders();
-				net.sendFile(res.sock, fn, 0, size); // (FileSystem.readfile64(fn));
-			}
-			catch (e) {
-			}
+			res.sendHeaders();
+			net.sendFile(res.sock, fn, 0, size); // (FileSystem.readfile64(fn));
 		},
 
 		flush: function() {

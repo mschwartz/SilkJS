@@ -368,7 +368,7 @@ static JSVAL net_write (JSARGS args) {
     char *s = *buf;
     while (size > 0) {
         long count = write(fd, s, size);
-        if (count < 0) {
+        if (count <= 0) {
             return ThrowException(String::Concat(String::New("Write Error: "), String::New(strerror(errno))));
         }
         size -= count;
