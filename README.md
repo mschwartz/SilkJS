@@ -91,15 +91,21 @@ in JavaScript.  Even the CommonJS require() method is written in JavaScript.
 
 (See https://github.com/mschwartz/SilkJS/wiki/Build-Instructions for dependent libraries)
 
-Currently for Mac OSX Lion x64 and Ubuntu only...
+Currently for :
+* Mac OSX Lion x64
+* Ubuntu 12.04 and higher
+* Other Ubuntu-based distributions (including Linux Mint 12 and higher...)
 
+Downloading and compilation :
     git clone https://github.com/mschwartz/SilkJS SilkJS
     cd SilkJS
     make
+    
+Installation :
+    make install (OR "sudo make install" for Ubuntu)
 
-Once built:
-
-    ./silkjs httpd/main.js
+Once installed, you can launch the demo:
+    silkjs httpd/main.js
 
 Then point your browser at http://localhost:9090/
 
