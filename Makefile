@@ -1,16 +1,21 @@
 UNAME := $(shell uname -s)
-
 MAKEFILE=Makefile
-RELEASE = 0
 ifeq ($(UNAME),Darwin)
-    MAKEFILE=Makefile.osx
+	MAKEFILE=Makefile.osx
 else
-	RELEASE := $(shell lsb_release -sr)
+    ifneq ($(shell shtool platform | grep -i "suse"),)
+		MAKEFILE=Makefile.sles
+    endif
+    ifneq ($(shell shtool platform | grep -i "centos"),)
+		MAKEFILE=Makefile.centos
+    endif
+    ifneq ($(shell shtool platform | grep -i "linuxmint"),)
+		MAKEFILE=Makefile.Mint
+    endif
+    ifneq ($(shell shtool platform | grep -i "ubuntu"),)
+		MAKEFILE=Makefile
+    endif
 endif
-ifeq ($(RELEASE),11)
-	MAKEFILE = Makefile.sles
-endif
-
 
 all:
 	cd src && make -f$(MAKEFILE)

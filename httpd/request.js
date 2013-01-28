@@ -136,12 +136,11 @@ req = (function() {
 						});
 					}
                     else {
+                        req.data = data;
                         req.data.post = post;
                     }
 				}
 			}
-			req.data = data;
-			
 			return true;
 		},
 		getHeader: function(key) {
