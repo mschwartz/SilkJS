@@ -97,14 +97,17 @@ Currently for :
 * Other Ubuntu-based distributions (including Linux Mint 12 and higher...)
 
 Downloading and compilation :
+
     git clone https://github.com/mschwartz/SilkJS SilkJS
     cd SilkJS
     make
     
 Installation :
+
     make install (OR "sudo make install" for Ubuntu)
 
 Once installed, you can launch the demo:
+
     silkjs httpd/main.js
 
 Then point your browser at http://localhost:9090/
