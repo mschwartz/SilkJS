@@ -175,6 +175,7 @@ function main() {
         }
         var child = activeList.remHead();
         net.write(child.control, 'g', 1);
+        net.read(child.control, 1);
         child.status = 'x';
         wakeupCount--;
         activeList.addTail(child);

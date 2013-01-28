@@ -9,6 +9,7 @@ HttpChild = (function() {
 
     function errorHandler(e) {
         console.log('errorHandler');
+        console.dir(e);
         console.dir(e.stack);
         var spaces = '                 ';
         function lineNumber(n) {
@@ -432,6 +433,7 @@ HttpChild = (function() {
                 async.write(control, 'r', 1);
                 async.read(control, 1);
                 var sock = net.accept(serverSocket);
+                async.write(control, 'x', 1);
                 var keepAlive = true;
                 while (keepAlive) {
                     if (++requestsHandled > REQUESTS_PER_CHILD) {
