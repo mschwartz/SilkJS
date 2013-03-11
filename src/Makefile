@@ -9,6 +9,9 @@ endif
 ifeq ($(RELEASE),12.10)
 	GROUP=sudo
 endif
+ifeq ($(RELEASE),14)
+	GROUP=sudo
+endif
 
 CORE=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o v8.o http.o md5.o popen.o linenoise.o async.o time.o
 
