@@ -129,15 +129,20 @@ req = (function() {
 				}
 				else {
 					post = http.readPost(stream, contentLength);
-					if (headers['content-type'] && headers['content-type'].match(/^application\/x-www-form-urlencoded/i)) {
-						post.split('&').each(function(part) {
-							part = part.split('=');
-							data[part[0]] = decodeURIComponent(part[1].replace(/\+/gm, ' '));
-						});
+					if (post) {
+						if (headers['content-type'] && headers['content-type'].match(/^application\/x-www-form-urlencoded/i)) {
+							post.split('&').each(function(part) {
+								part = part.split('=');
+								data[part[0]] = decodeURIComponent(part[1].replace(/\+/gm, ' '));
+							});
+						}
+						else {
+							req.data.post = post;
+						}
 					}
-                    else {
-                        req.data.post = post;
-                    }
+					else {
+						req.data.post = '';
+					}
 				}
 			}
 			req.data = data;
