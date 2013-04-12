@@ -118,7 +118,7 @@ HttpChild = (function() {
             }
         }
         catch (ee) {
-
+			process.exit();
         }
     }
 
@@ -456,6 +456,7 @@ HttpChild = (function() {
                         if (e !== 'RES.STOP') {
                             errorHandler(e);
                             keepAlive = false;
+							break;
 //                          Error.exceptionHandler(e);
                         }
                     }
@@ -476,6 +477,7 @@ HttpChild = (function() {
                     catch (e) {
                         console.dir(e.stack);
                         keepAlive = false;
+						break;
                     }
                 }
                 net.close(sock);
