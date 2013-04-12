@@ -899,11 +899,18 @@ static JSVAL ncurses_get_stdscr (Local<String>property, const AccessorInfo& info
     return Opaque::New(stdscr);
 }
 
-void ncurses_set_stdscr (Local<String>property, Local<Value>value, const AccessorInfo& info) {
+static void ncurses_set_stdscr (Local<String>property, Local<Value>value, const AccessorInfo& info) {
     stdscr = (WINDOW *) JSOPAQUE(value);
 }
 
+static void ncurses_cleanup(int sig) {
+	endwin();
+	exit(0);
+}
+
 void init_ncurses_object () {
+	signal(SIGINT, ncurses_cleanup);
+
     Handle<ObjectTemplate>ncurses = ObjectTemplate::New();
 
     ncurses->Set(String::New("ERR"), Integer::New(ERR));
