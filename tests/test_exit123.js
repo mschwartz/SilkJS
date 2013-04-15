@@ -6,5 +6,7 @@ var process = require('builtin/process'),
 function main() {
 	process.exec('./exit123.js');
 	console.log('return code = ' + process.exec_result());
+	process.exec('./return123.js');
+	console.log('returns = ' + process.exec_result());
 }
 

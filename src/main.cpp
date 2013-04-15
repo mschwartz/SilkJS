@@ -170,6 +170,9 @@ int main (int argc, char** argv) {
                     ReportException(&tryCatch);
                     exit(1);
                 }
+				if (v->IsInt32()) {
+					exit(v->IntegerValue());
+				}
             }
         }
         context.Dispose();
