@@ -232,8 +232,21 @@ static JSVAL process_exec (JSARGS args) {
     return String::New(s.c_str(), s.size());
 }
 
+/**
+ * @function process.exec_result();
+ *
+ * ### Synopsis
+ *
+ * var result = process.exec_result);
+ *
+ * Returns the exit code of the last process.exec() call.  
+ *
+ * NOTE: The value is the low-order 8 bits of the argument the program run by exec()  passed to _exit(2) or exit(3).
+ *
+ * @return {int} result - exit code
+ */
 static JSVAL process_exec_result(JSARGS args) {
-    return Integer::New(exec_result);
+    return Integer::New(WEXITSTATUS(exec_result));
 }
 
 /**
