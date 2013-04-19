@@ -10,7 +10,7 @@ HttpChild = (function() {
     function errorHandler(e) {
         console.log('errorHandler');
         console.dir(e);
-        console.dir(e.stack);
+		console.log(e.stack);
         var spaces = '                 ';
         function lineNumber(n) {
             n = '' + n;

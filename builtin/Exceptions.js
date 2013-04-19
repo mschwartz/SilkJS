@@ -36,6 +36,7 @@
         return this.message;
     }
 
+if (false) {
     global.SilkException = function(msg) {
 //        var save = Error.prepareStackTrace;
 //        Error.prepareStackTrace = prepareStackTrace;
@@ -227,5 +228,6 @@
             ].join('\n'));
         }
     }
+}
 
 }());

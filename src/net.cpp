@@ -170,7 +170,7 @@ static JSVAL net_accept (JSARGS args) {
     socklen_t sock_size = sizeof (struct sockaddr_in);
     bzero(&their_addr, sizeof (their_addr));
 
-#if 1
+#if 0
     fd_set fds;
     FD_ZERO(&fds);
     FD_SET(sock, &fds);

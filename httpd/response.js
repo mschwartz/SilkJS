@@ -147,7 +147,8 @@ res = function() {
 				catch (e) {
                     console.dir(e);
                     console.log(e.stack);
-					throw new SilkException(e);
+					throw e;
+//					throw new SilkException(e);
 				}
 				
 			}
@@ -158,7 +159,10 @@ res = function() {
 				buffer.write(buf, s, s.length);
 			}
 			catch (e) {
-				throw new SilkException(e);
+				console.dir(e);
+				console.log(e.stack);
+				throw e;
+//				throw new SilkException(e);
 			}
 		},
 		
@@ -171,26 +175,34 @@ res = function() {
 				buffer.write64(buf, s, s.length);
 			}
 			catch (e) {
-				throw new SilkException(e);
+				console.dir(e);
+				console.log(e.stack);
+//				throw new SilkException(e);
 			}
 		},
 
 		sendFile: function (fn) {
-			res.reset();	// so extra stuff sent with res.write() isn't sent'
-			var modified = fs.fileModified(fn);
-			var size = fs.fileSize(fn);
-			res.headers['last-modified'] = new Date(modified*1000).toGMTString();
-			var ifModifiedSince = req.headers['if-modified-since'];
-			if (ifModifiedSince) {
-				ifModifiedSince = Date.parse(ifModifiedSince)/1000;
-				if (modified <= ifModifiedSince) {
-					res.status = 304;
-					res.stop();
+			try {
+				res.reset();	// so extra stuff sent with res.write() isn't sent'
+				var modified = fs.fileModified(fn);
+				var size = fs.fileSize(fn);
+				res.headers['last-modified'] = new Date(modified*1000).toGMTString();
+				var ifModifiedSince = req.headers['if-modified-since'];
+				if (ifModifiedSince) {
+					ifModifiedSince = Date.parse(ifModifiedSince)/1000;
+					if (modified <= ifModifiedSince) {
+						res.status = 304;
+						res.stop();
+					}
 				}
+				res.contentLength = size;
+				res.sendHeaders();
+				net.sendFile(res.sock, fn, 0, size); // (FileSystem.readfile64(fn));
 			}
-			res.contentLength = size;
-			res.sendHeaders();
-			net.sendFile(res.sock, fn, 0, size); // (FileSystem.readfile64(fn));
+			catch (e) {
+				throw e;
+			}
+
 		},
 
 		flush: function() {
