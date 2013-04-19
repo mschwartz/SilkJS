@@ -25,10 +25,12 @@ var ssh2 = require('builtin/ssh2');
  * @param {string} host - hostname to connect to.
  * @param {string} user - user login at remote host
  * @param {string} password - user password at remote host
+ * @param {int} port - optional port if not 22
  * @returns {object} ssh - ssh connection instance, connected.
  */
-var SSH = function(host, user, password) {
-    this.connection = ssh2.connect(host, user, password);
+var SSH = function(host, user, password, port) {
+	port = port || 22;
+    this.connection = ssh2.connect(host, user, password, port);
     if (!ssh2.alive(this.connection)) {
         throw ssh2.error(this.connection);
     }
