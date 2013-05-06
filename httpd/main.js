@@ -25,40 +25,23 @@ include('lib/Showdown.js');
 var SSH = require('SSH');
 ////
 include('httpd/config.js');
+Config.serverAlgorithm = 'semaphore';
 include('httpd/Server.js');
 include('httpd/request.js');
 include('httpd/response.js');
 include('httpd/child.js');
 
-function main() {
-    var debugMode = false;
-    // load any user provided JavaScripts
-    arguments.each(function(arg) {
-        if (arg === '-d') {
-            debugMode = true;
-            return false;
-        }
-    });
+/*global logfile, HttpChild */
 
-    if (debugMode) {
-        v8.enableDebugger();
-        log('Running in debug mode');
-    }
-    arguments.each(function(arg) {
-        if (arg.endsWith('.js') || arg.endsWith('.coffee')) {
-            include(arg);
-        }
-    });
-    if (Config.mysql) {
-        MySQL = require('MySQL').MySQL;
-    }
-
+// This version of the server, the main program directs the child processes
+// to wake up and handle requests.
+function masterServer(debugMode) {
     var pid;
     // var fd = fs.open(Config.lockFile, fs.O_WRONLY|fs.O_CREAT|fs.O_TRUNC, parseInt('0644', 8));
     // fs.close(fd);
     var serverSocket = net.listen(Config.port, 50, Config.listenIp);
     global.logfile = new LogFile(Config.logFile || '/tmp/httpd-silkjs.log');
-    
+
     Server.onStart();
 
     if (debugMode) {
@@ -66,13 +49,13 @@ function main() {
             HttpChild.run(serverSocket, process.getpid());
         }
     }
-    
+
     var List = require('List').List,
         freeList = new List(),
         activeList = new List();
 
-    for (var n=0; n<Config.numChildren*2; n++) {
-        freeList.addTail({ n: n, pid: 0, control: 0, status: '' });
+    for (var n = 0; n < Config.numChildren * 2; n++) {
+        freeList.addTail({ n : n, pid : 0, control : 0, status : '' });
     }
 
     function dumpList(list, heading) {
@@ -80,16 +63,17 @@ function main() {
         console.log(heading);
         list.each(function(node) {
             console.dir({
-                n: node.n,
-                pid: node.pid,
-                control: node.control,
-                status: node.status
+                n       : node.n,
+                pid     : node.pid,
+                control : node.control,
+                status  : node.status
             });
         });
     }
 
     var children = {},
         children_map = {};
+
     function forkChild() {
         var pair = net.socketpair();
         if (pair === false) {
@@ -116,21 +100,20 @@ function main() {
         }
     }
 
-    for (var i=0; i<Config.numChildren; i++) {
+    for (var i = 0; i < Config.numChildren; i++) {
         forkChild();
     }
     var logMessage = 'SilkJS HTTP running with ' + Config.numChildren + ' children on port ' + Config.port + ' from documentRoot ' + Config.documentRoot;
     if (Config.listenIp !== '0.0.0.0') {
         logMessage += ' on IP ' + Config.listenIp;
     }
-//    console.log('Silk running with ' + Config.numChildren + ' children on port ' + Config.port);
-//    logfile.write('Silk running with ' + Config.numChildren + ' children on port ' + Config.port + '\n');
     console.log(logMessage);
     logfile.writeln(logMessage);
 
 
     var readfds = async.alloc_fd_set();
     var maxfd;
+
     function build_fd_set() {
         async.FD_ZERO(readfds);
         async.FD_SET(serverSocket, readfds);
@@ -149,6 +132,7 @@ function main() {
     }
 
     var child;
+
     function processInput(fd) {
         if (fd === serverSocket) {
             return;
@@ -165,7 +149,9 @@ function main() {
         child.status = status;
         wakeupChild();
     }
+
     var wakeupCount = 0;
+
     function wakeupChild() {
         if (!wakeupCount) {
             return;
@@ -192,9 +178,10 @@ function main() {
             delete children[child.pid];
         }
     }
+
     while (true) {
         build_fd_set();
-        var o = async.select(maxfd+1, readfds);
+        var o = async.select(maxfd + 1, readfds);
         while ((child = process.wait(true))) {
             if (!children[child.pid]) {
                 console.log('********************** CHILD EXITED THAT IS NOT HTTP CHILD');
@@ -214,4 +201,88 @@ function main() {
             }
         }
     }
+}
+
+// this version of the server, the children flock() around accept().
+function lockServer(debugMode) {
+    var pid;
+    var fd = fs.open(Config.lockFile, fs.O_WRONLY | fs.O_CREAT | fs.O_TRUNC, parseInt('0644', 8));
+    fs.close(fd);
+    var serverSocket = net.listen(Config.port, 50, Config.listenIp);
+    global.logfile = new LogFile(Config.logFile || '/tmp/httpd-silkjs.log');
+
+    Server.onStart();
+
+    if (debugMode) {
+        while (1) {
+            HttpChild.run(serverSocket, process.getpid());
+        }
+    }
+
+    var children = {};
+    for (var i = 0; i < Config.numChildren; i++) {
+        pid = process.fork();
+        if (pid == 0) {
+            HttpChild.run(serverSocket, process.getpid());
+            process.exit(0);
+        }
+        else if (pid == -1) {
+            console.error(process.error());
+        }
+        else {
+            children[pid] = true;
+        }
+    }
+
+    var logMessage = 'SilkJS HTTP running with ' + Config.numChildren + ' children on port ' + Config.port + ' from documentRoot ' + Config.documentRoot;
+    if (Config.listenIp !== '0.0.0.0') {
+        logMessage += ' on IP ' + Config.listenIp;
+    }
+    console.log(logMessage);
+    logfile.writeln(logMessage);
+    while (true) {
+        var o = process.wait();
+        if (!children[o.pid]) {
+            console.log('********************** CHILD EXITED THAT IS NOT HTTP CHILD');
+            continue;
+        }
+        delete children[o.pid];
+        pid = process.fork();
+        if (pid == 0) {
+            HttpChild.run(serverSocket, process.getpid());
+            process.exit(0);
+        }
+        else if (pid == -1) {
+            console.error(process.error());
+        }
+        else {
+            children[pid] = true;
+        }
+    }
+}
+
+function main() {
+    var debugMode = false;
+    // load any user provided JavaScripts
+    arguments.each(function(arg) {
+        if (arg === '-d') {
+            debugMode = true;
+            return false;
+        }
+    });
+
+    if (debugMode) {
+        v8.enableDebugger();
+        log('Running in debug mode');
+    }
+    arguments.each(function(arg) {
+        if (arg.endsWith('.js') || arg.endsWith('.coffee')) {
+            include(arg);
+        }
+    });
+    if (Config.mysql) {
+        MySQL = require('MySQL').MySQL;
+    }
+
+    lockServer(debugMode);
 }

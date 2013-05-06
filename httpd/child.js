@@ -1,5 +1,7 @@
 // httpd/child.js
 
+/*global async */
+
 HttpChild = (function() {
     var requestsHandled;
 
@@ -403,6 +405,26 @@ HttpChild = (function() {
         }
     }
 
+    // semaphore for locking around accept()
+    var USE_FLOCK = true;
+    var lock = USE_FLOCK ? function(lockfd) { fs.flock(lockfd, fs.LOCK_EX); } : function(lockfd) { fs.lockf(lockfd, fs.F_LOCK); };
+    var unlock = USE_FLOCK ? function(lockfd) { fs.flock(lockfd, fs.LOCK_UN); } : function(lockfd) { fs.lockf(lockfd, fs.F_ULOCK); };
+
+    var accept = Config.serverAlgorithm === 'semaphore' ?
+        function(serverSocket, control) {
+            lock(control)
+            var sock = net.accept(serverSocket);
+            unlock(control);
+            return sock;
+        } :
+        function (serverSocket, control) {
+            async.write(control, 'r', 1);
+            async.read(control, 1);
+            var sock = net.accept(serverSocket);
+            async.write(control, 'x', 1);
+            return sock;
+        };
+
     return {
         requestHandler: null,   // called at start of each request
         endRequest: null,       // called at end of each request
@@ -411,6 +433,7 @@ HttpChild = (function() {
             return coffee_cache[fn];
         },
         run: function(serverSocket, pid, control) {
+            var sock;   // child socket
             // randomize the random number generator, just in case.
             var bits = pid % Config.numChildren;
             for (var b=0; b<bits; b++) {
@@ -429,11 +452,19 @@ HttpChild = (function() {
             var requestHandler = HttpChild.requestHandler;
             var endRequest = HttpChild.endRequest;
             requestsHandled = 0;
+            if (Config.serverAlgorithm === 'flock') {
+                control = fs.open(Config.lockFile, fs.O_RDONLY);
+            }
             while (requestsHandled < REQUESTS_PER_CHILD) {
-                async.write(control, 'r', 1);
-                async.read(control, 1);
-                var sock = net.accept(serverSocket);
-                async.write(control, 'x', 1);
+                try {
+                    sock = accept(serverSocket, control);
+                    if (sock < 0) {
+                        continue;
+                    }
+                }
+                catch (e) {
+                    continue;
+                }
                 var keepAlive = true;
                 while (keepAlive) {
                     if (++requestsHandled > REQUESTS_PER_CHILD) {
