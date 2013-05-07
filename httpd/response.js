@@ -42,7 +42,9 @@ var responseCodeText = {
 };
 
 res = function() {
-	var buf = buffer.create();
+	var buf = buffer.create(),
+		watchdog = require('builtin/watchdog');
+
 	return {
 		sock: 0,
 		status: 200,
@@ -79,7 +81,13 @@ res = function() {
 		},
 		
 		stop: function() {
-			Server.endRequest();
+			watchdog.clear();
+			if (global.Server) {
+				Server.endRequest();
+			}
+			else {
+				throw 'RES.STOP';
+			}
 		},
 		
 		reset: function() {
@@ -177,12 +185,14 @@ res = function() {
 			catch (e) {
 				console.dir(e);
 				console.log(e.stack);
+				throw e;
 //				throw new SilkException(e);
 			}
 		},
 
 		sendFile: function (fn) {
 			try {
+				watchdog.clear();
 				res.reset();	// so extra stuff sent with res.write() isn't sent'
 				var modified = fs.fileModified(fn);
 				var size = fs.fileSize(fn);

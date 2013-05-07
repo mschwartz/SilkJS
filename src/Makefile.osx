@@ -3,7 +3,7 @@ GPP = /usr/bin/g++
 LD = /usr/bin/g++
 export LC_ALL:=C
 
-OBJ=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o http.o gd.o ncurses.o sem.o logfile.o v8.o md5.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o memcached.o ftplib.o ftp.o editline.o popen.o linenoise.o cairo.o expat.o async.o time.o mysql.o
+OBJ=	main.o base64.o global.o console.o process.o net.o fs.o buffer.o http.o gd.o ncurses.o sem.o logfile.o v8.o md5.o sqlite3.o xhrhelper.o curl.o ssh2.o sftp.o memcached.o ftplib.o ftp.o editline.o popen.o linenoise.o cairo.o expat.o async.o time.o mysql.o watchdog.o
 
 CFLAGS = -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-sections -fno-strict-aliasing -fvisibility=hidden -Wall -W -Wno-unused-function -Wno-unused-parameter -Wnon-virtual-dtor -m64 -O3 -fomit-frame-pointer -fdata-sections -ffunction-sections -ansi -fno-strict-aliasing
 

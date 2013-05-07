@@ -7,7 +7,8 @@ HttpChild = (function() {
 
     var mimeTypes = require('MimeTypes'),
 		Showdown = require('github-flavored-markdown'),
-        time = require('builtin/time');
+        time = require('builtin/time')
+		watchdog = require('builtin/watchdog');
 
     function errorHandler(e) {
         console.log('errorHandler');
@@ -448,14 +449,17 @@ HttpChild = (function() {
                 SQL = new MySQL();
                 SQL.connect();
             }
-            var REQUESTS_PER_CHILD = Config.requestsPerChild;
-            var requestHandler = HttpChild.requestHandler;
-            var endRequest = HttpChild.endRequest;
+            var REQUESTS_PER_CHILD = Config.requestsPerChild,
+				watchdogTimeout = Config.watchdogTimeout || 0,
+            	requestHandler = HttpChild.requestHandler,
+            	endRequest = HttpChild.endRequest;
+
             requestsHandled = 0;
             if (Config.serverAlgorithm === 'flock') {
                 control = fs.open(Config.lockFile, fs.O_RDONLY);
             }
             while (requestsHandled < REQUESTS_PER_CHILD) {
+				watchdog.clear();
                 try {
                     sock = accept(serverSocket, control);
                     if (sock < 0) {
@@ -471,6 +475,9 @@ HttpChild = (function() {
                         keepAlive = false;
                     }
                     var start_time = time.getrusage();
+					if (watchdogTimeout) {
+						watchdog.set(watchdogTimeout);
+					}
                     try {
                         if (!req.init(sock)) {
                             break;
@@ -487,6 +494,7 @@ HttpChild = (function() {
                         if (e !== 'RES.STOP') {
                             errorHandler(e);
                             keepAlive = false;
+							watchdog.clear();
 							break;
 //                          Error.exceptionHandler(e);
                         }
@@ -510,10 +518,12 @@ HttpChild = (function() {
                         keepAlive = false;
 						break;
                     }
+					watchdog.clear();
                 }
                 net.close(sock);
                 req.close();
                 v8.gc();
+				watchdog.clear();
             }
             res.close();
         }

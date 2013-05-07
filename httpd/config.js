@@ -26,6 +26,7 @@ Config = {
 	port: 9090,
 	numChildren: 50,
 	requestsPerChild: 100000,
+	watchdogTimeout: 30,	// if process runs this long for a request, the alarm handler will exit()
     listenIp: '0.0.0.0',    // listen socket will be bound to this IP.  '0.0.0.0' means ANY IP on this machine.
 	documentRoot: docRoot,
     logFile: '/tmp/httpd-silkjs.log',
