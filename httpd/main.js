@@ -267,6 +267,7 @@ function main() {
     arguments.each(function(arg) {
         if (arg === '-d') {
             debugMode = true;
+			Config.watchdogTimeout = 0;
             return false;
         }
     });
