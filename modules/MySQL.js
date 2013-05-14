@@ -161,7 +161,7 @@ MySQL.prototype.extend({
     },
 
     /**
-     * @function SQL.getDataRows
+     * @function SQL.getDataRow
      *
      * ### Synopsis
      *

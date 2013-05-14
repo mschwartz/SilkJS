@@ -140,7 +140,7 @@
             }
             if (single) {
                 var ret = SQL.getDataRow(query);
-                return empty(ret) ? [] : Schema.onLoad(schema, ret);
+                return empty(ret) ? false : Schema.onLoad(schema, ret);
             }
             else {
                 return Schema.onLoad(schema, SQL.getDataRows(query));
