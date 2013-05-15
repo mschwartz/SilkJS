@@ -1,7 +1,7 @@
 (function() {
 	var fs = builtin.fs,
 		v8 = builtin.v8;
-	
+
 	function locateFile(fn) {
 		if (fs.isFile(fn)) {
             return fn;
@@ -51,9 +51,17 @@
 //
 //			log('\n'+source)
 		}
-		var script = v8.compileScript(contents, fn);
-		v8.runScript(script);
-		v8.freeScript(script);
+		var script;
+		try {
+			script = v8.compileScript(contents, fn);
+			v8.runScript(script);
+			v8.freeScript(script);
+		}
+		catch (e) {
+			throw "Could not compile " + fn + "\n" + e.toString();
+			// console.dir(e);
+			// throw e;
+		}
 	}
 	include = function() {
 		var argLen = arguments.length;

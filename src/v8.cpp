@@ -56,8 +56,16 @@ static JSVAL gc (const Arguments& args) {
 static JSVAL compileScript (JSARGS args) {
     //	Persistent<Context>context = Context::New(NULL, ObjectTemplate::New());
     //	Context::Scope context_scope(context);
+    TryCatch tryCatch;
+    Persistent<Script>s = Persistent<Script>::New(Script::New(args[0]->ToString(), args[1]->ToString()));
+    if (s.IsEmpty()) {
+        String::Utf8Value error(tryCatch.Exception());
+        return ThrowException(String::New(*error)); // String::Concat(String::New("Error compiling "), args[1]->ToString()));
+        // delete wrapper;
+        // return Opaque::New(NULL);
+    }
     ScriptWrapper *wrapper = new ScriptWrapper;
-    wrapper->script = Persistent<Script>::New(Script::New(args[0]->ToString(), args[1]->ToString()));
+    wrapper->script = s; // Persistent<Script>::New(Script::New(args[0]->ToString(), args[1]->ToString()));
     //	context.Dispose();
     return Opaque::New(wrapper);
 }
@@ -78,7 +86,9 @@ static JSVAL compileScript (JSARGS args) {
 
 static JSVAL runScript (JSARGS args) {
     ScriptWrapper *wrapper = (ScriptWrapper *) JSOPAQUE(args[0]); // wrap->Value();
-
+    if (!wrapper) {
+        return Null();
+    }
     //	Persistent<Context>context = Context::New(NULL, ObjectTemplate::New());
     //	Context::Scope context_scope(context);
     Handle<Value>v = wrapper->script->Run();

@@ -278,7 +278,13 @@ function main() {
     }
     arguments.each(function(arg) {
         if (arg.endsWith('.js') || arg.endsWith('.coffee')) {
-            include(arg);
+            try {
+                include(arg);
+            }
+            catch (e) {
+                console.log('*** ' + e.toString());
+                process.exit(1);
+            }
         }
     });
     if (Config.mysql) {
