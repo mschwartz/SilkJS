@@ -902,9 +902,10 @@ static JSVAL fs_touch(JSARGS args) {
     if (success == 0) {
         return True();
     }
-    if (success == ENOENT) {
+    if (errno == ENOENT) {
         int fd = open(*filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
         if (fd < 1) {
+			printf("%s\n", strerror(errno));
             return False();
         }
         close(fd);
