@@ -90,7 +90,26 @@
        getPassword: function(prompt) {
            prompt = prompt || '';
            return console.getPassword(prompt);
-       }
+       },
+
+       /**
+        * @function console.getSize
+        *
+        * ### Synopsis
+        *
+        * var size = console.getSize();
+        *
+        * Get size of console window in rows and columns
+        *
+        * The size object returned contains the following members:
+        * rows: number of rows the terminal can display
+        * columns: number of columns the terminal can display
+        *
+        * @returns {object} size - object containing dimensions, as described above.
+        */
+        getSize: function() {
+            return console.getSize();
+        }
         
 	};
 }());

@@ -205,12 +205,60 @@ function masterServer(debugMode) {
 
 // this version of the server, the children flock() around accept().
 function lockServer(debugMode) {
-    var pid;
+    var gid = process.getgid(),
+        uid = process.getuid(),
+        user = process.getpwnam(Config.user),
+        group = process.getgrnam(Config.group),
+        setuid = process.setuid,
+        setgid = process.setgid,
+        setChildUser = function() {};
+
+    if (uid && Config.port < 1024) {
+        console.log([
+            'Config.port is set to ' + Config.port,
+            'But the server is being run as ' + process.getpwuid(uid).name + '.',
+            'Only programs with root user privileges can bind to ports below 1024.'
+        ].join('\n'));
+        process.exit(1);
+    }
+    if (!uid) {
+        if (user && group) {
+            gid = group.gid;
+            uid = user.uid;
+            setChildUser = function() {
+                // the order here is important!
+                setgid(gid);
+                setuid(uid);
+            };
+        }
+        else {
+            if (!user) {
+                console.log([
+                    'Config.user set to ' + Config.user,
+                    'But that user could not be found in the system.'
+                ].join('\n'))
+            }
+            if (!group) {
+                console.log([
+                    'Config.group set to ' + Config.group,
+                    'But that group could not be found in the system.'
+                ].join('\n'))
+            }
+            process.exit(1);
+        }
+    }
+
+    // assure lock file exists
     var fd = fs.open(Config.lockFile, fs.O_WRONLY | fs.O_CREAT | fs.O_TRUNC, parseInt('0644', 8));
     fs.close(fd);
+
+    // create server socket
     var serverSocket = net.listen(Config.port, 50, Config.listenIp);
+
+    // open log file
     global.logfile = new LogFile(Config.logFile || '/tmp/httpd-silkjs.log');
 
+    // run any initialization functions
     Server.onStart();
 
     if (debugMode) {
@@ -219,10 +267,13 @@ function lockServer(debugMode) {
         }
     }
 
-    var children = {};
+    var pid, 
+        children = {};
+
     for (var i = 0; i < Config.numChildren; i++) {
         pid = process.fork();
         if (pid == 0) {
+            setChildUser();
             HttpChild.run(serverSocket, process.getpid());
             process.exit(0);
         }
@@ -249,6 +300,7 @@ function lockServer(debugMode) {
         delete children[o.pid];
         pid = process.fork();
         if (pid == 0) {
+            setChildUser();
             HttpChild.run(serverSocket, process.getpid());
             process.exit(0);
         }

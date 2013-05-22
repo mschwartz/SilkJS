@@ -21,10 +21,6 @@
  * ### Usage
  * var logfile = require('builtin/logfile');
  * 
- * ### Notes
- * 
- * The log file is written to /tmp/silkjs.log.  This really should be configurable.  
- * 
  * ### See Also
  * The JavaScriptimplementation of the http server.
  */
@@ -56,8 +52,13 @@ struct STATE {
         *this->logBuffer = '\0';
         this->logFd = 0;
         this->alive = true;
-        int fd = open(this->filename, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        // setting file mode to 0666 so child processes with user,group
+        // changed by calls to setuid/setgid can flush()
+        mode_t omask = umask(0);
+        int fd = open(this->filename, O_WRONLY | O_CREAT | O_TRUNC, 0666);
         close(fd);
+        chmod(this->filename, 0666);
+        umask(omask);
     }
 
     ~STATE() {

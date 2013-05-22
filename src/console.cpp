@@ -15,6 +15,7 @@
  * modules/console.js
  */
 #include "SilkJS.h"
+#include <sys/ioctl.h>
 
 /**
  * @function console.log
@@ -53,9 +54,9 @@ static JSVAL error (JSARGS args) {
 /**
  * @function console.getPassword
  * 
- * var password = console.getPassword(prompt);
- * 
  * ### Synopsis
+ * 
+ * var password = console.getPassword(prompt);
  * 
  * Display a prompt and readin a password without echoing the characters to the display.
  * 
@@ -67,11 +68,36 @@ static JSVAL getPassword (JSARGS args) {
     return String::New(getpass(*prompt));
 }
 
+/**
+ * @function console.getSize
+ *
+ * ### Synopsis
+ *
+ * var size = console.getSize();
+ *
+ * Get size of console window in rows and columns
+ *
+ * The size object returned contains the following members:
+ * rows: number of rows the terminal can display
+ * columns: number of columns the terminal can display
+ *
+ * @returns {object} size - object containing dimensions, as described above.
+ */
+static JSVAL getSize(JSARGS args) {
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+    Handle<Object>o = Object::New();
+    o->Set(String::New("Rows"), Integer::New(w.ws_row));
+    o->Set(String::New("Columns"), Integer::New(w.ws_col));
+    return o;
+}
+
 void init_console_object () {
     Handle<ObjectTemplate>console = ObjectTemplate::New();
     console->Set(String::New("log"), FunctionTemplate::New(log));
     console->Set(String::New("error"), FunctionTemplate::New(error));
     console->Set(String::New("getPassword"), FunctionTemplate::New(getPassword));
+    console->Set(String::New("getSize"), FunctionTemplate::New(getSize));
 
     builtinObject->Set(String::New("console"), console);
 }

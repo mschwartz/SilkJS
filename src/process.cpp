@@ -17,6 +17,10 @@
 #include "SilkJS.h"
 //#include "v8-read-only/src/v8.h"
 #include <pwd.h>
+#include <grp.h>
+#ifdef __APPLE__
+#include <uuid/uuid.h>
+#endif
 
 // TODO:
 // getcwd()
@@ -38,6 +42,203 @@
  */
 static JSVAL process_error (JSARGS args) {
     return String::New(strerror(errno));
+}
+
+/**
+ * @function process.getuid
+ *
+ * ### Synopsis
+ * Returns real user ID (uid) of calling process
+ *
+ * ### Usage:
+ * var uid = process.getuid();
+ *
+ * @return {int} uid - real user ID
+ */
+static JSVAL process_getuid(JSARGS args) {
+    return Integer::New(getuid());
+}
+
+/**
+ * @function process.setuid
+ *
+ * ### Synopsis
+ * Set real user ID (uid) of calling process
+ *
+ * ### Usage:
+ * var status = process.getuid(newId);
+ *
+ * @param {int} newId - user ID to set for calling process
+ * @return {int} status - 0 if successful, -1 if not (call process.error for details)
+ */
+static JSVAL process_setuid(JSARGS args) {
+    return Integer::New(setuid(args[0]->IntegerValue()));
+}
+
+/**
+ * @function process.getgid
+ *
+ * ### Synopsis
+ * Returns real group ID (gid) of calling process
+ *
+ * ### Usage:
+ * var gid = process.getgid();
+ *
+ * @return {int} gid - real group ID
+ */
+static JSVAL process_getgid(JSARGS args) {
+    return Integer::New(getgid());
+}
+
+/**
+ * @function process.setgid
+ *
+ * ### Synopsis
+ * Set real group ID (gid) of calling process
+ *
+ * ### Usage:
+ * var status = process.getgid(newId);
+ *
+ * @param {int} newId - group ID to set for calling process
+ * @return {int} status - 0 if successful, -1 if not (call process.error for details)
+ */
+static JSVAL process_setgid(JSARGS args) {
+    return Integer::New(setgid(args[0]->IntegerValue()));
+}
+
+static JSVAL format_passwd(struct passwd *p) {
+    if (!p) {
+        return False();
+    }
+    JSOBJ o = Object::New();
+    o->Set(String::New("name"), String::New(p->pw_name));
+    o->Set(String::New("passwd"), String::New(p->pw_passwd));
+    o->Set(String::New("uid"), Integer::New(p->pw_uid));
+    o->Set(String::New("gid"), Integer::New(p->pw_gid));
+    o->Set(String::New("gecos"), String::New(p->pw_gecos));
+    o->Set(String::New("dir"), String::New(p->pw_dir));
+    o->Set(String::New("shell"), String::New(p->pw_shell));
+    return o;
+}
+
+/**
+ * @function process.getpwnam
+ *
+ * ### Synopsis
+ * Get user information from the system user database
+ *
+ * ### Usage:
+ * var info = process.getpwnam(login);
+ *
+ * ### Info Structure
+ * The returned object has the following fields:
+ * name: login name
+ * passwd: the user's password (may not be reliable if using shadow, etc.)
+ * uid: the user's user ID
+ * gid: the user's group ID
+ * gecos: "user information"
+ * dir: user's home directory
+ * shell: user's shell
+ *
+ * @param {string} login - login name of user to get info for
+ * @return {int} info - object as described above (Info Structure)
+ */
+static JSVAL process_getpwnam(JSARGS args) {
+    String::Utf8Value login(args[0]->ToString());
+    return format_passwd(getpwnam(*login));
+}
+
+/**
+ * @function process.getpwuid
+ *
+ * ### Synopsis
+ * Get user information from the system user database
+ *
+ * ### Usage:
+ * var info = process.getpwnam(uid);
+ *
+ * ### Info Structure
+ * The returned object has the following fields:
+ * name: login name
+ * passwd: the user's password (may not be reliable if using shadow, etc.)
+ * uid: the user's user ID
+ * gid: the user's group ID
+ * gecos: "user information"
+ * dir: user's home directory
+ * shell: user's shell
+ *
+ * @param {int} uid - user Id of user to get info for
+ * @return {int} info - object as described above (Info Structure)
+ */
+static JSVAL process_getpwuid(JSARGS args) {
+    return format_passwd(getpwuid(args[0]->IntegerValue()));
+}
+
+static JSVAL format_group(struct group *g) {
+    if (!g) {
+        return False();
+    }
+    JSOBJ o = Object::New();
+    o->Set(String::New("name"), String::New(g->gr_name));
+    o->Set(String::New("passwd"), String::New(g->gr_passwd));
+    o->Set(String::New("gid"), Integer::New(g->gr_gid));
+
+    Handle<Array>a = Array::New();
+    int ndx = 0;
+    char **mem = g->gr_mem;
+    while (*mem) {
+        a->Set(ndx++, String::New(*mem));
+        mem++;
+    }
+    o->Set(String::New("mem"), a);
+    return o;
+}
+
+/**
+ * @function process.getgrnam
+ *
+ * ### Synopsis
+ * Get group information from the system user database
+ *
+ * ### Usage:
+ * var info = process.getgrnam(name);
+ *
+ * ### Info Structure
+ * The returned object has the following fields:
+ * name: group name
+ * passwd: the group's password (may not be reliable if using shadow, etc.)
+ * gid: the user's group ID
+ * mem: array of member names (strings)
+ *
+ * @param {string} name - name of group to get info for
+ * @return {int} info - object as described above (Info Structure)
+ */
+static JSVAL process_getgrnam(JSARGS args) {
+    String::Utf8Value name(args[0]->ToString());
+    return format_group(getgrnam(*name));
+}
+
+/**
+ * @function process.getgruid
+ *
+ * ### Synopsis
+ * Get group information from the system user database
+ *
+ * ### Usage:
+ * var info = process.getgrgid(gid);
+ *
+ * ### Info Structure
+ * The returned object has the following fields:
+ * name: group name
+ * passwd: the group's password (may not be reliable if using shadow, etc.)
+ * gid: the user's group ID
+ * mem: array of member names (strings)
+ *
+ * @param {int} gid - group ID of group to get info for
+ * @return {int} info - object as described above (Info Structure)
+ */
+static JSVAL process_getgrgid(JSARGS args) {
+    return format_group(getgrgid(args[0]->IntegerValue()));
 }
 
 /**
@@ -250,21 +451,6 @@ static JSVAL process_exec_result(JSARGS args) {
 }
 
 /**
- * @function process.getuid
- * 
- * ### Synopsis
- * 
- * var uid = process.getuid();
- * 
- * Get the real user ID of the calling process.
- * 
- * @return {int} uid - the user ID of the calling process.
- */
-static JSVAL process_getuid (JSARGS args) {
-    return Integer::New(getuid());
-}
-
-/**
  * @function process.env
  * 
  * ### Synopsis
@@ -423,6 +609,16 @@ void init_process_object () {
     process->Set(String::New("env"), FunctionTemplate::New(process_env));
     process->Set(String::New("setenv"), FunctionTemplate::New(process_setenv));
     process->Set(String::New("error"), FunctionTemplate::New(process_error));
+    
+    process->Set(String::New("getuid"), FunctionTemplate::New(process_getuid));
+    process->Set(String::New("setuid"), FunctionTemplate::New(process_setuid));
+    process->Set(String::New("getgid"), FunctionTemplate::New(process_getgid));
+    process->Set(String::New("setgid"), FunctionTemplate::New(process_setgid));
+    process->Set(String::New("getpwnam"), FunctionTemplate::New(process_getpwnam));
+    process->Set(String::New("getpwuid"), FunctionTemplate::New(process_getpwuid));
+    process->Set(String::New("getgrnam"), FunctionTemplate::New(process_getgrnam));
+    process->Set(String::New("getgrgid"), FunctionTemplate::New(process_getgrgid));
+
     process->Set(String::New("kill"), FunctionTemplate::New(process_kill));
     process->Set(String::New("getpid"), FunctionTemplate::New(process_getpid));
     process->Set(String::New("fork"), FunctionTemplate::New(process_fork));
@@ -432,7 +628,6 @@ void init_process_object () {
     process->Set(String::New("wait"), FunctionTemplate::New(process_wait));
     process->Set(String::New("exec"), FunctionTemplate::New(process_exec));
     process->Set(String::New("exec_result"), FunctionTemplate::New(process_exec_result));
-    process->Set(String::New("getuid"), FunctionTemplate::New(process_getuid));
     process->Set(String::New("rusage"), FunctionTemplate::New(process_rusage));
     process->Set(String::New("getlogin"), FunctionTemplate::New(process_getlogin));
 

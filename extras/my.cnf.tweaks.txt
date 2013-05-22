@@ -1,0 +1,12 @@
+When running on a micro instance, mysqld can run out of memory and exit.
+
+This will cause the SilkJS WWW server to respawn child processes who 
+continually exit because they can't connect to MySQL.
+
+The following settings in my.cnf may help:
+
+key_buffer              = 8M 
+max_connections         = 30 // Limit connections
+query_cache_size        = 8M // try 4m if not enough 
+query_cache_limit       = 512K
+thread_stack            = 128K
