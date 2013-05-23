@@ -4,7 +4,7 @@ OSX Installer
 All is automated by running the create-installer.js script:
 
 ```
-cd SilkJS/osx
+cd SilkJS/osx-installer
 ./create-installer.js
 ```
 
