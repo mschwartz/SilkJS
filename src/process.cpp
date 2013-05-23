@@ -20,9 +20,11 @@
 #include <grp.h>
 #ifdef __APPLE__
 #include <uuid/uuid.h>
-#include <sys/resource.h>
-#else
-#include <linux/resource.h>
+#endif
+
+// Ubuntu 13.x doesn't include resource.h proper
+#ifndef RUSAGE_SELF
+#define RUSAGE_SELF 0
 #endif
 
 // TODO:
