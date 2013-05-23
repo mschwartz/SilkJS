@@ -22,10 +22,6 @@
 #include <uuid/uuid.h>
 #endif
 
-// Ubuntu 13.x doesn't include resource.h proper
-#ifndef RUSAGE_SELF
-#include <linux/resource.h>
-#endif
 
 // TODO:
 // getcwd()
