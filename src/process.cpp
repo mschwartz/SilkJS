@@ -24,7 +24,7 @@
 
 // Ubuntu 13.x doesn't include resource.h proper
 #ifndef RUSAGE_SELF
-#include <linux/rusage.h>
+#include <linux/resource.h>
 #endif
 
 // TODO:
