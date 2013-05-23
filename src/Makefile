@@ -44,7 +44,7 @@ CFLAGS = -fexceptions -fomit-frame-pointer -fdata-sections -ffunction-sections -
 	g++ $(CFLAGS) -c $(INCDIRS) -o $*.o $*.cpp
 
 silkjs: deps $(V8DIR) $(V8) $(CORE) $(OBJ) SilkJS.h Makefile
-	gcc -o silkjs $(CORE) $(OBJ) $(V8LIBS) -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lmemcached -lcairo -Wl,-rpath=/usr/local/silkjs/src/v8,-rpath=$(V8LIB_DIR) 
+	g++ -o silkjs $(CORE) $(OBJ) $(V8LIBS) -lmysqlclient -lmm -lgd -lncurses -lssl -lpthread -lsqlite3 -lcurl -lssh2 -lmemcached -lcairo -ldl -lexpat -Wl,-rpath=/usr/local/silkjs/src/v8,-rpath=$(V8LIB_DIR) 
 
 deps: 
 	sudo apt-get -y install libmm-dev libmysqlclient-dev libmemcached-dev libgd2-xpm-dev libncurses5-dev libsqlite3-dev libcurl4-openssl-dev libssh2-1-dev libcairo2-dev
@@ -80,7 +80,7 @@ $(V8DIR):
 
 $(V8):
 	# cd $(V8DIR) && svn update -r12823 && make dependencies && GYP_GENERATORS=make make GYPFLAGS="-Dcomponent=shared_library -Dv8_enable_extra_checks=0" -j 4 $(V8VERSION)
-	cd $(V8DIR) && svn update -r12823 && make dependencies && GYP_GENERATORS=make make GYPFLAGS="-Dcomponent=shared_library" -j 4 $(V8VERSION)
+	cd $(V8DIR) && svn update -r12823 && make dependencies && GYP_GENERATORS=make make $(V8VERSION) library=shared -j 2
 
 update:
 	cd $(V8DIR) && svn update -r 12823 && make dependencies && GYP_GENERATORS=make make $(V8VERSION)
