@@ -20,6 +20,9 @@
 #include <grp.h>
 #ifdef __APPLE__
 #include <uuid/uuid.h>
+#include <sys/resource.h>
+#else
+#include <linux/resource.h>
 #endif
 
 // TODO:
