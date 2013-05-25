@@ -46,6 +46,9 @@ struct STATE {
         strcpy(this->mm_file, filename);
         strcat(this->mm_file, "_mm");
         this->mm = mm_create(LOGFILE_CHUNK_SIZE * 2, this->mm_file);
+        if (!this->mm) {
+            return;
+        }
         this->length = (long *) mm_malloc(mm, sizeof (long));
         *this->length = 0;
         this->logBuffer = (char *) mm_malloc(mm, LOGFILE_CHUNK_SIZE);
@@ -134,7 +137,11 @@ static JSVAL logfile_init (JSARGS args) {
     String::AsciiValue filename(args[0]);
     STATE *state = new STATE(*filename);
     if (!state->alive) {
-        ThrowException(String::New("Could not initialize log file"));
+        char buf[strlen(*filename)+500];
+        sprintf(buf, "Could not initialize log file (%s): %s", *filename, strerror(errno));
+        ThrowException(String::New(buf));
+        // ThrowException(String::Concat(String::New("Could not initialize log file: "), String::New(strerror(errno))));
+        return Undefined();
     }
     return Opaque::New(state);
 }

@@ -256,7 +256,13 @@ function lockServer(debugMode) {
     var serverSocket = net.listen(Config.port, 50, Config.listenIp);
 
     // open log file
-    global.logfile = new LogFile(Config.logFile || '/tmp/httpd-silkjs.log');
+    try {
+        global.logfile = new LogFile(Config.logFile || '/tmp/httpd-silkjs.log');
+    }
+    catch (e) {
+        console.log(e.toString());
+        process.exit(1);
+    }
 
     // run any initialization functions
     Server.onStart();
