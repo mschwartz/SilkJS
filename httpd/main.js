@@ -299,12 +299,12 @@ function lockServer(debugMode) {
         }
         delete children[o.pid];
         pid = process.fork();
-        if (pid == 0) {
+        if (pid === 0) {
             setChildUser();
             HttpChild.run(serverSocket, process.getpid());
             process.exit(0);
         }
-        else if (pid == -1) {
+        else if (pid === -1) {
             console.error(process.error());
         }
         else {
