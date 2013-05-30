@@ -27,8 +27,11 @@ if (!fs.exists('nasm')) {
     chdir('..');
 }
 
+var d = new Date(),
+	filename = 'silkjs-installer-osx-' + d.getMonth() + '-' + d.getDate() + '-' + d.getFullYear();
+
 exec('./nasm -fmacho64 tarfile.s -o tarfile.o');
-exec('gcc -o silkjs-installer-osx installer.cpp tarfile.o');
+exec('gcc -o ' + filename + ' installer.cpp tarfile.o');
 // fs.chdir('/usr/local');
 
 // console.dir(fs.getcwd());
