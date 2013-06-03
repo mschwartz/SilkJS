@@ -62,7 +62,6 @@ GitHub.prototype.extend({
 
     /* private */
     _get: function(url) {
-        console.dir(url);
         var response = cURL({
             url: url
         });
@@ -1006,7 +1005,7 @@ GitHub.prototype.extend({
         if (contentType) {
             params.content_type = contentType;
         }
-        console.log('Creating GitHub resource...')
+        //console.log('Creating GitHub resource...')
         var response = cURL({
             method: 'POST',
             url: url,
@@ -1017,7 +1016,7 @@ GitHub.prototype.extend({
             throw o;
         }
         // upload to S3
-        console.log('Uploading to S3...');
+        //console.log('Uploading to S3...');
         var config = {
             method: 'POST',
             url: o.s3_url,
@@ -1370,7 +1369,6 @@ GitHub.prototype.extend({
     getTree: function(repo, sha, recursive) {
         recursive = recursive ? '?recursive=1' : '';
         var url = this.url + '/repos/' + this._repoName(repo) + '/git/trees/' + sha + recursive;
-        console.log(url);
         return this._get(url);
     }
 });
