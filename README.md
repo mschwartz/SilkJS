@@ -89,19 +89,7 @@ in JavaScript.  Even the CommonJS require() method is written in JavaScript.
 
 ## QUICKSTART
 
-(See https://github.com/mschwartz/SilkJS/wiki/Build-Instructions for dependent libraries)
-
-Currently for Mac OSX Lion x64 and Ubuntu only...
-
-    git clone https://github.com/mschwartz/SilkJS SilkJS
-    cd SilkJS
-    make
-
-Once built:
-
-    ./silkjs httpd/main.js
-
-Then point your browser at http://localhost:9090/
+See the instructions on installing SilkJS at http://silkjs.net
 
 ## Useful Links
 
