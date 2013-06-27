@@ -126,7 +126,7 @@ static JSVAL init (JSARGS args) {
 /**
  * @function curl.setMethod
  * 
- * var status = curl.setMethod(method);
+ * var status = curl.setMethod(handle, method);
  * 
  * Sets the method for the CURL request to either GET or POST.
  * 
