@@ -137,11 +137,11 @@ req = (function() {
 							});
 						}
 						else {
-							req.data.post = post;
+							data.post = post;
 						}
 					}
 					else {
-						req.data.post = '';
+						data.post = '';
 					}
 				}
 			}
