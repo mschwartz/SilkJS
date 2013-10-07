@@ -16,10 +16,11 @@ if (req.data.testfile) {
 		<h1>req.headers</h1>
 		<pre><%= console.dir(req.headers) %></pre>
 
+	<% if (req.postData) { %>
 		<h1>postData</h1>
 		<pre><%= req.postData.length %> Bytes</pre>
 		<pre><%= req.postData %></pre>
-
+	<% } %>
 		<h1>Mime Parts</h1>
 		<pre><%= console.dir(req.mimeParts) %></pre>
 
