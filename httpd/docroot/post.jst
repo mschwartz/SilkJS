@@ -11,17 +11,17 @@ if (req.data.testfile) {
 	</head>
 	<body>
 		<h1>req.data</h1>
-		<pre><%= req.data.dump() %></pre>
+		<pre><%= console.dir(req.data) %></pre>
 
 		<h1>req.headers</h1>
-		<pre><%= req.headers.dump() %></pre>
+		<pre><%= console.dir(req.headers) %></pre>
 
 		<h1>postData</h1>
 		<pre><%= req.postData.length %> Bytes</pre>
 		<pre><%= req.postData %></pre>
 
 		<h1>Mime Parts</h1>
-		<pre><%= req.mimeParts.dump() %></pre>
+		<pre><%= console.dir(req.mimeParts) %></pre>
 
 		<h1>Standard Form</h1>
 		<form action="/post.jst?foo=bar&baz=zaz" method="POST">
