@@ -1,9 +1,12 @@
 <%
 // JST program to test binary file upload, and standard form submit
-	
+var print_r = require('builtin/print_r');
+
 if (req.data.testfile) {
 	var fs = require('fs');
+	console.dir('writing file /tmp/' + req.data.testfile.filename); 
 	fs.writeFile64('/tmp/'+req.data.testfile.filename, req.data.testfile.content);
+	req.data.testfile.content = 'removed';
 }
 %>
 <html>
@@ -12,18 +15,16 @@ if (req.data.testfile) {
 	</head>
 	<body>
 		<h1>req.data</h1>
-		<pre><%= console.dir(req.data) %></pre>
+		<pre><%= print_r(req.data) %></pre>
 
 		<h1>req.headers</h1>
-		<pre><%= console.dir(req.headers) %></pre>
+		<pre><%= print_r(req.headers) %></pre>
 
 	<% if (req.postData) { %>
 		<h1>postData</h1>
 		<pre><%= req.postData.length %> Bytes</pre>
 		<pre><%= req.postData %></pre>
 	<% } %>
-		<h1>Mime Parts</h1>
-		<pre><%= console.dir(req.mimeParts) %></pre>
 
 		<h1>Standard Form</h1>
 		<form action="/post.jst?foo=bar&baz=zaz" method="POST">
