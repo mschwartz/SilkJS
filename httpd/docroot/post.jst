@@ -2,7 +2,8 @@
 // JST program to test binary file upload, and standard form submit
 	
 if (req.data.testfile) {
-	FileSystem.writefile64('/tmp/'+req.data.testfile.filename, req.data.testfile.content);
+	var fs = require('fs');
+	fs.writeFile64('/tmp/'+req.data.testfile.filename, req.data.testfile.content);
 }
 %>
 <html>
