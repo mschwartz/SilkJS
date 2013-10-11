@@ -9,6 +9,9 @@ endif
 ifeq ($(RELEASE),12.10)
 	GROUP=sudo
 endif
+ifeq ($(RELEASE),13.04)
+	GROUP=sudo
+endif
 ifeq ($(RELEASE),14)
 	GROUP=sudo
 endif
