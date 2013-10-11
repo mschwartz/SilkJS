@@ -475,15 +475,15 @@ HttpChild = (function() {
                         keepAlive = false;
                     }
                     var start_time = time.getrusage();
-					if (watchdogTimeout) {
-						watchdog.set(watchdogTimeout);
-					}
                     try {
                         if (!req.init(sock)) {
                             break;
                         }
                         // console.log(time.getrusage() - start_time);
                         keepAlive = res.init(sock, keepAlive, requestsHandled);
+						if (watchdogTimeout) {
+							watchdog.set(watchdogTimeout);
+						}
                         // execute a pure JavaScript handler, if provided.
                         if (requestHandler) {
                             requestHandler();
