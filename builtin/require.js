@@ -8,21 +8,21 @@
 	var console = builtin.console;
 
 	function runScript(src, fn) {
-		try {
+//		try {
 			var script = v8.compileScript(src, fn);
 			var exports = v8.runScript(script);
 			v8.freeScript(script);
 			return exports;
-		}
-		catch (e) {
-			console.log(e);
-			if (e.stack) {
-				console.log(e.stack);
-			}
-			throw new Error('require failed due to compile errors');
+//		}
+//		catch (e) {
+//			console.log(e);
+//			if (e.stack) {
+//				console.log(e.stack);
+//			}
+//			throw new Error('require failed due to compile errors');
 //			console.log(builtin.print_r(e));
 //			builtin.process.exit(1);
-		}
+//		}
 	}
 	function locateFile(module) {
 		function tryFile(path) {
