@@ -8,9 +8,19 @@
 	var console = builtin.console;
 
 	function runScript(src, fn) {
-		var script = v8.compileScript(src, fn);
-		var exports = v8.runScript(script);
-		v8.freeScript(script);
+		try {
+			var script = v8.compileScript(src, fn);
+			var exports = v8.runScript(script);
+			v8.freeScript(script);
+		}
+		catch (e) {
+			console.log(e);
+			if (e.stack) {
+				console.log(e.stack);
+			}
+//			console.log(builtin.print_r(e));
+//			builtin.process.exit(1);
+		}
 		return exports;
 	}
 	function locateFile(module) {

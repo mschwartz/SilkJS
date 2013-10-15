@@ -59,8 +59,18 @@ static JSVAL compileScript (JSARGS args) {
     TryCatch tryCatch;
     Persistent<Script>s = Persistent<Script>::New(Script::New(args[0]->ToString(), args[1]->ToString()));
     if (s.IsEmpty()) {
-        String::Utf8Value error(tryCatch.Exception());
-        return ThrowException(String::New(*error)); // String::Concat(String::New("Error compiling "), args[1]->ToString()));
+		String::Utf8Value error(tryCatch.Exception());
+		Handle<Message>message = tryCatch.Message();
+		if (message.IsEmpty()) {
+	        return ThrowException(String::New(*error)); // String::Concat(String::New("Error compiling "), args[1]->ToString()));
+		}
+		else {
+			String::Utf8Value filename(message->GetScriptResourceName());
+			int lineNumber = message->GetLineNumber();
+			char buf[512];
+			sprintf(buf, "Error in %s:%d (%s)", *filename, lineNumber, *error);
+			return ThrowException(String::New(buf));
+		}
         // delete wrapper;
         // return Opaque::New(NULL);
     }
