@@ -13,7 +13,7 @@
             return fn + '.coffee';
         }
 		if (fn.substr(0,1) == '/' || fn.substr(0,2) == './' || fn.substr(0,3) == '../') {
-			throw 'Could not locate include file ' + fn;
+			throw new Error('Could not locate include file ' + fn);
 		}
 		var paths = include.path;
 		for (var i=0, len=paths.length; i<len; i++) {
@@ -32,7 +32,7 @@
 				return fn + '.coffee';
 			}
 		}
-		throw Error('Could not locate include file ' + fn);
+		throw new Error('Could not locate include file ' + fn);
 	}
 	var suffix = '.coffee',
 		suffixLen = suffix.length;
@@ -52,16 +52,9 @@
 //			log('\n'+source)
 		}
 		var script;
-		try {
-			script = v8.compileScript(contents, fn);
-			v8.runScript(script);
-			v8.freeScript(script);
-		}
-		catch (e) {
-			throw "Could not compile " + fn + "\n" + e.toString();
-			// console.dir(e);
-			// throw e;
-		}
+		script = v8.compileScript(contents, fn);
+		v8.runScript(script);
+		v8.freeScript(script);
 	}
 	include = function() {
 		var argLen = arguments.length;
