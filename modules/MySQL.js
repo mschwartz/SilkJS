@@ -11,7 +11,7 @@
  *
  * ### Usage
  *
- * var MySQL = require('MySQL');
+ * var MySQL = require('MySQL').MySQL;
  *
  * ### Notes
  *
