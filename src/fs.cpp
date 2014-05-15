@@ -1209,6 +1209,7 @@ void init_fs_object () {
     fs->Set(String::New("S_IXUSR"), Integer::New(S_IXUSR));
     fs->Set(String::New("S_IRWXG"), Integer::New(S_IRWXG));
     fs->Set(String::New("S_IRGRP"), Integer::New(S_IRGRP));
+    fs->Set(String::New("S_IXGRP"), Integer::New(S_IXGRP));
     fs->Set(String::New("S_IWGRP"), Integer::New(S_IWGRP));
     fs->Set(String::New("S_IRWXO"), Integer::New(S_IRWXO));
     fs->Set(String::New("S_IROTH"), Integer::New(S_IROTH));
