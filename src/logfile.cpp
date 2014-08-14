@@ -58,7 +58,7 @@ struct STATE {
         // setting file mode to 0666 so child processes with user,group
         // changed by calls to setuid/setgid can flush()
         mode_t omask = umask(0);
-        int fd = open(this->filename, O_WRONLY | O_CREAT | O_TRUNC, 0666);
+        int fd = open(this->filename, O_WRONLY | O_CREAT, 0666);
         close(fd);
         chmod(this->filename, 0666);
         umask(omask);
@@ -90,7 +90,7 @@ static inline STATE* HANDLE (Handle<Value>v) {
 
 static void open_logfile (STATE *state) {
     if (!state->logFd) {
-        state->logFd = open(state->filename, O_RDWR);
+        state->logFd = open(this->filename, O_WRONLY | O_CREAT | O_APPEND, 0666);
         if (state->logFd < 0) {
             perror("logfile_write/open");
             exit(1);
