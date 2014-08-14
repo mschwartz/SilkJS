@@ -90,7 +90,7 @@ static inline STATE* HANDLE (Handle<Value>v) {
 
 static void open_logfile (STATE *state) {
     if (!state->logFd) {
-        state->logFd = open(this->filename, O_WRONLY | O_CREAT | O_APPEND, 0666);
+        state->logFd = open(state->filename, O_WRONLY | O_CREAT | O_APPEND, 0666);
         if (state->logFd < 0) {
             perror("logfile_write/open");
             exit(1);
