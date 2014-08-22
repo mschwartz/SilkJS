@@ -330,7 +330,7 @@ Mail.prototype.extend({
             if (this.text) {
                 putln('--' + boundary);
                 putln('Content-Type: text/plain');
-                putln('Content-Transfer-Encoding: quoted-printable');
+                putln('Content-Transfer-Encoding: 7bit');
                 putln('');
                 putln(this.text);
                 putln('');
@@ -338,7 +338,7 @@ Mail.prototype.extend({
             if (this.html) {
                 putln('--' + boundary);
                 putln('Content-Type: text/html');
-                putln('Content-Transfer-Encoding: quoted-printable');
+                putln('Content-Transfer-Encoding: 7bit');
                 putln('');
                 putln(this.html);
                 putln('');
