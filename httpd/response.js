@@ -208,13 +208,13 @@ res = function() {
 				res.contentLength = size;
 				res.sendHeaders();
 				if (Config.sendFile || Config.sendFile == undefined) {
-					net.sendFile(res.sock, fn, 0, size); // (FileSystem.readfile64(fn));
-				} else {
-				    var file = fs.open(fn, fs.O_RDONLY);
-					var content = net.read(file, size, size);
+                    net.sendFile(res.sock, fn, 0, size); // (FileSystem.readfile64(fn));
+			    } else {
+                    var file = fs.open(fn, fs.O_RDONLY);
+                    var content = net.read(file, size, size);
                     net.write(res.sock, content, size);
                     fs.close(file);
-				}
+                }
 			}
 			catch (e) {
 				throw e;
