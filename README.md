@@ -1,3 +1,17 @@
+# PLEASE NOTE
+
+After several years of supporting SilkJS, I've decided it's time to retire the project and move on to something better.  Please see https://github.com/decafjs/decaf if you are interested in fast synchronous (PHP scripting style) JavaScript for the server.
+
+Over time, the V8 developers changed the API enough that SilkJS no longer compiles against the modern library.  They are moving from subversion to git which breaks the Makefiles for SilkJS (relies on svn).  The latest gyp tools do not compile older versions of V8.  Modern versions of GCC throw errors compiling the old source.
+
+To pend any time keeping up with the code breaking API and build toolchain issues, and the fact that V8 is not reentrant, seems pointless anymore.
+
+The rest of this README is kept here for posterity.
+
+If you are using SilkJS and have pull requests, I will examine them and honor them.  If you have a need for me to examine a bug in the existing code and you are able to build it, I am happy to update the sources though I won't be able to compile them to test.
+
+-- mschwartz
+
 # About SilkJS
 
 SilkJS is a console application that wraps the v8 JavaScript engine.  It is designed for Ubuntu Linux, but it also compiles for OSX as well as other flavors of Linux.
