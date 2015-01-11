@@ -12,7 +12,10 @@ endif
 ifeq ($(RELEASE),13.04)
 	GROUP=sudo
 endif
-ifeq ($(RELEASE),14)
+ifeq ($(RELEASE),14.04)
+	GROUP=sudo
+endif
+ifeq ($(RELEASE),14.10)
 	GROUP=sudo
 endif
 
